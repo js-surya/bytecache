@@ -7,14 +7,14 @@ public struct ServerURL: Hashable, Codable, Sendable {
     /// Accepts loosely typed input: missing scheme, trailing `/`, or a pasted URL ending in `/api` or `/login`.
     public init(_ raw: String) throws(APIError) {
         var text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty else { throw .invalidServerURL }
+        guard !text.isEmpty else { throw .invalidServer }
         if !text.contains("://") { text = "https://" + text }
 
         guard var components = URLComponents(string: text),
               let scheme = components.scheme?.lowercased(),
               scheme == "http" || scheme == "https",
               let host = components.host, !host.isEmpty
-        else { throw .invalidServerURL }
+        else { throw .invalidServer }
 
         var segments = components.path.split(separator: "/").map(String.init)
         if let last = segments.last, last == "api" || last == "login" {
@@ -27,7 +27,7 @@ public struct ServerURL: Hashable, Codable, Sendable {
         components.fragment = nil
         components.path = segments.isEmpty ? "" : "/" + segments.joined(separator: "/")
 
-        guard let url = components.url else { throw .invalidServerURL }
+        guard let url = components.url else { throw .invalidServer }
         base = url
     }
 
