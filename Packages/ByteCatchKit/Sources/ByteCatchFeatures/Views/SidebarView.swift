@@ -6,6 +6,7 @@ public struct SidebarView: View {
     @Binding var selection: SidebarItem?
     let session: SessionManager
     @State private var showingSettings = false
+    @Environment(AppSettings.self) private var settings
 
     public init(model: SidebarModel, selection: Binding<SidebarItem?>, session: SessionManager) {
         self.model = model
@@ -38,7 +39,12 @@ public struct SidebarView: View {
         }
         .navigationTitle(AboutText.appName)
         .refreshable { await model.load() }
-        .task { await model.load() }
+        .task {
+            #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("-BCShowSettings") { showingSettings = true }
+            #endif
+            await model.load()
+        }
         #if os(iOS)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -50,6 +56,7 @@ public struct SidebarView: View {
                 SettingsView(session: session)
                     .toolbar { Button("Done") { showingSettings = false } }
             }
+            .appSettingsStyle(settings)
         }
         #endif
     }

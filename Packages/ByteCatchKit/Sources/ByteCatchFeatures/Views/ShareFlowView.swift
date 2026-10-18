@@ -15,6 +15,7 @@ public struct ShareFlowView: View {
     let items: [NSExtensionItem]
     let onFinish: () -> Void
     @State private var phase = Phase.loading
+    @State private var settings = AppSettings()
 
     public init(items: [NSExtensionItem], onFinish: @escaping () -> Void) {
         self.items = items
@@ -53,6 +54,7 @@ public struct ShareFlowView: View {
                 }
             }
         }
+        .appSettingsStyle(settings)
         .task { await load() }
     }
 

@@ -23,7 +23,7 @@ public struct CaptureSheet: View {
             }
             Section("Code") {
                 TextEditor(text: $model.text)
-                    .font(.system(.footnote, design: .monospaced))
+                    .codeEditorStyle()
                     .autocorrectionDisabled()
                     #if os(iOS)
                     .textInputAutocapitalization(.never)

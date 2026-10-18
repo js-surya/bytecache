@@ -1,10 +1,12 @@
 import HighlightSwift
 import SwiftUI
 
-/// Read-only, syntax-highlighted code with line numbers; scrolls sideways instead of wrapping.
+/// Read-only, syntax-highlighted code in the user's code theme; scrolls sideways instead of wrapping.
 public struct CodeView: View {
     let code: String
     let language: String
+    @Environment(AppSettings.self) private var settings
+    @Environment(\.colorScheme) private var colorScheme
 
     public init(code: String, language: String) {
         self.code = code
@@ -17,21 +19,47 @@ public struct CodeView: View {
     }
 
     public var body: some View {
+        let palette = settings.codeTheme.palette(for: colorScheme)
         ScrollView(.horizontal) {
             HStack(alignment: .top, spacing: 12) {
-                Text(lineNumbers)
-                    .foregroundStyle(.tertiary)
-                    .multilineTextAlignment(.trailing)
-                    .accessibilityHidden(true)
+                if settings.showLineNumbers {
+                    Text(lineNumbers)
+                        .foregroundStyle(CodeTheme.color(palette.foreground).opacity(0.4))
+                        .multilineTextAlignment(.trailing)
+                        .accessibilityHidden(true)
+                }
                 CodeText(code)
                     .highlightMode(HighlightAlias.mode(for: language))
-                    .codeTextColors(.theme(.xcode))
+                    .codeTextColors(.custom(dark: palette.colors, light: palette.colors))
+                    .foregroundStyle(CodeTheme.color(palette.foreground))
                     .textSelection(.enabled)
             }
-            .font(.system(.callout, design: .monospaced))
+            .font(.system(size: settings.codeFontSize, design: .monospaced))
             .padding(12)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(CodeTheme.color(palette.background))
     }
+}
+
+/// Plain text editors for code take the code theme's colours and font size.
+struct CodeEditorStyle: ViewModifier {
+    @Environment(AppSettings.self) private var settings
+    @Environment(\.colorScheme) private var colorScheme
+
+    func body(content: Content) -> some View {
+        let palette = settings.codeTheme.palette(for: colorScheme)
+        content
+            .font(.system(size: settings.codeFontSize, design: .monospaced))
+            .foregroundStyle(CodeTheme.color(palette.foreground))
+            .scrollContentBackground(.hidden)
+            .padding(4)
+            .background(CodeTheme.color(palette.background), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+    }
+}
+
+extension View {
+    public func codeEditorStyle() -> some View { modifier(CodeEditorStyle()) }
 }
 
 /// ByteStash language id → highlight.js language bundled with HighlightSwift.

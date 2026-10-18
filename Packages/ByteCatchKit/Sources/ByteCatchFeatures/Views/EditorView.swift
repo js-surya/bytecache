@@ -35,7 +35,7 @@ public struct EditorView: View {
                         suggestions: model.suggestions[index] ?? []
                     ) { model.setLanguage($0, fragment: index) }
                     TextEditor(text: text(index, \.code))
-                        .font(.system(.callout, design: .monospaced))
+                        .codeEditorStyle()
                         .autocorrectionDisabled()
                         #if os(iOS)
                         .textInputAutocapitalization(.never)

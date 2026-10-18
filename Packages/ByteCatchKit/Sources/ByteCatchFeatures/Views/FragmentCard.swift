@@ -36,7 +36,8 @@ public struct FragmentCard: View {
             Divider()
             CodeView(code: fragment.code, language: fragment.language)
         }
-        .background(.background.secondary, in: RoundedRectangle(cornerRadius: 10))
+        .background(.background.secondary)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
         .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.separator))
         .draggable(fragment.code)
     }

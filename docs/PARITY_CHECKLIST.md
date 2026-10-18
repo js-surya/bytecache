@@ -23,7 +23,9 @@ Tick each cell after trying it on that platform. "Auto" = covered by automated t
 | Open snippet in new window | n/a (iOS limit) | ☐ | ☐ |
 | Shortcuts: Save to ByteCatch, Search Snippets, Open Snippet | ☐ | ☐ | ☐ |
 | Spotlight finds a viewed snippet; tapping opens it | ☐ | ☐ | ☐ |
-| Settings | ☐ (sheet) | ☐ (sheet) | ☐ (Settings window) |
+| Settings (iOS Settings style, icon rows) | ☐ (sheet) | ☐ (sheet) | ☐ (Settings window) |
+| Appearance: Automatic / Light / Dark, accent colour | ☐ | ☐ | ☐ |
+| Code theme (22 themes), font size, line numbers — viewer, editor, share sheet | ☐ | ☐ | ☐ |
 
 ## Review focus (from the plan)
 | Case | Expected | Auto | Manual |
