@@ -135,6 +135,17 @@ public final class SnippetListModel {
         if let server = session.client?.server { cache?.upsert(snippet, server: server) }
     }
 
+    /// Makes sure a snippet (from Spotlight or Shortcuts) is in the list; fetches it if needed.
+    public func reveal(id: Int) async -> Bool {
+        if snippets.contains(where: { $0.id == id }) { return true }
+        guard let client = session.client else { return false }
+        if let snippet = (try? await client.snippet(id: id)) ?? cache?.snippet(id: id, server: client.server) {
+            snippets.insert(snippet, at: 0)
+            return true
+        }
+        return false
+    }
+
     // MARK: Private
 
     private func mutate(

@@ -8,13 +8,16 @@
 
 /* Begin PBXBuildFile section */
 		08F79F18BB88ED924C22F95B /* ShareExtension-iOS.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 423BCC1F180466E6F27DDD06 /* ShareExtension-iOS.appex */; platformFilters = (ios, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		0CAA7FA2814CEC7B588965F4 /* AppNavigator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6AF48382EF4B267429237E7 /* AppNavigator.swift */; };
 		26A542E9740AEC06728A967E /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12855A995C6E19339685CED3 /* ShareViewController.swift */; };
 		50D5E0443B187DAF7D3713C5 /* ByteCatchFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = B26A3093597AB739C2DF0511 /* ByteCatchFeatures */; };
 		5F75781056007E14A3E95F00 /* ByteCatchFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = E78D4BEF3C7ED8F59F9D494A /* ByteCatchFeatures */; };
 		7682168EE4B9626F45CCBB34 /* ByteCatchCore in Frameworks */ = {isa = PBXBuildFile; productRef = 7CEDA390447B6039AE590DD4 /* ByteCatchCore */; };
+		83AFB29D0CC866D1C8464D89 /* SnippetIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D838413DCB2050F3742666 /* SnippetIntents.swift */; };
 		8C1655241A95849FE38DC887 /* ByteCatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61BC3B1A0E40FC429B39F979 /* ByteCatchApp.swift */; };
 		9EE1FB947F289D8DFA267B5A /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 578F0BBD49A6125840F8204E /* RootView.swift */; };
 		AF5E2FE6012B017544A66057 /* ShareExtension-macOS.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 277B9E0F2A58366A616C1FFB /* ShareExtension-macOS.appex */; platformFilters = (macos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B4AD0729A2F3278FF81FD9A0 /* SnippetEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0001AE1ACCD8D3F505B8C18C /* SnippetEntity.swift */; };
 		B789F97FF456E2CF92CC6E7F /* ByteCatchLanguage in Frameworks */ = {isa = PBXBuildFile; productRef = 11A7A824534E8E9296F68967 /* ByteCatchLanguage */; };
 		DC94C7D71DD250E5DA74FB46 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CA40CCBD169D7B78D1AD1DF /* ShareViewController.swift */; };
 		DF1F192ACF61472B0193B5F9 /* MainSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91115E2D302E39CFA672F325 /* MainSplitView.swift */; };
@@ -56,6 +59,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0001AE1ACCD8D3F505B8C18C /* SnippetEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetEntity.swift; sourceTree = "<group>"; };
 		028C047DAB0DBADD80135A0F /* ByteCatch-macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ByteCatch-macOS.entitlements"; sourceTree = "<group>"; };
 		02BAA92960ADC054C238B0AA /* SnippetWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetWindow.swift; sourceTree = "<group>"; };
 		0CA40CCBD169D7B78D1AD1DF /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
@@ -68,10 +72,12 @@
 		5293C102C7001EC700362023 /* ByteCatch-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ByteCatch-iOS.entitlements"; sourceTree = "<group>"; };
 		578F0BBD49A6125840F8204E /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		61BC3B1A0E40FC429B39F979 /* ByteCatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ByteCatchApp.swift; sourceTree = "<group>"; };
+		66D838413DCB2050F3742666 /* SnippetIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetIntents.swift; sourceTree = "<group>"; };
 		807D3002C3AD054938EB719C /* ByteCatchKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ByteCatchKit; path = Packages/ByteCatchKit; sourceTree = SOURCE_ROOT; };
 		8A63EA4DB76956252DEAFC1E /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
 		91115E2D302E39CFA672F325 /* MainSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainSplitView.swift; sourceTree = "<group>"; };
 		9DFD62A9CB8A800D5EA878D6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		A6AF48382EF4B267429237E7 /* AppNavigator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNavigator.swift; sourceTree = "<group>"; };
 		E3530D541723AC7558952B22 /* ShareExtension-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ShareExtension-iOS.entitlements"; sourceTree = "<group>"; };
 		F312679A932EE894BE6213C6 /* ByteCatch.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ByteCatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -136,6 +142,15 @@
 			);
 			sourceTree = "<group>";
 		};
+		B2CED7555CBE476EEB00FD8E /* Intents */ = {
+			isa = PBXGroup;
+			children = (
+				0001AE1ACCD8D3F505B8C18C /* SnippetEntity.swift */,
+				66D838413DCB2050F3742666 /* SnippetIntents.swift */,
+			);
+			path = Intents;
+			sourceTree = "<group>";
+		};
 		B73C11B10F2A06923FC2BA31 /* ShareExtension-iOS */ = {
 			isa = PBXGroup;
 			children = (
@@ -168,10 +183,12 @@
 		CD6F71604189491A9487B401 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				A6AF48382EF4B267429237E7 /* AppNavigator.swift */,
 				61BC3B1A0E40FC429B39F979 /* ByteCatchApp.swift */,
 				91115E2D302E39CFA672F325 /* MainSplitView.swift */,
 				578F0BBD49A6125840F8204E /* RootView.swift */,
 				02BAA92960ADC054C238B0AA /* SnippetWindow.swift */,
+				B2CED7555CBE476EEB00FD8E /* Intents */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -320,9 +337,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0CAA7FA2814CEC7B588965F4 /* AppNavigator.swift in Sources */,
 				8C1655241A95849FE38DC887 /* ByteCatchApp.swift in Sources */,
 				DF1F192ACF61472B0193B5F9 /* MainSplitView.swift in Sources */,
 				9EE1FB947F289D8DFA267B5A /* RootView.swift in Sources */,
+				B4AD0729A2F3278FF81FD9A0 /* SnippetEntity.swift in Sources */,
+				83AFB29D0CC866D1C8464D89 /* SnippetIntents.swift in Sources */,
 				E5DC5AC650A6EE10C135D7B1 /* SnippetWindow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

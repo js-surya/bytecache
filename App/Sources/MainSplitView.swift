@@ -1,3 +1,4 @@
+import CoreSpotlight
 import SwiftUI
 import ByteCatchCore
 import ByteCatchFeatures
@@ -64,6 +65,19 @@ struct MainSplitView: View {
             #endif
         }
         .onAppear { clipboard.check() }
+        .onChange(of: list.snippets) {
+            if let server = services.session.client?.server { SpotlightIndexer.index(list.snippets, server: server) }
+        }
+        .onContinueUserActivity(CSSearchableItemActionType) { activity in
+            if let id = (activity.userInfo?[CSSearchableItemActivityIdentifier] as? String).flatMap(Int.init) {
+                AppNavigator.shared.pendingSnippetID = id
+            }
+        }
+        .task(id: AppNavigator.shared.pendingSnippetID) {
+            guard let id = AppNavigator.shared.pendingSnippetID else { return }
+            AppNavigator.shared.pendingSnippetID = nil
+            if await list.reveal(id: id) { selectedSnippet = id }
+        }
         .onChange(of: scenePhase) { if scenePhase == .active { clipboard.check() } }
         .focusedSceneValue(\.snippetCommands, commands)
         .sheet(item: $capture) { model in

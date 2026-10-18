@@ -14,8 +14,14 @@ public struct SettingsView: View {
                 Section("Account") {
                     LabeledContent("Server", value: server.base.absoluteString)
                     LabeledContent("Signed in as", value: user.username.isEmpty ? "—" : user.username)
-                    Button("Sign Out", role: .destructive) { session.signOut() }
-                    Button("Use a different server", role: .destructive) { session.changeServer() }
+                    Button("Sign Out", role: .destructive) {
+                        SpotlightIndexer.removeAll()
+                        session.signOut()
+                    }
+                    Button("Use a different server", role: .destructive) {
+                        SpotlightIndexer.removeAll()
+                        session.changeServer()
+                    }
                 }
             }
             Section("About") {

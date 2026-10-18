@@ -110,6 +110,29 @@ final class SnippetListModelTests: XCTestCase {
 }
 
 @MainActor
+final class SnippetRevealTests: XCTestCase {
+    func testRevealFetchesMissingSnippet() async {
+        let (session, transport) = await TestSession.signedIn([.json(TestJSON.page([TestJSON.snippet(1)])), .json(TestJSON.snippet(99, title: "Far"))])
+        let model = SnippetListModel(session: session, cache: nil)
+        await model.refresh()
+        let found = await model.reveal(id: 99)
+        XCTAssertTrue(found)
+        XCTAssertEqual(model.snippets.first?.title, "Far")
+        XCTAssertEqual(transport.last.url?.path, "/api/snippets/99")
+    }
+
+    func testRevealKnownSnippetDoesNotFetch() async {
+        let (session, transport) = await TestSession.signedIn([.json(TestJSON.page([TestJSON.snippet(1)]))])
+        let model = SnippetListModel(session: session, cache: nil)
+        await model.refresh()
+        let count = transport.requests.count
+        let found = await model.reveal(id: 1)
+        XCTAssertTrue(found)
+        XCTAssertEqual(transport.requests.count, count)
+    }
+}
+
+@MainActor
 final class SidebarModelTests: XCTestCase {
     func testLoadsLanguagesAndCategoriesSorted() async {
         let meta = #"{"categories":["web","api"],"languages":["python","bash"]}"#
