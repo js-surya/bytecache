@@ -17,3 +17,13 @@ public enum AppEnvironment {
         appGroupID.flatMap(UserDefaults.init(suiteName:)) ?? .standard
     }
 }
+
+extension AppEnvironment {
+    /// Credentials shared with the extensions when the keychain group is available, app-local otherwise.
+    public static func makeCredentialStore() -> any CredentialStore {
+        FallbackCredentialStore(
+            primary: KeychainCredentialStore(accessGroup: keychainGroup),
+            fallback: KeychainCredentialStore(accessGroup: nil)
+        )
+    }
+}

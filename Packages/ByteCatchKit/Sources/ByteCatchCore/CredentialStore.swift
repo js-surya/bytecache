@@ -32,3 +32,32 @@ public final class InMemoryCredentialStore: CredentialStore, @unchecked Sendable
     public func save(_ credentials: Credentials) throws { lock.withLock { self.credentials = credentials } }
     public func clear() throws { lock.withLock { credentials = nil } }
 }
+
+/// Uses `primary` (the shared keychain group) and falls back when it can't be written — unsigned
+/// simulator and local Mac builds lack the keychain-sharing entitlement.
+public struct FallbackCredentialStore: CredentialStore {
+    private let primary: any CredentialStore
+    private let fallback: any CredentialStore
+
+    public init(primary: any CredentialStore, fallback: any CredentialStore) {
+        self.primary = primary
+        self.fallback = fallback
+    }
+
+    public func load() -> Credentials? {
+        primary.load() ?? fallback.load()
+    }
+
+    public func save(_ credentials: Credentials) throws {
+        do {
+            try primary.save(credentials)
+        } catch {
+            try fallback.save(credentials)
+        }
+    }
+
+    public func clear() throws {
+        try? primary.clear()
+        try fallback.clear()
+    }
+}

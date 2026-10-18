@@ -17,6 +17,7 @@
 		AF5E2FE6012B017544A66057 /* ShareExtension-macOS.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 277B9E0F2A58366A616C1FFB /* ShareExtension-macOS.appex */; platformFilters = (macos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B789F97FF456E2CF92CC6E7F /* ByteCatchLanguage in Frameworks */ = {isa = PBXBuildFile; productRef = 11A7A824534E8E9296F68967 /* ByteCatchLanguage */; };
 		DC94C7D71DD250E5DA74FB46 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CA40CCBD169D7B78D1AD1DF /* ShareViewController.swift */; };
+		DF1F192ACF61472B0193B5F9 /* MainSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91115E2D302E39CFA672F325 /* MainSplitView.swift */; };
 		E78D6148C4233CC2E3543A7C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2E8E9F0E34A795A87F842D59 /* Assets.xcassets */; };
 		F73F71235039A2BE996A08F0 /* ByteCatchFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = B726A517EE2B62586C531C3A /* ByteCatchFeatures */; };
 /* End PBXBuildFile section */
@@ -67,6 +68,7 @@
 		61BC3B1A0E40FC429B39F979 /* ByteCatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ByteCatchApp.swift; sourceTree = "<group>"; };
 		807D3002C3AD054938EB719C /* ByteCatchKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ByteCatchKit; path = Packages/ByteCatchKit; sourceTree = SOURCE_ROOT; };
 		8A63EA4DB76956252DEAFC1E /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
+		91115E2D302E39CFA672F325 /* MainSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainSplitView.swift; sourceTree = "<group>"; };
 		9DFD62A9CB8A800D5EA878D6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E3530D541723AC7558952B22 /* ShareExtension-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ShareExtension-iOS.entitlements"; sourceTree = "<group>"; };
 		F312679A932EE894BE6213C6 /* ByteCatch.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ByteCatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -165,6 +167,7 @@
 			isa = PBXGroup;
 			children = (
 				61BC3B1A0E40FC429B39F979 /* ByteCatchApp.swift */,
+				91115E2D302E39CFA672F325 /* MainSplitView.swift */,
 				578F0BBD49A6125840F8204E /* RootView.swift */,
 			);
 			path = Sources;
@@ -315,6 +318,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8C1655241A95849FE38DC887 /* ByteCatchApp.swift in Sources */,
+				DF1F192ACF61472B0193B5F9 /* MainSplitView.swift in Sources */,
 				9EE1FB947F289D8DFA267B5A /* RootView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

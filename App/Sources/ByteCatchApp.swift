@@ -3,14 +3,16 @@ import ByteCatchFeatures
 
 @main
 struct ByteCatchApp: App {
+    @State private var services = AppServices()
+
     var body: some Scene {
         WindowGroup {
-            RootView()
+            RootView(services: services)
         }
         #if os(macOS)
         Settings {
-            Text(AboutText.tagline)
-                .padding()
+            SettingsView(session: services.session)
+                .frame(width: 460, height: 360)
         }
         #endif
     }

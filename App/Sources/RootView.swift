@@ -1,17 +1,31 @@
 import SwiftUI
 import ByteCatchFeatures
 
-/// Routes between server setup, login and the main split view (plan Task 9).
+/// Routes between server setup, login and the main split view.
 struct RootView: View {
+    let services: AppServices
+    @State private var restored = false
+
     var body: some View {
-        ContentUnavailableView {
-            Label(AboutText.appName, systemImage: "curlybraces")
-        } description: {
-            Text(AboutText.tagline)
+        Group {
+            if !restored {
+                ProgressView()
+            } else {
+                switch services.session.state {
+                case .needsServer:
+                    ServerSetupView(model: services.onboarding)
+                case .needsLogin(let server, _):
+                    LoginView(model: services.onboarding, server: server)
+                case .signedIn:
+                    MainSplitView(services: services)
+                }
+            }
+        }
+        .animation(.default, value: services.session.state)
+        .task {
+            guard !restored else { return }
+            await services.session.restore()
+            restored = true
         }
     }
-}
-
-#Preview {
-    RootView()
 }

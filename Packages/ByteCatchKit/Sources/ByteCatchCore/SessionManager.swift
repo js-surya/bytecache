@@ -85,6 +85,13 @@ public final class SessionManager {
         dropToLogin()
     }
 
+    /// Forgets the server and credentials entirely, back to the setup screen.
+    public func changeServer() {
+        credentials = nil
+        try? store.clear()
+        state = .needsServer
+    }
+
     /// Call when any request returns 401; signs out cleanly and shows login.
     public func handleUnauthorized() {
         guard case .signedIn = state else { return }

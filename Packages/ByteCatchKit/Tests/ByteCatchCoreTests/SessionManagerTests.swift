@@ -164,3 +164,47 @@ final class KeychainCredentialStoreTests: XCTestCase {
         XCTAssertNil(store.load())
     }
 }
+
+@MainActor
+final class SessionChangeServerTests: XCTestCase {
+    func testChangeServerForgetsEverything() async throws {
+        let server = try ServerURL("https://x.io")
+        let store = InMemoryCredentialStore(Credentials(server: server, token: nil, username: "demo"))
+        let config = #"{"authRequired":true}"#
+        let session = SessionManager(store: store, transport: StubTransport(body: config))
+        await session.restore()
+        guard case .needsLogin = session.state else { return XCTFail("\(session.state)") }
+
+        session.changeServer()
+        XCTAssertEqual(session.state, .needsServer)
+        XCTAssertNil(store.load())
+    }
+}
+
+final class FallbackCredentialStoreTests: XCTestCase {
+    struct Failing: CredentialStore {
+        struct Boom: Error {}
+        func load() -> Credentials? { nil }
+        func save(_ credentials: Credentials) throws { throw Boom() }
+        func clear() throws { throw Boom() }
+    }
+
+    func testUsesFallbackWhenPrimaryCannotSave() throws {
+        let fallback = InMemoryCredentialStore()
+        let store = FallbackCredentialStore(primary: Failing(), fallback: fallback)
+        let creds = Credentials(server: try ServerURL("https://x.io"), token: "t")
+        try store.save(creds)
+        XCTAssertEqual(store.load(), creds)
+        try store.clear()
+        XCTAssertNil(store.load())
+    }
+
+    func testPrefersPrimaryWhenItWorks() throws {
+        let primary = InMemoryCredentialStore(), fallback = InMemoryCredentialStore()
+        let store = FallbackCredentialStore(primary: primary, fallback: fallback)
+        let creds = Credentials(server: try ServerURL("https://x.io"), token: "t")
+        try store.save(creds)
+        XCTAssertEqual(primary.load(), creds)
+        XCTAssertNil(fallback.load())
+    }
+}
