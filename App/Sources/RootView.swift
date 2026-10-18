@@ -34,6 +34,11 @@ struct RootView: View {
                 await services.onboarding.connect()
                 await services.onboarding.login()
             }
+            // `BC_DEBUG_API_KEY` environment variable: pre-fill the API key field (simulator clipboard sync is unreliable).
+            if let key = ProcessInfo.processInfo.environment["BC_DEBUG_API_KEY"], case .needsLogin = services.session.state {
+                services.onboarding.method = .apiKey
+                services.onboarding.apiKey = key
+            }
             #endif
             restored = true
         }
