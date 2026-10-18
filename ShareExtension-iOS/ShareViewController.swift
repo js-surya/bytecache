@@ -2,11 +2,12 @@ import UIKit
 import SwiftUI
 import ByteCatchFeatures
 
-/// Hosts the capture sheet inside the iOS share sheet (plan Task 13).
+/// Hosts the share flow inside the iOS share sheet.
 final class ShareViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        let host = UIHostingController(rootView: SharePlaceholderView { [weak self] in
+        let items = extensionContext?.inputItems.compactMap { $0 as? NSExtensionItem } ?? []
+        let host = UIHostingController(rootView: ShareFlowView(items: items) { [weak self] in
             self?.extensionContext?.completeRequest(returningItems: nil)
         })
         addChild(host)
