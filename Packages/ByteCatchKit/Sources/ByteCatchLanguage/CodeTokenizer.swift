@@ -3,6 +3,9 @@ import Foundation
 /// Turns code into the token stream the language model sees. Training and inference must both use
 /// `features(_:)`, so any change here requires retraining the model.
 public enum CodeTokenizer {
+    /// Identifiers longer than this are replaced by `ID` in pair features.
+    static let pairIdentifierLimit = 8
+
     /// Tokens kept after a comment marker on the same line.
     static let commentTokenLimit = 20
 
@@ -40,7 +43,10 @@ public enum CodeTokenizer {
         let words = tokens(code, maxLines: maxLines).map(wordSafe)
         var output = words
         output.reserveCapacity(words.count * 2)
-        for (a, b) in zip(words, words.dropFirst()) where a != "NL" {
+        // Pairs carry syntax shape; long names are project-specific, so they become `ID` there
+        // (keeps the model small without losing keywords, which are short).
+        let shapes = words.map { $0.count > pairIdentifierLimit && isIdentifierStart($0.unicodeScalars.first!) ? "ID" : $0 }
+        for (a, b) in zip(shapes, shapes.dropFirst()) where a != "NL" {
             output.append(a + "ZZ" + b)
         }
         return output.joined(separator: " ")

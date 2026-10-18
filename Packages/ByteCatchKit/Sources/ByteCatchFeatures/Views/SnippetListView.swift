@@ -1,0 +1,131 @@
+import ByteCatchCore
+import SwiftUI
+
+public struct SnippetListView: View {
+    @Bindable var model: SnippetListModel
+    @Binding var selection: Snippet.ID?
+
+    public init(model: SnippetListModel, selection: Binding<Snippet.ID?>) {
+        self.model = model
+        _selection = selection
+    }
+
+    public var body: some View {
+        List(selection: $selection) {
+            ForEach(model.snippets) { snippet in
+                SnippetRow(snippet: snippet)
+                    .tag(snippet.id)
+                    .task { await model.loadMoreIfNeeded(current: snippet) }
+                    .contextMenu { SnippetActions(snippet: snippet, model: model) }
+                    #if os(iOS)
+                    .swipeActions(edge: .leading) {
+                        Button { Task { await model.togglePin(snippet) } } label: {
+                            Label(snippet.isPinned ? "Unpin" : "Pin", systemImage: snippet.isPinned ? "pin.slash" : "pin")
+                        }.tint(.orange)
+                        Button { Task { await model.toggleFavorite(snippet) } } label: {
+                            Label(snippet.isFavorite ? "Unfavorite" : "Favorite", systemImage: snippet.isFavorite ? "star.slash" : "star")
+                        }.tint(.yellow)
+                    }
+                    .swipeActions(edge: .trailing) {
+                        if model.selection == .recycleBin {
+                            Button(role: .destructive) { Task { await model.deletePermanently(snippet) } } label: {
+                                Label("Delete Forever", systemImage: "trash.slash")
+                            }
+                            Button { Task { await model.restore(snippet) } } label: {
+                                Label("Restore", systemImage: "arrow.uturn.backward")
+                            }.tint(.green)
+                        } else {
+                            Button(role: .destructive) { Task { await model.recycle(snippet) } } label: {
+                                Label("Recycle", systemImage: "trash")
+                            }
+                        }
+                    }
+                    #endif
+            }
+        }
+        .overlay {
+            if model.snippets.isEmpty && !model.isLoading {
+                if model.searchText.isEmpty {
+                    ContentUnavailableView("No Snippets", systemImage: "tray", description: Text("Nothing here yet."))
+                } else {
+                    ContentUnavailableView.search(text: model.searchText)
+                }
+            }
+        }
+        .safeAreaInset(edge: .top) {
+            if model.isOffline {
+                Label("Offline — showing saved snippets", systemImage: "wifi.slash")
+                    .font(.footnote)
+                    .frame(maxWidth: .infinity)
+                    .padding(6)
+                    .background(.yellow.opacity(0.25))
+            }
+        }
+        .searchable(text: $model.searchText, prompt: "Search snippets")
+        .onChange(of: model.searchText) { model.searchTextChanged() }
+        .refreshable { await model.refresh() }
+        .navigationTitle(model.selection.title)
+        .toolbar {
+            ToolbarItem {
+                Menu {
+                    Picker("Sort", selection: $model.sort) {
+                        Text("Newest").tag(SnippetSort.newest)
+                        Text("Oldest").tag(SnippetSort.oldest)
+                        Text("A–Z").tag(SnippetSort.alphaAsc)
+                        Text("Z–A").tag(SnippetSort.alphaDesc)
+                    }
+                    Toggle("Search Code Too", isOn: $model.searchCode)
+                } label: {
+                    Label("Sort and Search Options", systemImage: "arrow.up.arrow.down")
+                }
+            }
+        }
+        .onChange(of: model.sort) { Task { await model.refresh() } }
+        .onChange(of: model.searchCode) { if !model.searchText.isEmpty { Task { await model.refresh() } } }
+        .alert("Something went wrong", isPresented: Binding(
+            get: { model.error != nil }, set: { if !$0 { model.error = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(model.error ?? "")
+        }
+    }
+}
+
+/// Context-menu actions shared by rows and the detail view.
+public struct SnippetActions: View {
+    let snippet: Snippet
+    let model: SnippetListModel
+
+    public init(snippet: Snippet, model: SnippetListModel) {
+        self.snippet = snippet
+        self.model = model
+    }
+
+    private var allCode: String {
+        snippet.fragments.sorted { $0.position < $1.position }.map(\.code).joined(separator: "\n\n")
+    }
+
+    public var body: some View {
+        if model.selection == .recycleBin {
+            Button { Task { await model.restore(snippet) } } label: { Label("Restore", systemImage: "arrow.uturn.backward") }
+            Button(role: .destructive) { Task { await model.deletePermanently(snippet) } } label: {
+                Label("Delete Forever", systemImage: "trash.slash")
+            }
+        } else {
+            Button { Pasteboard.copy(allCode) } label: { Label("Copy Code", systemImage: "doc.on.doc") }
+            ShareLink(item: allCode) { Label("Share", systemImage: "square.and.arrow.up") }
+            Divider()
+            Button { Task { await model.togglePin(snippet) } } label: {
+                Label(snippet.isPinned ? "Unpin" : "Pin", systemImage: snippet.isPinned ? "pin.slash" : "pin")
+            }
+            Button { Task { await model.toggleFavorite(snippet) } } label: {
+                Label(snippet.isFavorite ? "Unfavorite" : "Favorite", systemImage: snippet.isFavorite ? "star.slash" : "star")
+            }
+            Divider()
+            Button(role: .destructive) { Task { await model.recycle(snippet) } } label: {
+                Label("Move to Recycle Bin", systemImage: "trash")
+            }
+        }
+    }
+}

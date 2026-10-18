@@ -25,6 +25,14 @@ struct RootView: View {
         .task {
             guard !restored else { return }
             await services.session.restore()
+            #if DEBUG
+            // `-BCDemoLogin` launch argument: sign in to the public demo (screenshots, quick checks).
+            if ProcessInfo.processInfo.arguments.contains("-BCDemoLogin"), case .needsServer = services.session.state {
+                services.onboarding.useDemoServer()
+                await services.onboarding.connect()
+                await services.onboarding.login()
+            }
+            #endif
             restored = true
         }
     }
