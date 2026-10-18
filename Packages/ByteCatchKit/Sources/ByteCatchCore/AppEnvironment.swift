@@ -1,0 +1,19 @@
+import Foundation
+
+/// Values shared between the app and its extensions, read from Info.plist.
+public enum AppEnvironment {
+    /// App Group identifier (`BCAppGroupID`). Differs per platform.
+    public static var appGroupID: String? {
+        Bundle.main.object(forInfoDictionaryKey: "BCAppGroupID") as? String
+    }
+
+    /// Shared keychain access group (`BCKeychainGroup`).
+    public static var keychainGroup: String? {
+        Bundle.main.object(forInfoDictionaryKey: "BCKeychainGroup") as? String
+    }
+
+    /// UserDefaults shared with the share extensions; falls back to standard when no group is set.
+    public static var sharedDefaults: UserDefaults {
+        appGroupID.flatMap(UserDefaults.init(suiteName:)) ?? .standard
+    }
+}
