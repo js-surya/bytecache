@@ -62,6 +62,7 @@ public struct SnippetListView: View {
             }
         }
         .searchable(text: $model.searchText, prompt: "Search snippets")
+        .modifier(SearchFocus(request: model.searchFocusRequest))
         .onChange(of: model.searchText) { model.searchTextChanged() }
         .refreshable { await model.refresh() }
         .navigationTitle(model.selection.title)
@@ -126,6 +127,22 @@ public struct SnippetActions: View {
             Button(role: .destructive) { Task { await model.recycle(snippet) } } label: {
                 Label("Move to Recycle Bin", systemImage: "trash")
             }
+        }
+    }
+}
+
+/// `searchFocused` needs iOS 18 / macOS 15; on older systems ⌘F is a no-op.
+private struct SearchFocus: ViewModifier {
+    let request: Int
+    @FocusState private var focused: Bool
+
+    func body(content: Content) -> some View {
+        if #available(iOS 18, macOS 15, *) {
+            content
+                .searchFocused($focused)
+                .onChange(of: request) { focused = true }
+        } else {
+            content
         }
     }
 }

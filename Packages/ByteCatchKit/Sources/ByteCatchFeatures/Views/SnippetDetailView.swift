@@ -69,7 +69,6 @@ public struct SnippetDetailView: View {
                     }
                 }
                 Button(action: onEdit) { Label("Edit", systemImage: "pencil") }
-                    .keyboardShortcut("e", modifiers: .command)
             }
         }
     }

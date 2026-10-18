@@ -10,6 +10,9 @@ struct MainSplitView: View {
     @State private var sidebarSelection: SidebarItem? = .all
     @State private var selectedSnippet: Snippet.ID?
     @State private var editor: SnippetEditorModel?
+    @State private var capture: CaptureModel?
+    @State private var clipboard = ClipboardWatcher()
+    @Environment(\.scenePhase) private var scenePhase
 
     init(services: AppServices) {
         self.services = services
@@ -25,10 +28,20 @@ struct MainSplitView: View {
                 #endif
         } content: {
             SnippetListView(model: list, selection: $selectedSnippet)
+                .safeAreaInset(edge: .bottom) {
+                    if clipboard.hasText {
+                        ClipboardBanner(watcher: clipboard) { startCapture($0) }
+                    }
+                }
+                .dropDestination(for: String.self) { items, _ in
+                    let text = items.joined(separator: "\n")
+                    guard text.contains(where: { !$0.isWhitespace }) else { return false }
+                    startCapture(text)
+                    return true
+                }
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
                         Button { startEditing(nil) } label: { Label("New Snippet", systemImage: "square.and.pencil") }
-                            .keyboardShortcut("n", modifiers: .command)
                     }
                 }
                 #if os(macOS)
@@ -50,6 +63,24 @@ struct MainSplitView: View {
             if ProcessInfo.processInfo.arguments.contains("-BCSelectFirst") { selectedSnippet = list.snippets.first?.id }
             #endif
         }
+        .onAppear { clipboard.check() }
+        .onChange(of: scenePhase) { if scenePhase == .active { clipboard.check() } }
+        .focusedSceneValue(\.snippetCommands, commands)
+        .sheet(item: $capture) { model in
+            NavigationStack {
+                CaptureSheet(model: model, knownCategories: sidebar.categories) { saved in
+                    if let saved {
+                        list.didSave(saved)
+                        selectedSnippet = saved.id
+                        Task { await sidebar.load() }
+                    }
+                    capture = nil
+                }
+            }
+            #if os(macOS)
+            .frame(minWidth: 480, minHeight: 520)
+            #endif
+        }
         .sheet(item: $editor) { model in
             NavigationStack {
                 EditorView(model: model, knownCategories: sidebar.categories) { saved in
@@ -64,6 +95,29 @@ struct MainSplitView: View {
             #if os(macOS)
             .frame(minWidth: 560, minHeight: 600)
             #endif
+        }
+    }
+
+    private var selected: Snippet? {
+        selectedSnippet.flatMap { id in list.snippets.first { $0.id == id } }
+    }
+
+    private var commands: SnippetCommandActions {
+        let snippet = selected
+        return SnippetCommandActions(
+            newSnippet: { startEditing(nil) },
+            refresh: { Task { await list.refresh(); await sidebar.load() } },
+            focusSearch: { list.searchFocusRequest += 1 },
+            edit: snippet.map { s in { startEditing(s) } },
+            copyCode: snippet.map { s in { Pasteboard.copy(s.fragments.sorted { $0.position < $1.position }.map(\.code).joined(separator: "\n\n")) } },
+            recycle: snippet.flatMap { s in list.selection == .recycleBin ? nil : { Task { await list.recycle(s) } } }
+        )
+    }
+
+    private func startCapture(_ text: String) {
+        let session = services.session
+        capture = CaptureModel(text: text, client: session.client, detector: services.detector) {
+            session.handleUnauthorized()
         }
     }
 

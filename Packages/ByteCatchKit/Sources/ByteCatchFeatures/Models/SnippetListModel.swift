@@ -14,6 +14,8 @@ public final class SnippetListModel {
     public private(set) var isOffline = false
     public private(set) var isLoading = false
     public var error: String?
+    /// Bumped by the Find command; the list view focuses its search field when it changes.
+    public var searchFocusRequest = 0
 
     @ObservationIgnored private(set) var pendingSearch: Task<Void, Never>?
     @ObservationIgnored private var hasMore = false

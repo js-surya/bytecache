@@ -9,6 +9,7 @@ struct ByteCatchApp: App {
         WindowGroup {
             RootView(services: services)
         }
+        .commands { SnippetCommandsMenu() }
         WindowGroup("Snippet", for: Int.self) { $id in
             if let id {
                 SnippetWindow(id: id, services: services)
