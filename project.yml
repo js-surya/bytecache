@@ -46,6 +46,10 @@ targets:
         UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: true
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
+          NSAllowsLocalNetworking: true
+        NSLocalNetworkUsageDescription: ByteCatch connects to the ByteStash server you enter, which may be on your local network.
         BCAppGroupID: $(BC_APP_GROUP_ID)
         BCKeychainGroup: $(AppIdentifierPrefix)app.bytecatch.shared
     settings:

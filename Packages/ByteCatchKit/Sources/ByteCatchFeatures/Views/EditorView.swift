@@ -24,24 +24,24 @@ public struct EditorView: View {
             }
             ForEach(model.draft.fragments.indices, id: \.self) { index in
                 Section {
-                    TextField("File name", text: $model.draft.fragments[index].fileName)
+                    TextField("File name", text: text(index, \.fileName))
                         .autocorrectionDisabled()
                         #if os(iOS)
                         .textInputAutocapitalization(.never)
                         #endif
-                        .onChange(of: model.draft.fragments[index].fileName) { model.codeChanged(fragment: index) }
+                        .onChange(of: model.draft.fragments[safe: index]?.fileName) { model.codeChanged(fragment: index) }
                     LanguagePicker(
-                        selection: model.draft.fragments[index].language,
+                        selection: model.draft.fragments[safe: index]?.language ?? "plaintext",
                         suggestions: model.suggestions[index] ?? []
                     ) { model.setLanguage($0, fragment: index) }
-                    TextEditor(text: $model.draft.fragments[index].code)
+                    TextEditor(text: text(index, \.code))
                         .font(.system(.callout, design: .monospaced))
                         .autocorrectionDisabled()
                         #if os(iOS)
                         .textInputAutocapitalization(.never)
                         #endif
                         .frame(minHeight: 160)
-                        .onChange(of: model.draft.fragments[index].code) { model.codeChanged(fragment: index) }
+                        .onChange(of: model.draft.fragments[safe: index]?.code) { model.codeChanged(fragment: index) }
                 } header: {
                     HStack {
                         Text(model.draft.fragments.count > 1 ? "File \(index + 1)" : "Code")
@@ -85,5 +85,19 @@ public struct EditorView: View {
                 }
             }
         }
+    }
+
+    /// Bounds-checked binding: a field may briefly outlive its fragment while a removal animates.
+    private func text(_ index: Int, _ field: WritableKeyPath<FragmentDraft, String>) -> Binding<String> {
+        Binding(
+            get: { model.draft.fragments[safe: index]?[keyPath: field] ?? "" },
+            set: { if model.draft.fragments.indices.contains(index) { model.draft.fragments[index][keyPath: field] = $0 } }
+        )
+    }
+}
+
+extension Array {
+    subscript(safe index: Int) -> Element? {
+        indices.contains(index) ? self[index] : nil
     }
 }

@@ -22,6 +22,13 @@
 	<string>$(BC_APP_GROUP_ID)</string>
 	<key>BCKeychainGroup</key>
 	<string>$(AppIdentifierPrefix)app.bytecatch.shared</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>NSExtension</key>
 	<dict>
 		<key>NSExtensionAttributes</key>
