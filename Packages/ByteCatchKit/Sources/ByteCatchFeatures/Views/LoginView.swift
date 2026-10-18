@@ -4,6 +4,7 @@ import SwiftUI
 public struct LoginView: View {
     @Bindable var model: OnboardingModel
     let server: ServerURL
+    @State private var showKey = false
 
     public init(model: OnboardingModel, server: ServerURL) {
         self.model = model
@@ -23,13 +24,33 @@ public struct LoginView: View {
 
             if model.method == .apiKey {
                 Section {
-                    SecureField("API key", text: $model.apiKey)
-                        .textContentType(.password)
+                    HStack {
+                        Group {
+                            if showKey {
+                                TextField("API key", text: $model.apiKey)
+                                    .font(.system(.body, design: .monospaced))
+                            } else {
+                                SecureField("API key", text: $model.apiKey)
+                            }
+                        }
                         .autocorrectionDisabled()
                         #if os(iOS)
                         .textInputAutocapitalization(.never)
                         #endif
                         .onSubmit { Task { await model.login() } }
+
+                        Button { showKey.toggle() } label: {
+                            Image(systemName: showKey ? "eye.slash" : "eye")
+                        }
+                        .buttonStyle(.borderless)
+                        .accessibilityLabel(showKey ? "Hide API key" : "Show API key")
+                    }
+                    // One tap, no "Allow Paste" prompt, and works where the edit menu only offers AutoFill.
+                    PasteButton(payloadType: String.self) { strings in
+                        let key = strings.first?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                        Task { @MainActor in model.apiKey = key }
+                    }
+                    .labelStyle(.titleAndIcon)
                 } header: {
                     Text("API key for \(server.base.host() ?? server.base.absoluteString)")
                 } footer: {
