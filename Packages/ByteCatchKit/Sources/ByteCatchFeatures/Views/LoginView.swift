@@ -11,20 +11,53 @@ public struct LoginView: View {
         self.server = server
     }
 
+    private var host: String { server.base.host() ?? server.base.absoluteString }
+
     public var body: some View {
         Form {
             Section {
-                Picker("Sign in with", selection: $model.method) {
+                VStack(spacing: 8) {
+                    Image(systemName: model.method == .apiKey ? "key.fill" : "person.fill")
+                        .font(.system(size: 28, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 64, height: 64)
+                        .background(Color.accentColor.gradient, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .contentTransition(.symbolEffect(.replace))
+                    Text("Sign In").font(.title.bold())
+                    Label(host, systemImage: "server.rack")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 4)
+            }
+            .listRowBackground(Color.clear)
+
+            Section {
+                Picker("Sign in with", selection: $model.method.animation()) {
                     ForEach(OnboardingModel.LoginMethod.allCases) { Text($0.title).tag($0) }
                 }
                 .pickerStyle(.segmented)
-                .listRowBackground(Color.clear)
-                .listRowInsets(EdgeInsets())
+                .labelsHidden()
             }
+            .listRowBackground(Color.clear)
+            .listRowInsets(EdgeInsets())
 
-            if model.method == .apiKey {
-                Section {
-                    HStack {
+            Section {
+                switch model.method {
+                case .password:
+                    TextField("Username", text: $model.username)
+                        .textContentType(.username)
+                        .autocorrectionDisabled()
+                        #if os(iOS)
+                        .textInputAutocapitalization(.never)
+                        #endif
+                    SecureField("Password", text: $model.password)
+                        .textContentType(.password)
+                        .onSubmit(signIn)
+                case .apiKey:
+                    HStack(spacing: 14) {
                         Group {
                             if showKey {
                                 TextField("API key", text: $model.apiKey)
@@ -37,67 +70,63 @@ public struct LoginView: View {
                         #if os(iOS)
                         .textInputAutocapitalization(.never)
                         #endif
-                        .onSubmit { Task { await model.login() } }
+                        .onSubmit(signIn)
+
+                        Button {
+                            if let text = Pasteboard.string() {
+                                model.apiKey = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                            }
+                        } label: {
+                            Image(systemName: "doc.on.clipboard")
+                        }
+                        .accessibilityLabel("Paste API key")
 
                         Button { showKey.toggle() } label: {
                             Image(systemName: showKey ? "eye.slash" : "eye")
                         }
-                        .buttonStyle(.borderless)
                         .accessibilityLabel(showKey ? "Hide API key" : "Show API key")
                     }
-                    // One tap, no "Allow Paste" prompt, and works where the edit menu only offers AutoFill.
-                    PasteButton(payloadType: String.self) { strings in
-                        let key = strings.first?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-                        Task { @MainActor in model.apiKey = key }
-                    }
-                    .labelStyle(.titleAndIcon)
-                } header: {
-                    Text("API key for \(server.base.host() ?? server.base.absoluteString)")
-                } footer: {
-                    if let error = model.errorMessage {
-                        Text(error).foregroundStyle(.red)
-                    } else {
-                        Text("Create a key in ByteStash under Settings → API Keys. It's stored in the Keychain on this device.")
-                    }
+                    .buttonStyle(.borderless)
                 }
-            } else {
-            Section {
-                TextField("Username", text: $model.username)
-                    .textContentType(.username)
-                    .autocorrectionDisabled()
-                    #if os(iOS)
-                    .textInputAutocapitalization(.never)
-                    #endif
-                SecureField("Password", text: $model.password)
-                    .textContentType(.password)
-                    .onSubmit { Task { await model.login() } }
-            } header: {
-                Text("Sign in to \(server.base.host() ?? server.base.absoluteString)")
             } footer: {
                 if let error = model.errorMessage {
                     Text(error).foregroundStyle(.red)
+                } else if model.method == .apiKey {
+                    Text("Create a key in ByteStash under Settings → API Keys. It's kept in the Keychain on this device.")
                 }
-            }
             }
 
             Section {
-                Button {
-                    Task { await model.login() }
-                } label: {
-                    HStack {
-                        Text("Sign In")
-                        if model.isWorking { Spacer(); ProgressView() }
+                VStack(spacing: 14) {
+                    Button(action: signIn) {
+                        ZStack {
+                            Text("Sign In").opacity(model.isWorking ? 0 : 1)
+                            if model.isWorking { ProgressView() }
+                        }
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
                     }
-                }
-                .disabled(!model.canLogin)
-                .keyboardShortcut(.defaultAction)
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .disabled(!model.canLogin)
+                    .keyboardShortcut(.defaultAction)
 
-                Button("Use a different server", role: .destructive) { model.changeServer() }
-                    .disabled(model.isWorking)
+                    Button("Use a Different Server") { model.changeServer() }
+                        .buttonStyle(.borderless)
+                        .font(.subheadline)
+                        .disabled(model.isWorking)
+                }
             }
+            .listRowBackground(Color.clear)
+            .listRowInsets(EdgeInsets())
         }
         .formStyle(.grouped)
         .frame(maxWidth: 520)
         .frame(maxWidth: .infinity)
+    }
+
+    private func signIn() {
+        guard model.canLogin else { return }
+        Task { await model.login() }
     }
 }

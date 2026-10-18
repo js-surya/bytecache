@@ -5,6 +5,15 @@ import AppKit
 #endif
 
 public enum Pasteboard {
+    /// Current clipboard text. On iOS this may show the system "Allow Paste" prompt.
+    public static func string() -> String? {
+        #if canImport(UIKit)
+        UIPasteboard.general.string
+        #else
+        NSPasteboard.general.string(forType: .string)
+        #endif
+    }
+
     public static func copy(_ text: String) {
         #if canImport(UIKit)
         UIPasteboard.general.string = text
