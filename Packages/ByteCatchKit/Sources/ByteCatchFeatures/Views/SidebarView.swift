@@ -7,6 +7,9 @@ public struct SidebarView: View {
     let session: SessionManager
     @State private var showingSettings = false
     @Environment(AppSettings.self) private var settings
+    #if DEBUG
+    @MainActor private static var debugSettingsShown = false
+    #endif
 
     public init(model: SidebarModel, selection: Binding<SidebarItem?>, session: SessionManager) {
         self.model = model
@@ -41,7 +44,11 @@ public struct SidebarView: View {
         .refreshable { await model.load() }
         .task {
             #if DEBUG
-            if ProcessInfo.processInfo.arguments.contains("-BCShowSettings") { showingSettings = true }
+            // Once per launch: the sidebar reappears every time you go back on iPhone.
+            if ProcessInfo.processInfo.arguments.contains("-BCShowSettings"), !Self.debugSettingsShown {
+                Self.debugSettingsShown = true
+                showingSettings = true
+            }
             #endif
             await model.load()
         }
