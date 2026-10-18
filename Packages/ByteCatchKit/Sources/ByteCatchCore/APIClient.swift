@@ -20,7 +20,7 @@ public struct APIClient: Sendable {
 
     public func login(username: String, password: String) async throws(APIError) -> (token: String, user: User) {
         let response: LoginResponse = try await send(
-            .post, "/api/auth/login", body: Credentials(username: username, password: password)
+            .post, "/api/auth/login", body: LoginBody(username: username, password: password)
         )
         guard let user = response.user else { throw .decoding("Login response had no user") }
         return (response.token, user)
@@ -89,7 +89,7 @@ private enum Method: String {
     case get = "GET", post = "POST", put = "PUT", patch = "PATCH", delete = "DELETE"
 }
 
-private struct Credentials: Encodable {
+private struct LoginBody: Encodable {
     let username: String
     let password: String
 }

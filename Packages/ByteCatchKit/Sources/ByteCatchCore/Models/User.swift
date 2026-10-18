@@ -1,6 +1,6 @@
 import Foundation
 
-public struct User: Codable, Sendable {
+public struct User: Codable, Equatable, Sendable {
     public let id: Int
     public let username: String
     public let isAdmin: Bool
