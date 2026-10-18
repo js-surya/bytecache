@@ -111,19 +111,41 @@ snippet including the current `is_public`.
 
 ## Platforms
 
-Navigation is a `NavigationSplitView` everywhere; it collapses to a stack on iPhone.
+**Rule (owner's requirement): full feature parity.** Every feature ships on iPhone, iPad and
+Mac in v1. Only the *layout* adapts per device. A feature is not done until it works on all
+three. The only gaps are things the OS itself does not allow, listed below with their
+equivalent.
 
-- **iPhone:** stack — list → detail. Share sheet is compact.
-- **iPad:** three columns — sidebar (All, Pinned, Favorites, Recycle Bin, Languages,
-  Categories) | snippet list | detail. Supports Split View / Slide Over / Stage Manager,
-  hardware-keyboard shortcuts (⌘N new, ⌘F search, ⌘C copy focused fragment, ⌘E edit),
-  drag & drop: drop text onto the window to create a snippet, drag a fragment out as text.
-- **Mac:** same three columns, native toolbar with search field, menu bar commands with the
-  same shortcuts, multiple windows (open a snippet in its own window), Settings via the
-  standard Settings scene, Share Extension in the macOS Share menu, drag & drop as on iPad.
-  "Services" menu entry ("Save to ByteCatch") is nice-to-have, not v1-required.
-- Sidebar filters map to the existing API query params (`pinned`, `favorites`, `recycled`,
-  `language`, `category`).
+Navigation is a `NavigationSplitView` everywhere: three columns — sidebar (All, Pinned,
+Favorites, Recycle Bin, Languages, Categories) | snippet list | detail.
+
+**Features on all three platforms:**
+
+| Feature | iPhone | iPad | Mac |
+|---|---|---|---|
+| Server setup, login, sign out | ✓ | ✓ | ✓ |
+| Share Extension capture | ✓ iOS share sheet | ✓ iOS share sheet | ✓ macOS Share menu |
+| Clipboard catch banner | ✓ | ✓ | ✓ |
+| Language detection (full pipeline) | ✓ | ✓ | ✓ |
+| Sidebar sections (pinned, favorites, recycle bin, languages, categories) | ✓ collapsed into the stack's root screen | ✓ | ✓ |
+| Search, filter, sort, infinite scroll, pull/⌘R refresh | ✓ | ✓ | ✓ |
+| Highlighted view + copy per fragment | ✓ | ✓ | ✓ |
+| Create / edit / pin / favorite / recycle / restore / delete | ✓ | ✓ | ✓ |
+| Offline cache | ✓ | ✓ | ✓ |
+| Keyboard shortcuts (⌘N, ⌘F, ⌘C, ⌘E, ⌘R, ⌘⌫) | ✓ hardware keyboard | ✓ | ✓ menu bar |
+| Drag & drop (text in → new snippet; fragment out as text) | ✓ | ✓ | ✓ |
+| Context menus on snippets (pin, favorite, copy, share, recycle) | ✓ long-press | ✓ long-press / right-click | ✓ right-click |
+| "Save to ByteCatch" + "Search snippets" App Intents (Shortcuts, Spotlight, Siri) | ✓ | ✓ | ✓ |
+| Settings screen | ✓ | ✓ | ✓ standard Settings window |
+
+**Allowed OS-imposed differences:**
+- Multiple windows: iPad (Stage Manager / Split View) and Mac. iPhone cannot have multiple
+  windows; equivalent is full-screen detail navigation.
+- Mac "Services" menu entry is replaced on every platform by the App Intent above, so
+  parity holds.
+
+Sidebar filters map to the existing API query params (`pinned`, `favorites`, `recycled`,
+`language`, `category`).
 
 ## Language detection
 
