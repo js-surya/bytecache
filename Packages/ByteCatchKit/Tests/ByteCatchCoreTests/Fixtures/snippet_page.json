@@ -1,0 +1,23 @@
+{
+  "data": [
+    {
+      "id": 1796,
+      "title": "asdf",
+      "description": "",
+      "updated_at": "2026-10-18 00:45:14Z",
+      "expiry_date": null,
+      "user_id": 2,
+      "is_public": 0,
+      "is_pinned": 0,
+      "is_favorite": 0,
+      "username": "demo",
+      "categories": [],
+      "share_count": 0,
+      "fragments": [
+        { "id": 3421, "file_name": "main", "code": "echo hi", "language": "plaintext", "position": 0 },
+        { "id": 3422, "file_name": "file2", "code": "print(1)", "language": "python", "position": 1 }
+      ]
+    }
+  ],
+  "pagination": { "total": 1323, "offset": 0, "limit": 50, "hasMore": true }
+}

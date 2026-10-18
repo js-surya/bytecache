@@ -22,7 +22,7 @@ let package = Package(
             name: "ByteCatchFeatures",
             dependencies: ["ByteCatchCore", "ByteCatchLanguage", "HighlightSwift"]
         ),
-        .testTarget(name: "ByteCatchCoreTests", dependencies: ["ByteCatchCore"]),
+        .testTarget(name: "ByteCatchCoreTests", dependencies: ["ByteCatchCore"], resources: [.copy("Fixtures")]),
         .testTarget(name: "ByteCatchLanguageTests", dependencies: ["ByteCatchLanguage"]),
         .testTarget(name: "ByteCatchFeaturesTests", dependencies: ["ByteCatchFeatures"]),
     ]
