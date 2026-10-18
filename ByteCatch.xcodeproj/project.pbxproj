@@ -18,6 +18,7 @@
 		B789F97FF456E2CF92CC6E7F /* ByteCatchLanguage in Frameworks */ = {isa = PBXBuildFile; productRef = 11A7A824534E8E9296F68967 /* ByteCatchLanguage */; };
 		DC94C7D71DD250E5DA74FB46 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CA40CCBD169D7B78D1AD1DF /* ShareViewController.swift */; };
 		DF1F192ACF61472B0193B5F9 /* MainSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91115E2D302E39CFA672F325 /* MainSplitView.swift */; };
+		E5DC5AC650A6EE10C135D7B1 /* SnippetWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02BAA92960ADC054C238B0AA /* SnippetWindow.swift */; };
 		E78D6148C4233CC2E3543A7C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2E8E9F0E34A795A87F842D59 /* Assets.xcassets */; };
 		F73F71235039A2BE996A08F0 /* ByteCatchFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = B726A517EE2B62586C531C3A /* ByteCatchFeatures */; };
 /* End PBXBuildFile section */
@@ -56,6 +57,7 @@
 
 /* Begin PBXFileReference section */
 		028C047DAB0DBADD80135A0F /* ByteCatch-macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ByteCatch-macOS.entitlements"; sourceTree = "<group>"; };
+		02BAA92960ADC054C238B0AA /* SnippetWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetWindow.swift; sourceTree = "<group>"; };
 		0CA40CCBD169D7B78D1AD1DF /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		12855A995C6E19339685CED3 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		15ED647692FF51FEFF0FA1C8 /* ShareExtension-macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ShareExtension-macOS.entitlements"; sourceTree = "<group>"; };
@@ -169,6 +171,7 @@
 				61BC3B1A0E40FC429B39F979 /* ByteCatchApp.swift */,
 				91115E2D302E39CFA672F325 /* MainSplitView.swift */,
 				578F0BBD49A6125840F8204E /* RootView.swift */,
+				02BAA92960ADC054C238B0AA /* SnippetWindow.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -320,6 +323,7 @@
 				8C1655241A95849FE38DC887 /* ByteCatchApp.swift in Sources */,
 				DF1F192ACF61472B0193B5F9 /* MainSplitView.swift in Sources */,
 				9EE1FB947F289D8DFA267B5A /* RootView.swift in Sources */,
+				E5DC5AC650A6EE10C135D7B1 /* SnippetWindow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

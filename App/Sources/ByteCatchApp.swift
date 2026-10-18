@@ -9,6 +9,11 @@ struct ByteCatchApp: App {
         WindowGroup {
             RootView(services: services)
         }
+        WindowGroup("Snippet", for: Int.self) { $id in
+            if let id {
+                SnippetWindow(id: id, services: services)
+            }
+        }
         #if os(macOS)
         Settings {
             SettingsView(session: services.session)

@@ -9,6 +9,7 @@ struct MainSplitView: View {
     @State private var list: SnippetListModel
     @State private var sidebarSelection: SidebarItem? = .all
     @State private var selectedSnippet: Snippet.ID?
+    @State private var editor: SnippetEditorModel?
 
     init(services: AppServices) {
         self.services = services
@@ -24,20 +25,49 @@ struct MainSplitView: View {
                 #endif
         } content: {
             SnippetListView(model: list, selection: $selectedSnippet)
+                .toolbar {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button { startEditing(nil) } label: { Label("New Snippet", systemImage: "square.and.pencil") }
+                            .keyboardShortcut("n", modifiers: .command)
+                    }
+                }
                 #if os(macOS)
                 .navigationSplitViewColumnWidth(min: 260, ideal: 320)
                 #endif
         } detail: {
             if let id = selectedSnippet, let snippet = list.snippets.first(where: { $0.id == id }) {
-                Text(snippet.title).font(.title)
+                SnippetDetailView(snippet: snippet, list: list) { startEditing(snippet) }
             } else {
-                ContentUnavailableView("No Snippet Selected", systemImage: "curlybraces")
+                ContentUnavailableView("No Snippet Selected", systemImage: "curlybraces",
+                                       description: Text("Pick a snippet, or press ⌘N to create one."))
             }
         }
         .task(id: sidebarSelection) {
             list.selection = sidebarSelection ?? .all
             selectedSnippet = nil
             await list.refresh()
+            #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("-BCSelectFirst") { selectedSnippet = list.snippets.first?.id }
+            #endif
         }
+        .sheet(item: $editor) { model in
+            NavigationStack {
+                EditorView(model: model, knownCategories: sidebar.categories) { saved in
+                    list.didSave(saved)
+                    selectedSnippet = saved.id
+                    editor = nil
+                    Task { await sidebar.load() }
+                } onCancel: {
+                    editor = nil
+                }
+            }
+            #if os(macOS)
+            .frame(minWidth: 560, minHeight: 600)
+            #endif
+        }
+    }
+
+    private func startEditing(_ snippet: Snippet?) {
+        editor = SnippetEditorModel(existing: snippet, session: services.session, detector: services.detector)
     }
 }
