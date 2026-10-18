@@ -16,13 +16,16 @@
 		83AFB29D0CC866D1C8464D89 /* SnippetIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D838413DCB2050F3742666 /* SnippetIntents.swift */; };
 		8C1655241A95849FE38DC887 /* ByteCatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61BC3B1A0E40FC429B39F979 /* ByteCatchApp.swift */; };
 		9EE1FB947F289D8DFA267B5A /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 578F0BBD49A6125840F8204E /* RootView.swift */; };
+		9F2D642D1829203210876D00 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2EB80AEB5977C7A9C16AC93B /* PrivacyInfo.xcprivacy */; };
 		AF5E2FE6012B017544A66057 /* ShareExtension-macOS.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 277B9E0F2A58366A616C1FFB /* ShareExtension-macOS.appex */; platformFilters = (macos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B4AD0729A2F3278FF81FD9A0 /* SnippetEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0001AE1ACCD8D3F505B8C18C /* SnippetEntity.swift */; };
 		B789F97FF456E2CF92CC6E7F /* ByteCatchLanguage in Frameworks */ = {isa = PBXBuildFile; productRef = 11A7A824534E8E9296F68967 /* ByteCatchLanguage */; };
+		C9EFAE7F00096F5B80548555 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E54885824DAFA6C47F772DFE /* PrivacyInfo.xcprivacy */; };
 		DC94C7D71DD250E5DA74FB46 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CA40CCBD169D7B78D1AD1DF /* ShareViewController.swift */; };
 		DF1F192ACF61472B0193B5F9 /* MainSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91115E2D302E39CFA672F325 /* MainSplitView.swift */; };
 		E5DC5AC650A6EE10C135D7B1 /* SnippetWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02BAA92960ADC054C238B0AA /* SnippetWindow.swift */; };
 		E78D6148C4233CC2E3543A7C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2E8E9F0E34A795A87F842D59 /* Assets.xcassets */; };
+		E7DF150A599F0901D4FE2FBB /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1AC72476E280B018B57269D8 /* PrivacyInfo.xcprivacy */; };
 		F73F71235039A2BE996A08F0 /* ByteCatchFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = B726A517EE2B62586C531C3A /* ByteCatchFeatures */; };
 /* End PBXBuildFile section */
 
@@ -65,8 +68,10 @@
 		0CA40CCBD169D7B78D1AD1DF /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		12855A995C6E19339685CED3 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		15ED647692FF51FEFF0FA1C8 /* ShareExtension-macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ShareExtension-macOS.entitlements"; sourceTree = "<group>"; };
+		1AC72476E280B018B57269D8 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		277B9E0F2A58366A616C1FFB /* ShareExtension-macOS.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "ShareExtension-macOS.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E8E9F0E34A795A87F842D59 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		2EB80AEB5977C7A9C16AC93B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		3555B251FD38D1897095963D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		423BCC1F180466E6F27DDD06 /* ShareExtension-iOS.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = "ShareExtension-iOS.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5293C102C7001EC700362023 /* ByteCatch-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ByteCatch-iOS.entitlements"; sourceTree = "<group>"; };
@@ -79,6 +84,7 @@
 		9DFD62A9CB8A800D5EA878D6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		A6AF48382EF4B267429237E7 /* AppNavigator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNavigator.swift; sourceTree = "<group>"; };
 		E3530D541723AC7558952B22 /* ShareExtension-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ShareExtension-iOS.entitlements"; sourceTree = "<group>"; };
+		E54885824DAFA6C47F772DFE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		F312679A932EE894BE6213C6 /* ByteCatch.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ByteCatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -155,6 +161,7 @@
 			isa = PBXGroup;
 			children = (
 				9DFD62A9CB8A800D5EA878D6 /* Info.plist */,
+				2EB80AEB5977C7A9C16AC93B /* PrivacyInfo.xcprivacy */,
 				E3530D541723AC7558952B22 /* ShareExtension-iOS.entitlements */,
 				12855A995C6E19339685CED3 /* ShareViewController.swift */,
 			);
@@ -167,6 +174,7 @@
 				2E8E9F0E34A795A87F842D59 /* Assets.xcassets */,
 				5293C102C7001EC700362023 /* ByteCatch-iOS.entitlements */,
 				028C047DAB0DBADD80135A0F /* ByteCatch-macOS.entitlements */,
+				E54885824DAFA6C47F772DFE /* PrivacyInfo.xcprivacy */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -197,6 +205,7 @@
 			isa = PBXGroup;
 			children = (
 				3555B251FD38D1897095963D /* Info.plist */,
+				1AC72476E280B018B57269D8 /* PrivacyInfo.xcprivacy */,
 				15ED647692FF51FEFF0FA1C8 /* ShareExtension-macOS.entitlements */,
 				0CA40CCBD169D7B78D1AD1DF /* ShareViewController.swift */,
 			);
@@ -244,6 +253,7 @@
 			buildConfigurationList = D3E6A30BBC7FFBE3E37C34CA /* Build configuration list for PBXNativeTarget "ShareExtension-macOS" */;
 			buildPhases = (
 				B80E2EBE8756746AF897E310 /* Sources */,
+				BE80DB02F0DB2642EEEB04A6 /* Resources */,
 				C38D6A0C57043A918EA05CB0 /* Frameworks */,
 			);
 			buildRules = (
@@ -263,6 +273,7 @@
 			buildConfigurationList = 178B47632DEF104D0399F541 /* Build configuration list for PBXNativeTarget "ShareExtension-iOS" */;
 			buildPhases = (
 				EA9839EEE72CF5612F26F09C /* Sources */,
+				14D1BBDE350D14CB5077A5FA /* Resources */,
 				500D9CE70C4E4B01A174F80C /* Frameworks */,
 			);
 			buildRules = (
@@ -322,11 +333,28 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		14D1BBDE350D14CB5077A5FA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9F2D642D1829203210876D00 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		539F09C31B2F8AF3EEC2408C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				E78D6148C4233CC2E3543A7C /* Assets.xcassets in Resources */,
+				C9EFAE7F00096F5B80548555 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BE80DB02F0DB2642EEEB04A6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E7DF150A599F0901D4FE2FBB /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

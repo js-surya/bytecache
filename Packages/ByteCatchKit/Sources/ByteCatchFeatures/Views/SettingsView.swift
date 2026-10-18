@@ -29,6 +29,13 @@ public struct SettingsView: View {
                 Text(AboutText.tagline)
                 Text(AboutText.privacy).foregroundStyle(.secondary)
             }
+            Section("Acknowledgements") {
+                Text("HighlightSwift — MIT License, © 2023 Stefan Britton")
+                Text("highlight.js — BSD 3-Clause License, © 2006 Ivan Sagalaev")
+                Text("Language model trained on permissively licensed open-source code (see DATA.md).")
+                    .foregroundStyle(.secondary)
+            }
+            .font(.footnote)
         }
         .formStyle(.grouped)
         .navigationTitle("Settings")
