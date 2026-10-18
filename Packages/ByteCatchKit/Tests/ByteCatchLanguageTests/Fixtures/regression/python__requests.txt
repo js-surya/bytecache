@@ -1,0 +1,9 @@
+import requests
+
+def fetch(url):
+    response = requests.get(url, timeout=10)
+    response.raise_for_status()
+    return response.json()
+
+if __name__ == "__main__":
+    print(fetch("https://api.github.com"))

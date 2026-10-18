@@ -1,0 +1,6 @@
+Sub HighlightNegatives()
+    Dim cell As Range
+    For Each cell In Selection
+        If cell.Value < 0 Then cell.Interior.Color = vbRed
+    Next cell
+End Sub

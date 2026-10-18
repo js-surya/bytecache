@@ -1,0 +1,4 @@
+set number
+set expandtab shiftwidth=2
+nnoremap <leader>w :w<CR>
+autocmd FileType python setlocal shiftwidth=4

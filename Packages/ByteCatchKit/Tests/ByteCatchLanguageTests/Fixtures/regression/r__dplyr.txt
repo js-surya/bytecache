@@ -1,0 +1,6 @@
+library(dplyr)
+
+mtcars %>%
+  group_by(cyl) %>%
+  summarise(mean_mpg = mean(mpg)) %>%
+  arrange(desc(mean_mpg))

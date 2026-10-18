@@ -1,0 +1,6 @@
+REPORT zdemo.
+DATA lt_flights TYPE TABLE OF sflight.
+SELECT * FROM sflight INTO TABLE lt_flights UP TO 10 ROWS.
+LOOP AT lt_flights INTO DATA(ls_flight).
+  WRITE: / ls_flight-carrid, ls_flight-connid.
+ENDLOOP.

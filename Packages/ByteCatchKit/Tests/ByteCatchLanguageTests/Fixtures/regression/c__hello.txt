@@ -1,0 +1,10 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(void) {
+    char *buf = malloc(64);
+    snprintf(buf, 64, "%d items", 3);
+    printf("%s\n", buf);
+    free(buf);
+    return 0;
+}

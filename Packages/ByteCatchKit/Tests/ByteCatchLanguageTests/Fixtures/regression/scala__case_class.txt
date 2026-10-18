@@ -1,0 +1,6 @@
+case class Point(x: Int, y: Int)
+
+object Main extends App {
+  val points = List(Point(1, 2), Point(3, 4))
+  points.map(p => p.x + p.y).foreach(println)
+}

@@ -1,0 +1,5 @@
+SELECT u.name, COUNT(o.id) AS orders
+FROM users u
+LEFT JOIN orders o ON o.user_id = u.id
+GROUP BY u.name
+ORDER BY orders DESC;

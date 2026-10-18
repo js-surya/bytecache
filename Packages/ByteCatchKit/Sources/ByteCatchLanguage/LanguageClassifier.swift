@@ -24,7 +24,7 @@ public final class CoreMLLanguageClassifier: LanguageClassifier, @unchecked Send
 
     public func rank(_ text: String) -> [LanguageGuess] {
         let hypotheses = lock.withLock {
-            model.predictedLabelHypotheses(for: CodeTokenizer.features(text), maximumCount: 5)
+            model.predictedLabelHypotheses(for: CodeTokenizer.features(text), maximumCount: Disambiguator.rankingWindow)
         }
         return hypotheses
             .map { LanguageGuess(id: $0.key, confidence: $0.value) }

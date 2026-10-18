@@ -1,0 +1,11 @@
+class Greeter
+  def initialize(name)
+    @name = name
+  end
+
+  def greet
+    puts "Hello, #{@name}!"
+  end
+end
+
+[1, 2, 3].each { |n| puts n * 2 }

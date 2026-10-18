@@ -1,0 +1,5 @@
+<form action="/login" method="post">
+  <label for="user">Username</label>
+  <input id="user" name="user" type="text">
+  <button type="submit">Sign in</button>
+</form>

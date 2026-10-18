@@ -1,0 +1,8 @@
+func handler(w http.ResponseWriter, r *http.Request) {
+	name := r.URL.Query().Get("name")
+	if name == "" {
+		http.Error(w, "missing name", http.StatusBadRequest)
+		return
+	}
+	fmt.Fprintf(w, "Hello, %s", name)
+}

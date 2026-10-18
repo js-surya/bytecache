@@ -1,0 +1,1 @@
+db.orders.find({ status: "shipped", total: { $gt: 100 } }).sort({ createdAt: -1 }).limit(10)

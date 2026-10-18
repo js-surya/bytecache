@@ -1,0 +1,7 @@
+func load(_ url: URL) async throws -> Data {
+    guard let (data, response) = try? await URLSession.shared.data(from: url),
+          (response as? HTTPURLResponse)?.statusCode == 200 else {
+        throw URLError(.badServerResponse)
+    }
+    return data
+}

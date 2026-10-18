@@ -18,6 +18,10 @@ public struct StructuralStage: RuleStage {
         if Self.isGo(lines) { return "go" }
         if Self.isDockerfile(lines) { return "dockerfile" }
         if Self.isKubernetes(lines) { return "kubernetes" }
+        if Self.isGraphQLOperation(lines) { return "graphql" }
+        if Self.isBatch(lines) { return "batch" }
+        if Self.isMongo(lines) { return "mongodb" }
+        if Self.isCypher(lines) { return "cypher" }
         if let config = Self.configFormat(lines) { return config }
         if Self.isSQL(lines) { return "sql" }
         if Self.isYAML(lines) { return "yaml" }
@@ -29,6 +33,31 @@ public struct StructuralStage: RuleStage {
         guard let first = text.first, first == "{" || first == "[",
               let data = text.data(using: .utf8) else { return false }
         return (try? JSONSerialization.jsonObject(with: data)) != nil
+    }
+
+    static func isGraphQLOperation(_ lines: [Substring]) -> Bool {
+        guard let first = lines.first(where: { !$0.hasPrefix("#") }) else { return false }
+        return first.prefixMatch(of: /(query|mutation|subscription)(\s+\w+)?\s*(\([^)]*\))?\s*\{/) != nil
+            || first.prefixMatch(of: /fragment\s+\w+\s+on\s+\w+\s*\{/) != nil
+    }
+
+    static func isBatch(_ lines: [Substring]) -> Bool {
+        guard let first = lines.first?.lowercased() else { return false }
+        if first.hasPrefix("@echo off") { return true }
+        let commented = first.hasPrefix("rem ") || first.hasPrefix("::")
+        return commented && lines.contains { $0.contains("%~") || $0.firstMatch(of: /%\w+%/) != nil || $0.lowercased().contains("goto :") }
+    }
+
+    static func isMongo(_ lines: [Substring]) -> Bool {
+        lines.first { !$0.hasPrefix("//") }?.prefixMatch(of: /\s*db\.\w+\.(find|findOne|insertOne|insertMany|updateOne|updateMany|deleteOne|deleteMany|aggregate|countDocuments|createIndex|drop)\s*\(/) != nil
+    }
+
+    static func isCypher(_ lines: [Substring]) -> Bool {
+        guard let first = lines.first(where: { !$0.hasPrefix("//") }),
+              first.prefixMatch(of: /(?i)\s*(optional\s+)?(match|merge|create)\s*\(\w*(:\w+)?/) != nil else { return false }
+        let text = lines.joined(separator: "\n")
+        return text.contains("-[") || text.contains("]->") || text.contains("<-[")
+            || text.firstMatch(of: /(?i)\breturn\b/) != nil
     }
 
     static func isGo(_ lines: [Substring]) -> Bool {
@@ -89,11 +118,21 @@ public struct StructuralStage: RuleStage {
         let body = lines.drop { $0 == "---" }
         guard body.count >= (startsWithMarker ? 1 : 3),
               body.allSatisfy({ $0.wholeMatch(of: yamlLine) != nil }) else { return false }
-        // Needs at least one key, and no code punctuation that YAML values rarely end with.
-        return body.contains { $0.contains(":") } && !body.contains { $0.hasSuffix(";") || $0.hasSuffix("{") }
+        // Needs at least one key, and no code punctuation that YAML values rarely end with —
+        // `owner: public(address)` is Vyper, `a: 1,` is a keyword argument.
+        return body.contains { $0.contains(":") }
+            && !body.contains { $0.hasSuffix(";") || $0.hasSuffix("{") || $0.hasSuffix(",") }
+            && !body.contains { $0.firstMatch(of: /\w\(.*\)\s*$/) != nil }
     }
 
     static func isMarkdown(_ lines: [Substring]) -> Bool {
+        // Doc comments and docstrings are often Markdown inside code; leave those to the classifier.
+        let insideCode = lines.contains { line in
+            let t = line.drop { $0.isWhitespace }
+            return t.hasPrefix("/**") || t.hasPrefix("*/") || t.hasPrefix("///") || t.hasPrefix("#'")
+                || t.hasPrefix("\"\"\"") || t.hasPrefix("'''")
+        }
+        if insideCode { return false }
         var signals = 0
         if lines.contains(where: { $0.prefixMatch(of: /#{1,6}\s+\S/) != nil }) { signals += 1 }
         if lines.contains(where: { $0.prefixMatch(of: /\s*([-*+]|\d+\.)\s+\S/) != nil }) { signals += 1 }

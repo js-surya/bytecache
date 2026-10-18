@@ -1,0 +1,9 @@
+use strict;
+use warnings;
+
+my %count;
+while (my $line = <STDIN>) {
+    chomp $line;
+    $count{$_}++ for split /\s+/, $line;
+}
+print "$_: $count{$_}\n" for sort keys %count;

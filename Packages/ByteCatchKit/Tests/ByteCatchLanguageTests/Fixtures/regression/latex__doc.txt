@@ -1,0 +1,6 @@
+\documentclass{article}
+\usepackage{amsmath}
+\begin{document}
+\section{Intro}
+Euler: $e^{i\pi} + 1 = 0$
+\end{document}

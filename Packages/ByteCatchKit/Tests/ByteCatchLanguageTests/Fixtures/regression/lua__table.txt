@@ -1,0 +1,11 @@
+local M = {}
+
+function M.sum(t)
+  local total = 0
+  for _, v in ipairs(t) do
+    total = total + v
+  end
+  return total
+end
+
+return M

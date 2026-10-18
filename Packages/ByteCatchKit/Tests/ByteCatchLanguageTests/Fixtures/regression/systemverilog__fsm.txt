@@ -1,0 +1,6 @@
+typedef enum logic [1:0] {IDLE, RUN, DONE} state_t;
+state_t state;
+always_ff @(posedge clk or negedge rst_n) begin
+  if (!rst_n) state <= IDLE;
+  else state <= next_state;
+end

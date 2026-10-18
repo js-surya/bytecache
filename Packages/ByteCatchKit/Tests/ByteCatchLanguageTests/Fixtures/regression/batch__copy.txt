@@ -1,0 +1,8 @@
+@echo off
+set SRC=%~dp0build
+xcopy "%SRC%" "C:\deploy" /E /I /Y
+if errorlevel 1 goto :fail
+echo Done
+exit /b 0
+:fail
+echo Copy failed

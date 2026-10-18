@@ -74,4 +74,10 @@ final class LanguageDetectorTests: XCTestCase {
         XCTAssertEqual(result.best, "plaintext")
         XCTAssertTrue(result.abstained)
     }
+
+    func testStructuralAnswerStillOffersClassifierQuickPicks() {
+        let result = LanguageDetector(classifier: StubClassifier(swiftFirst)).detect(DetectionInput(text: #"{"a": 1}"#))
+        XCTAssertEqual(result.best, "json")
+        XCTAssertEqual(result.candidates.map(\.id), ["json", "swift", "kotlin"])
+    }
 }

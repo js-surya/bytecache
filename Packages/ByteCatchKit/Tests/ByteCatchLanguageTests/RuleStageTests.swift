@@ -81,4 +81,15 @@ final class RuleStageTests: XCTestCase {
         XCTAssertEqual(stage.detect(DetectionInput(text: "[core]\neditor = vim\nautocrlf = input")), "ini")
         XCTAssertEqual(stage.detect(DetectionInput(text: "[package]\nname = \"bytecatch\"\nversion = \"0.1.0\"\n\n[dependencies]\nserde = { version = \"1\" }")), "toml")
     }
+
+    func testMarkdownAndYAMLDoNotFireOnCodeThatLooksLikeThem() {
+        let stage = StructuralStage()
+        let code = [
+            "owner: public(address)\nbalance: HashMap[address, uint256]\ntotal: uint256", // Vyper
+            "  /** Returns the sum.\n   *\n   * # Example\n   * - see [[List]] and [docs](http://x)\n   */", // Scaladoc
+            "\"\"\"\n# Arguments\n- `x`: input\n\nSee [docs](https://julialang.org).\n\"\"\"", // Julia docstring
+            "foo(a: 1,\n    b: 2,\n    c: 3)", // Ruby keyword args
+        ]
+        for text in code { XCTAssertNil(stage.detect(DetectionInput(text: text)), text) }
+    }
 }

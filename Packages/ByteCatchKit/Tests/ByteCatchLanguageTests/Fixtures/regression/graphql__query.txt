@@ -1,0 +1,8 @@
+query GetUser($id: ID!) {
+  user(id: $id) {
+    name
+    repositories(first: 5) {
+      nodes { name }
+    }
+  }
+}
