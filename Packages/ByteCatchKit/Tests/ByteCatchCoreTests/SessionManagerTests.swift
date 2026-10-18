@@ -1,5 +1,6 @@
 import XCTest
 @testable import ByteCatchCore
+import ByteCatchTestSupport
 
 @MainActor
 final class SessionManagerTests: XCTestCase {

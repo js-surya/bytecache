@@ -22,8 +22,14 @@ let package = Package(
             name: "ByteCatchFeatures",
             dependencies: ["ByteCatchCore", "ByteCatchLanguage", "HighlightSwift"]
         ),
-        .testTarget(name: "ByteCatchCoreTests", dependencies: ["ByteCatchCore"], resources: [.copy("Fixtures")]),
-        .testTarget(name: "ByteCatchLanguageTests", dependencies: ["ByteCatchLanguage"]),
-        .testTarget(name: "ByteCatchFeaturesTests", dependencies: ["ByteCatchFeatures"]),
+        // Test helpers only; not a product.
+        .target(name: "ByteCatchTestSupport", dependencies: ["ByteCatchCore"]),
+        .testTarget(
+            name: "ByteCatchCoreTests",
+            dependencies: ["ByteCatchCore", "ByteCatchTestSupport"],
+            resources: [.copy("Fixtures")]
+        ),
+        .testTarget(name: "ByteCatchLanguageTests", dependencies: ["ByteCatchLanguage"], resources: [.copy("Fixtures")]),
+        .testTarget(name: "ByteCatchFeaturesTests", dependencies: ["ByteCatchFeatures", "ByteCatchTestSupport"]),
     ]
 )
