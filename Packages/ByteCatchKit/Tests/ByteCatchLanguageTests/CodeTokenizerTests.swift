@@ -45,4 +45,12 @@ final class CodeTokenizerTests: XCTestCase {
         _ = CodeTokenizer.features(code)
         XCTAssertLessThan(Date().timeIntervalSince(start), 0.02)
     }
+
+    func testPairFeaturesGeneraliseLongIdentifiers() {
+        let words = CodeTokenizer.features("fooBarBazQux = 1").split(separator: " ").map(String.init)
+        XCTAssertTrue(words.contains("fooBarBazQux"), "unigrams keep the identifier")
+        XCTAssertTrue(words.contains("IDZZp3d"), "pairs use ID for long identifiers")
+        XCTAssertFalse(words.contains("fooBarBazQuxZZp3d"))
+        XCTAssertTrue(CodeTokenizer.features("def x").split(separator: " ").contains("defZZx"), "short words stay in pairs")
+    }
 }

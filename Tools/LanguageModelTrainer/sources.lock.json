@@ -1,0 +1,754 @@
+[
+ {
+  "repo": "expressjs/express",
+  "license": "MIT",
+  "languages": [
+   "javascript"
+  ],
+  "commit": "0dee2c52c7c873498f8ed7d8ee4ddd0a04d3ada8"
+ },
+ {
+  "repo": "axios/axios",
+  "license": "MIT",
+  "languages": [
+   "javascript",
+   "typescript"
+  ],
+  "commit": "326843a3902d73c9f6af9bad7b55e2412566a251"
+ },
+ {
+  "repo": "jquery/jquery",
+  "license": "MIT",
+  "languages": [
+   "javascript"
+  ],
+  "commit": "c2f27864e4ffc2d1409c289fcb9a42b6165dfeaf"
+ },
+ {
+  "repo": "chartjs/Chart.js",
+  "license": "MIT",
+  "languages": [
+   "javascript",
+   "typescript"
+  ],
+  "commit": "7169e65147a47f3720957a6f156a33c838ab9f57"
+ },
+ {
+  "repo": "colinhacks/zod",
+  "license": "MIT",
+  "languages": [
+   "typescript"
+  ],
+  "commit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+ },
+ {
+  "repo": "trpc/trpc",
+  "license": "MIT",
+  "languages": [
+   "typescript"
+  ],
+  "commit": "2c331e84193fe33012340494a4f3db4424005070"
+ },
+ {
+  "repo": "angular/components",
+  "license": "MIT",
+  "languages": [
+   "typescript",
+   "html",
+   "css"
+  ],
+  "commit": "3f9f22ba985eb7f85e812aa66a75ec7b143fd756"
+ },
+ {
+  "repo": "twbs/bootstrap",
+  "license": "MIT",
+  "languages": [
+   "html",
+   "css",
+   "javascript"
+  ],
+  "commit": "38e57e5b64cbe598295bbaee8bde4a2d75991f4f"
+ },
+ {
+  "repo": "h5bp/html5-boilerplate",
+  "license": "MIT",
+  "languages": [
+   "html",
+   "css"
+  ],
+  "commit": "b6597338e695dc4a8165c5abcb2bfffa586c3ee5"
+ },
+ {
+  "repo": "mdn/learning-area",
+  "license": "CC0-1.0",
+  "languages": [
+   "html",
+   "css"
+  ],
+  "commit": "d55e1c2e3ff401519811b64e5b2a7d3643b43d0f"
+ },
+ {
+  "repo": "jgthms/bulma",
+  "license": "MIT",
+  "languages": [
+   "css"
+  ],
+  "commit": "c5cd04baf0258cfcc77b4e8610488a0d439effa2"
+ },
+ {
+  "repo": "necolas/normalize.css",
+  "license": "MIT",
+  "languages": [
+   "css"
+  ],
+  "commit": "fc091cce1534909334c1911709a39c22d406977b"
+ },
+ {
+  "repo": "laravel/framework",
+  "license": "MIT",
+  "languages": [
+   "php"
+  ],
+  "commit": "3bbfbac4a3e37c50eb70b85d2a013e6af50aaeb0"
+ },
+ {
+  "repo": "symfony/symfony",
+  "license": "MIT",
+  "languages": [
+   "php"
+  ],
+  "commit": "d6050dcf0fcfcdf62de76a5d2b1e523ac0476334"
+ },
+ {
+  "repo": "libuv/libuv",
+  "license": "MIT",
+  "languages": [
+   "c"
+  ],
+  "commit": "bbd08cc8d56d8b440fcfe96256de0cca082f2f86"
+ },
+ {
+  "repo": "DaveGamble/cJSON",
+  "license": "MIT",
+  "languages": [
+   "c"
+  ],
+  "commit": "6d9f2443ab071f86e5d9b43025a40929ec41c46c"
+ },
+ {
+  "repo": "nginx/nginx",
+  "license": "BSD-2-Clause",
+  "languages": [
+   "c"
+  ],
+  "commit": "1725db9059e8d4057ce8d5090673d16e20713b45"
+ },
+ {
+  "repo": "nlohmann/json",
+  "license": "MIT",
+  "languages": [
+   "cpp"
+  ],
+  "commit": "0e95fe8200adbf0e033d0c0818eea473e1d4d346"
+ },
+ {
+  "repo": "fmtlib/fmt",
+  "license": "MIT",
+  "languages": [
+   "cpp"
+  ],
+  "commit": "0fc31633e7d53ac895ae0a688b83b7d44f0b0c1f"
+ },
+ {
+  "repo": "google/leveldb",
+  "license": "BSD-3-Clause",
+  "languages": [
+   "cpp"
+  ],
+  "commit": "bb74ef739973a70ca9f0d90788a1da89b788c0ad"
+ },
+ {
+  "repo": "google/googletest",
+  "license": "BSD-3-Clause",
+  "languages": [
+   "cpp"
+  ],
+  "commit": "b66cffcd5f5d6ee34a4f96d57bf016d9a22cb023"
+ },
+ {
+  "repo": "JamesNK/Newtonsoft.Json",
+  "license": "MIT",
+  "languages": [
+   "csharp"
+  ],
+  "commit": "52fa3aef1f2cadcd3a3f874251eddc98d3efbbaa"
+ },
+ {
+  "repo": "App-vNext/Polly",
+  "license": "BSD-3-Clause",
+  "languages": [
+   "csharp"
+  ],
+  "commit": "3f3adad9d5af85658fc3585018f02a2d8c2173e8"
+ },
+ {
+  "repo": "VBA-tools/VBA-JSON",
+  "license": "MIT",
+  "languages": [
+   "vba"
+  ],
+  "commit": "06b6c45a2e8086a7a761f00bead7460852d6b602"
+ },
+ {
+  "repo": "VBA-tools/VBA-Web",
+  "license": "MIT",
+  "languages": [
+   "vba"
+  ],
+  "commit": "9dbcc751d177099f20c96c5ee332ec10ef47423c"
+ },
+ {
+  "repo": "tokio-rs/tokio",
+  "license": "MIT",
+  "languages": [
+   "rust"
+  ],
+  "commit": "cdd9dae3aa5056e23dc4d5bc4f852ab8fbf27aff"
+ },
+ {
+  "repo": "serde-rs/serde",
+  "license": "Apache-2.0",
+  "languages": [
+   "rust"
+  ],
+  "commit": "0db9b3b504bcb0a7fa9cf001429869519afd3e9a"
+ },
+ {
+  "repo": "BurntSushi/ripgrep",
+  "license": "Unlicense",
+  "languages": [
+   "rust"
+  ],
+  "commit": "3fce3b5bb0236da2df6d99672afb8a719642eca7"
+ },
+ {
+  "repo": "spf13/cobra",
+  "license": "Apache-2.0",
+  "languages": [
+   "go"
+  ],
+  "commit": "adbc8813901bba65827259daa8e22ff94ec1f30e"
+ },
+ {
+  "repo": "gin-gonic/gin",
+  "license": "MIT",
+  "languages": [
+   "go"
+  ],
+  "commit": "0f09c3a9b4626d9fe9979cf4d0521d6ae32ab646"
+ },
+ {
+  "repo": "junegunn/fzf",
+  "license": "MIT",
+  "languages": [
+   "go"
+  ],
+  "commit": "55c122f1a0e1340546c8709682bea5561fe0e8fd"
+ },
+ {
+  "repo": "apache/commons-lang",
+  "license": "Apache-2.0",
+  "languages": [
+   "java"
+  ],
+  "commit": "45c80d99559017ea6efcb5db6156bb9a5c850d34"
+ },
+ {
+  "repo": "square/retrofit",
+  "license": "Apache-2.0",
+  "languages": [
+   "java",
+   "kotlin"
+  ],
+  "commit": "e052f662f96799c08f629892c07dbe19c9aede1b"
+ },
+ {
+  "repo": "google/gson",
+  "license": "Apache-2.0",
+  "languages": [
+   "java"
+  ],
+  "commit": "e2292f9c9f2e07a4791827e8eea34aa7d80545d6"
+ },
+ {
+  "repo": "spring-projects/spring-petclinic",
+  "license": "Apache-2.0",
+  "languages": [
+   "java",
+   "html"
+  ],
+  "commit": "500158f732419217507c7656904b8e6aa1bcc0d6"
+ },
+ {
+  "repo": "Kotlin/kotlinx.coroutines",
+  "license": "Apache-2.0",
+  "languages": [
+   "kotlin"
+  ],
+  "commit": "7e0d1b3e9ca83652427ae00dda7d1673f058a743"
+ },
+ {
+  "repo": "square/okhttp",
+  "license": "Apache-2.0",
+  "languages": [
+   "kotlin",
+   "java"
+  ],
+  "commit": "aab431214cd0da8b74f6a288b6a2bb137a8d982e"
+ },
+ {
+  "repo": "JetBrains/Exposed",
+  "license": "Apache-2.0",
+  "languages": [
+   "kotlin"
+  ],
+  "commit": "09f814c61c22851b76840ccb65c1ac2c4db97452"
+ },
+ {
+  "repo": "scala/scala",
+  "license": "Apache-2.0",
+  "languages": [
+   "scala"
+  ],
+  "commit": "e690fca106af993d6091cc21827d29d674c2c54a"
+ },
+ {
+  "repo": "playframework/playframework",
+  "license": "Apache-2.0",
+  "languages": [
+   "scala"
+  ],
+  "commit": "9f9c0cdc52e13b3c956739b4d93756ed3a32bbfc"
+ },
+ {
+  "repo": "apache/groovy",
+  "license": "Apache-2.0",
+  "languages": [
+   "groovy"
+  ],
+  "commit": "d77e6df56a8d59ca30afbfa4c66afb9c685a22db"
+ },
+ {
+  "repo": "spockframework/spock",
+  "license": "Apache-2.0",
+  "languages": [
+   "groovy"
+  ],
+  "commit": "ce7e8afa895210d0b06103223f10d963a83f7a08"
+ },
+ {
+  "repo": "psf/requests",
+  "license": "Apache-2.0",
+  "languages": [
+   "python"
+  ],
+  "commit": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60"
+ },
+ {
+  "repo": "pallets/flask",
+  "license": "BSD-3-Clause",
+  "languages": [
+   "python"
+  ],
+  "commit": "d086db856be187255b8ec61ef409357393020f32"
+ },
+ {
+  "repo": "django/django",
+  "license": "BSD-3-Clause",
+  "languages": [
+   "python"
+  ],
+  "commit": "d430084791a61b31cecec132bce3dca19194f7f2"
+ },
+ {
+  "repo": "rails/rails",
+  "license": "MIT",
+  "languages": [
+   "ruby"
+  ],
+  "commit": "f19674e4a52735aaedca7824ef26245d634384d3"
+ },
+ {
+  "repo": "jekyll/jekyll",
+  "license": "MIT",
+  "languages": [
+   "ruby"
+  ],
+  "commit": "97c3bdc822df9d5bea4c269b29a28de5a5e29d70"
+ },
+ {
+  "repo": "mojolicious/mojo",
+  "license": "Artistic-2.0",
+  "languages": [
+   "perl"
+  ],
+  "commit": "1f230adbeeda2ae05ced5ad9c82fc046f1dcae60"
+ },
+ {
+  "repo": "Kong/kong",
+  "license": "Apache-2.0",
+  "languages": [
+   "lua"
+  ],
+  "commit": "6605dd81630d5f239514cf0dcdf77b51b878bd24"
+ },
+ {
+  "repo": "neovim/nvim-lspconfig",
+  "license": "Apache-2.0",
+  "languages": [
+   "lua"
+  ],
+  "commit": "45a3a444b710511c39abca3b60bb6e23a21e3de5"
+ },
+ {
+  "repo": "nvim-telescope/telescope.nvim",
+  "license": "MIT",
+  "languages": [
+   "lua"
+  ],
+  "commit": "40aedd8a68c78a656a10a8d62d80c54af59420fb"
+ },
+ {
+  "repo": "ohmyzsh/ohmyzsh",
+  "license": "MIT",
+  "languages": [
+   "bash"
+  ],
+  "commit": "964ddf789b022b6958b27d02d7fa54f552de21e9"
+ },
+ {
+  "repo": "nvm-sh/nvm",
+  "license": "MIT",
+  "languages": [
+   "bash"
+  ],
+  "commit": "b1b3a0038c0666c7436cb5d383608b4b72c8300b"
+ },
+ {
+  "repo": "bats-core/bats-core",
+  "license": "MIT",
+  "languages": [
+   "bash"
+  ],
+  "commit": "f2a9f7449df1701429a2541499e925a5fa6966d2"
+ },
+ {
+  "repo": "dylanaraps/neofetch",
+  "license": "MIT",
+  "languages": [
+   "bash"
+  ],
+  "commit": "ccd5d9f52609bbdcd5d8fa78c4fdb0f12954125f"
+ },
+ {
+  "repo": "docker/docker-install",
+  "license": "Apache-2.0",
+  "languages": [
+   "bash"
+  ],
+  "commit": "ada7a567e59b3935bd601bb21e422da50e80e376"
+ },
+ {
+  "repo": "dataplat/dbatools",
+  "license": "MIT",
+  "languages": [
+   "powershell"
+  ],
+  "commit": "900ba0347e93b62d930b9db66284060d317ac99c"
+ },
+ {
+  "repo": "PowerShell/PowerShell",
+  "license": "MIT",
+  "languages": [
+   "powershell"
+  ],
+  "commit": "fbb4fd5f7be2107100c113e1fb0de94b6808b608"
+ },
+ {
+  "repo": "jOOQ/sakila",
+  "license": "BSD-2-Clause",
+  "languages": [
+   "sql"
+  ],
+  "commit": "e089a5b1ec9af0df7a9c6a5d47d49fa1736a4e84"
+ },
+ {
+  "repo": "dbt-labs/jaffle_shop",
+  "license": "Apache-2.0",
+  "languages": [
+   "sql"
+  ],
+  "commit": "fd7bfacae4f497ff044a6a0275268676bf1b64c3"
+ },
+ {
+  "repo": "dense-analysis/ale",
+  "license": "BSD-2-Clause",
+  "languages": [
+   "vimscript"
+  ],
+  "commit": "e1789bc54483d76ac9ddb40b633d1645c8281914"
+ },
+ {
+  "repo": "junegunn/vim-plug",
+  "license": "MIT",
+  "languages": [
+   "vimscript"
+  ],
+  "commit": "7e5aae5e1187842cb0b1d8def986e48d481c4410"
+ },
+ {
+  "repo": "terraform-aws-modules/terraform-aws-vpc",
+  "license": "Apache-2.0",
+  "languages": [
+   "terraform"
+  ],
+  "commit": "b3abd6df2ecf052451a361ed55b8f06f8742a795"
+ },
+ {
+  "repo": "terraform-aws-modules/terraform-aws-eks",
+  "license": "Apache-2.0",
+  "languages": [
+   "terraform"
+  ],
+  "commit": "91b8a8d944e3cf169483108acd12d5b1e47856f7"
+ },
+ {
+  "repo": "apple/swift-nio",
+  "license": "Apache-2.0",
+  "languages": [
+   "swift"
+  ],
+  "commit": "eabcc14f9dcb2bdba7efecdcc343e7bb5f29fce1"
+ },
+ {
+  "repo": "Alamofire/Alamofire",
+  "license": "MIT",
+  "languages": [
+   "swift"
+  ],
+  "commit": "bda9ed57d72988a3a2ada33d824583541f86eac6"
+ },
+ {
+  "repo": "tidyverse/dplyr",
+  "license": "MIT (DESCRIPTION: MIT + file LICENSE)",
+  "languages": [
+   "r"
+  ],
+  "commit": "d5e94e7fa8fd4a5f79c1a707d1842216bb4c691f"
+ },
+ {
+  "repo": "r-lib/rlang",
+  "license": "MIT (DESCRIPTION: MIT + file LICENSE)",
+  "languages": [
+   "r"
+  ],
+  "commit": "b4a2a057ea67613cc13cdbaed9eb0c421400e96a"
+ },
+ {
+  "repo": "r-lib/testthat",
+  "license": "MIT (DESCRIPTION: MIT + file LICENSE)",
+  "languages": [
+   "r"
+  ],
+  "commit": "54c0edc932018079a8925845f7e278097d19c786"
+ },
+ {
+  "repo": "JuliaLang/julia",
+  "license": "MIT",
+  "languages": [
+   "julia"
+  ],
+  "commit": "c4ee9157f93a4aed714e6fdc3067aeea6fc7780a"
+ },
+ {
+  "repo": "felangel/bloc",
+  "license": "MIT",
+  "languages": [
+   "dart"
+  ],
+  "commit": "b9be1e252ee24ffbe9f2fb629edc7624b2cfbf05"
+ },
+ {
+  "repo": "rrousselGit/riverpod",
+  "license": "MIT",
+  "languages": [
+   "dart"
+  ],
+  "commit": "87aad84b1afcd592c7313768d23d391f1441d586"
+ },
+ {
+  "repo": "elm/core",
+  "license": "BSD-3-Clause",
+  "languages": [
+   "elm"
+  ],
+  "commit": "65cea00afa0de03d7dda0487d964a305fc3d58e3"
+ },
+ {
+  "repo": "elm/browser",
+  "license": "BSD-3-Clause",
+  "languages": [
+   "elm"
+  ],
+  "commit": "1d28cd625b3ce07be6dfad51660bea6de2c905f2"
+ },
+ {
+  "repo": "elm/json",
+  "license": "BSD-3-Clause",
+  "languages": [
+   "elm"
+  ],
+  "commit": "2865dfce97a75724a75583a214d3a287d2abecd4"
+ },
+ {
+  "repo": "elm/html",
+  "license": "BSD-3-Clause",
+  "languages": [
+   "elm"
+  ],
+  "commit": "1affbf39efef4b4529110a567f706130c178a457"
+ },
+ {
+  "repo": "rtfeldman/elm-spa-example",
+  "license": "MIT",
+  "languages": [
+   "elm"
+  ],
+  "commit": "cb32acd73c3d346d0064e7923049867d8ce67193"
+ },
+ {
+  "repo": "financialforcedev/fflib-apex-common",
+  "license": "BSD-3-Clause",
+  "languages": [
+   "apex"
+  ],
+  "commit": "c91fa6f32781c02969dc57d9fd1453478b541f6a"
+ },
+ {
+  "repo": "trailheadapps/apex-recipes",
+  "license": "CC0-1.0",
+  "languages": [
+   "apex"
+  ],
+  "commit": "b364267fc786a8a3ac4c3968467fcc4abd4adac6"
+ },
+ {
+  "repo": "OpenZeppelin/openzeppelin-contracts",
+  "license": "MIT",
+  "languages": [
+   "solidity"
+  ],
+  "commit": "b04d141ba4fec9b0f970ce4c7746b0a02e50000b"
+ },
+ {
+  "repo": "foundry-rs/forge-std",
+  "license": "Apache-2.0",
+  "languages": [
+   "solidity"
+  ],
+  "commit": "b013eff2ac4fce26f34d789e6f5c49021c5ee817"
+ },
+ {
+  "repo": "vyperlang/vyper",
+  "license": "Apache-2.0 (LICENSE file)",
+  "languages": [
+   "vyper"
+  ],
+  "commit": "08c2841623c5c0cc2850cc49dbeb79f13d77f940"
+ },
+ {
+  "repo": "alexforencich/verilog-ethernet",
+  "license": "MIT",
+  "languages": [
+   "verilog"
+  ],
+  "commit": "77320a9471d19c7dd383914bc049e02d9f4f1ffb"
+ },
+ {
+  "repo": "YosysHQ/picorv32",
+  "license": "ISC",
+  "languages": [
+   "verilog"
+  ],
+  "commit": "ef203c2b0a3fb793280f5114941416c425c5b461"
+ },
+ {
+  "repo": "lowRISC/ibex",
+  "license": "Apache-2.0",
+  "languages": [
+   "systemverilog"
+  ],
+  "commit": "65368a4c41d8e6c2e56ce816e418e21fc4e7b328"
+ },
+ {
+  "repo": "sb2nov/resume",
+  "license": "MIT",
+  "languages": [
+   "latex"
+  ],
+  "commit": "7b70fe14876f97180034787f2a7f661597416a17"
+ },
+ {
+  "repo": "kourgeorge/arxiv-style",
+  "license": "MIT",
+  "languages": [
+   "latex"
+  ],
+  "commit": "920514696f6e7270cab0558fd97c44515c63b4c4"
+ },
+ {
+  "repo": "Wandmalfarbe/pandoc-latex-template",
+  "license": "BSD-3-Clause",
+  "languages": [
+   "latex"
+  ],
+  "commit": "93cc5b8e08c658da012d7609491ae72b1aff72fc"
+ },
+ {
+  "repo": "matlab2tikz/matlab2tikz",
+  "license": "BSD-2-Clause",
+  "languages": [
+   "matlab"
+  ],
+  "commit": "806c97d99f87f8a1e99a7c54e853c25c82aac301"
+ },
+ {
+  "repo": "altmany/export_fig",
+  "license": "BSD-3-Clause",
+  "languages": [
+   "matlab"
+  ],
+  "commit": "5c73efc7154ee00f242481305cb3b2e121480614"
+ },
+ {
+  "repo": "octokit/graphql-schema",
+  "license": "MIT",
+  "languages": [
+   "graphql"
+  ],
+  "commit": "82ff2d4780080e6929ebb95608cefa22dfa05ac7"
+ },
+ {
+  "repo": "abapGit/abapGit",
+  "license": "MIT",
+  "languages": [
+   "abap"
+  ],
+  "commit": "af87ee387f2b014ddf44fa6ef1e07dc18ed99364"
+ },
+ {
+  "repo": "github-linguist/linguist (samples/)",
+  "license": "MIT",
+  "commit": "73ee9a3b277f398c37ca4ab0dea0193849de6460"
+ }
+]
