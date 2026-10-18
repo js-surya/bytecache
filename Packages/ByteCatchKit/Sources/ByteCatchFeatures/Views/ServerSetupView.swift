@@ -61,6 +61,13 @@ public struct ServerSetupView: View {
             }
         }
         .formStyle(.grouped)
+        .toolbar {
+            if model.session.canCancelAddServer {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { Task { await model.cancelAddServer() } }
+                }
+            }
+        }
         .frame(maxWidth: 520)
         .frame(maxWidth: .infinity)
     }

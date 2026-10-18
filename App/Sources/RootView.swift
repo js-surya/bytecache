@@ -13,11 +13,13 @@ struct RootView: View {
             } else {
                 switch services.session.state {
                 case .needsServer:
-                    ServerSetupView(model: services.onboarding)
+                    NavigationStack { ServerSetupView(model: services.onboarding) }
                 case .needsLogin(let server, _):
-                    LoginView(model: services.onboarding, server: server)
+                    NavigationStack { LoginView(model: services.onboarding, server: server) }
                 case .signedIn:
+                    // A fresh list, sidebar and selection for each server.
                     MainSplitView(services: services)
+                        .id(services.session.activeAccountID)
                 }
             }
         }

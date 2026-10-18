@@ -1,14 +1,18 @@
 import Foundation
 
-/// Talks to a ByteStash server's HTTP API. Stateless: create one per server/token pair.
+/// Talks to a ByteStash server's HTTP API. Stateless: create one per server and login.
+/// Authenticates with a session token (`bytestashauth`) or an API key (`x-api-key`; ByteStash
+/// accepts keys on `/api/snippets/...` only, which covers everything the app does once signed in).
 public struct APIClient: Sendable {
     public let server: ServerURL
     public let token: String?
+    public let apiKey: String?
     private let transport: any HTTPTransport
 
-    public init(server: ServerURL, token: String?, transport: any HTTPTransport = URLSession.shared) {
+    public init(server: ServerURL, token: String?, apiKey: String? = nil, transport: any HTTPTransport = URLSession.shared) {
         self.server = server
         self.token = token
+        self.apiKey = apiKey
         self.transport = transport
     }
 
@@ -146,7 +150,11 @@ extension APIClient {
         var request = URLRequest(url: url, timeoutInterval: Self.timeout)
         request.httpMethod = method.rawValue
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        if let token { request.setValue("Bearer \(token)", forHTTPHeaderField: "bytestashauth") }
+        if let apiKey {
+            request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
+        } else if let token {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "bytestashauth")
+        }
         if let body {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             do {

@@ -7,7 +7,7 @@ ByteCatch is an unofficial client for ByteStash, the self-hosted code snippet ma
 **ByteCatch collects no data.** There is no analytics, tracking, advertising or crash reporting, and no ByteCatch server.
 
 - **Your snippets** go only to the ByteStash server address you enter, over the connection you configure (use HTTPS).
-- **Your login** (server address, username and session token) is stored in the Apple Keychain on your device and shared only with ByteCatch's own share extension. Your password is never stored.
+- **Your logins** (each server's address, username and session token or API key) are stored in the Apple Keychain on your device and shared only with ByteCatch's own share extension. Your password is never stored. Removing a server in Settings → Servers deletes its login from the device.
 - **Recently viewed snippets** are cached on your device so you can read them offline. Signing out or changing server stops using them; deleting the app removes them.
 - **Clipboard:** ByteCatch only checks whether the clipboard contains text. It reads the text only when you tap Paste.
 - **Language detection** runs entirely on your device.

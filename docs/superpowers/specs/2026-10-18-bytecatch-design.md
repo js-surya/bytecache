@@ -30,12 +30,16 @@ and copying saved snippets on the phone is the second job.
 7. **iPad and Mac layouts** — real adaptive layouts, not a stretched phone UI (see Platforms).
 8. **Production-grade language detection** — on-device, accurate, measured (see Language detection).
 
+## Added after v1 design (2026-10-19)
+
+- Several saved servers with switching; sign-in with a ByteStash API key (`x-api-key`, accepted on `/api/snippets/...`).
+- App appearance, accent colour and code themes; iOS Settings-style settings.
+
 ## Non-goals (v1)
 
 - SSO / OIDC login (server's flow is cookie + web redirect only; revisit later).
 - Admin screens, API-key management, user settings, public snippet browsing, share links.
 - Full IDE-grade editor.
-- Multiple accounts / servers at once.
 
 ## Anti-goals
 

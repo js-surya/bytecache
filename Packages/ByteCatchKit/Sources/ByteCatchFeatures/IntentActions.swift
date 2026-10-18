@@ -58,12 +58,11 @@ public enum IntentActions {
     }
 
     private static func client(store: any CredentialStore, transport: any HTTPTransport) -> APIClient? {
-        guard let credentials = store.load(), let token = credentials.token else { return nil }
-        return APIClient(server: credentials.server, token: token, transport: transport)
+        store.load()?.makeClient(transport: transport)
     }
 
     private static func forgetToken(in store: any CredentialStore) {
         guard let credentials = store.load() else { return }
-        try? store.save(Credentials(server: credentials.server, token: nil, username: credentials.username))
+        try? store.save(credentials.signedOut)
     }
 }

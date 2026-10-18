@@ -1,7 +1,7 @@
 import Foundation
 import Security
 
-/// Stores credentials as one generic-password Keychain item, shared with the extensions through `accessGroup`.
+/// Stores all saved servers as one generic-password Keychain item, shared with the extensions through `accessGroup`.
 public struct KeychainCredentialStore: CredentialStore {
     public struct KeychainError: Error, Equatable {
         public let status: OSStatus
@@ -30,19 +30,20 @@ public struct KeychainCredentialStore: CredentialStore {
         return query
     }
 
-    public func load() -> Credentials? {
+    public func loadAll() -> AccountList {
         var query = baseQuery
         query[kSecReturnData as String] = true
         query[kSecMatchLimit as String] = kSecMatchLimitOne
         var result: CFTypeRef?
         guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
               let data = result as? Data
-        else { return nil }
-        return try? JSONDecoder().decode(Credentials.self, from: data)
+        else { return AccountList() }
+        return (try? AccountList.decode(data)) ?? AccountList()
     }
 
-    public func save(_ credentials: Credentials) throws {
-        let data = try JSONEncoder().encode(credentials)
+    public func saveAll(_ list: AccountList) throws {
+        guard !list.accounts.isEmpty else { return try deleteItem() }
+        let data = try JSONEncoder().encode(list)
         let update = [kSecValueData as String: data]
         var status = SecItemUpdate(baseQuery as CFDictionary, update as CFDictionary)
         if status == errSecItemNotFound {
@@ -54,7 +55,7 @@ public struct KeychainCredentialStore: CredentialStore {
         guard status == errSecSuccess else { throw KeychainError(status: status) }
     }
 
-    public func clear() throws {
+    private func deleteItem() throws {
         let status = SecItemDelete(baseQuery as CFDictionary)
         guard status == errSecSuccess || status == errSecItemNotFound else {
             throw KeychainError(status: status)

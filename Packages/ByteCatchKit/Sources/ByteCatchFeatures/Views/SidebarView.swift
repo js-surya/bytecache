@@ -52,6 +52,11 @@ public struct SidebarView: View {
             #endif
             await model.load()
         }
+        .toolbar {
+            ToolbarItem(placement: .navigation) {
+                ServerMenu(session: session)
+            }
+        }
         #if os(iOS)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

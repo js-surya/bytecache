@@ -65,15 +65,13 @@ public struct ShareFlowView: View {
         case .success(let payload):
             let store = AppEnvironment.makeCredentialStore()
             let credentials = store.load()
-            let client = credentials.flatMap { c in c.token.map { APIClient(server: c.server, token: $0) } }
+            let client = credentials?.makeClient()
             let model = CaptureModel(
                 text: payload.text, fileName: payload.fileName, sourceURL: payload.sourceURL,
                 pageTitle: payload.pageTitle, client: client, detector: LanguageDetector()
             ) {
                 // Token rejected: forget it so the app shows login next time; keep the server.
-                if let credentials {
-                    try? store.save(Credentials(server: credentials.server, token: nil, username: credentials.username))
-                }
+                if let credentials { try? store.save(credentials.signedOut) }
             }
             phase = .ready(model)
         }

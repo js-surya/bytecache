@@ -15,13 +15,20 @@ public struct SettingsView: View {
             if case .signedIn(let server, let user) = session.state {
                 Section {
                     HStack(spacing: 14) {
-                        Text(String(user.username.prefix(1)).uppercased())
+                        Group {
+                            if user.username == SessionManager.apiKeyUserName {
+                                Image(systemName: "key.fill")
+                            } else {
+                                Text(String(user.username.prefix(1)).uppercased())
+                            }
+                        }
                             .font(.title2.weight(.semibold))
                             .foregroundStyle(.white)
                             .frame(width: 56, height: 56)
                             .background(settings.accent.color.gradient, in: Circle())
                         VStack(alignment: .leading, spacing: 2) {
                             Text(user.username.isEmpty ? "Signed In" : user.username).font(.title3.weight(.semibold))
+                                .accessibilityLabel(user.username == SessionManager.apiKeyUserName ? "Signed in with an API key" : user.username)
                             Text(server.base.host() ?? server.base.absoluteString)
                                 .font(.subheadline).foregroundStyle(.secondary)
                         }
@@ -45,18 +52,16 @@ public struct SettingsView: View {
                 }
             }
 
-            if case .signedIn(let server, _) = session.state {
-                Section {
-                    SettingsLabel(title: "Server", systemName: "server.rack", color: .green,
-                                  value: server.base.absoluteString)
-                    Button {
-                        SpotlightIndexer.removeAll()
-                        session.changeServer()
-                    } label: {
-                        SettingsLabel(title: "Use a Different Server", systemName: "arrow.left.arrow.right", color: .orange)
-                    }
-                    .foregroundStyle(.primary)
+            Section {
+                NavigationLink {
+                    ServersView(session: session)
+                } label: {
+                    SettingsLabel(title: "Servers", systemName: "server.rack", color: .green,
+                                  value: session.accounts.count > 1 ? "\(session.accounts.count)" : session.accounts.first?.displayName)
                 }
+            }
+
+            if case .signedIn = session.state {
                 Section {
                     Button("Sign Out", role: .destructive) {
                         SpotlightIndexer.removeAll()

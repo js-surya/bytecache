@@ -28,7 +28,7 @@ final class SessionManagerTests: XCTestCase {
 
         try await session.login(username: "demo", password: "demodemo")
         XCTAssertEqual(session.state, .signedIn(server: server, user: User(id: 2, username: "demo")))
-        XCTAssertEqual(store.load(), Credentials(server: server, token: "t", username: "demo"))
+        XCTAssertEqual(store.load()?.server, server); XCTAssertEqual(store.load()?.token, "t"); XCTAssertEqual(store.load()?.username, "demo")
         XCTAssertEqual(session.client?.token, "t")
     }
 
@@ -140,7 +140,7 @@ final class SessionManagerTests: XCTestCase {
         session.signOut()
         guard case .needsLogin(let kept, _) = session.state else { return XCTFail("\(session.state)") }
         XCTAssertEqual(kept, server)
-        XCTAssertEqual(store.load(), Credentials(server: server, token: nil, username: "demo"))
+        XCTAssertEqual(store.load()?.server, server); XCTAssertEqual(store.load()?.token, nil); XCTAssertEqual(store.load()?.username, "demo")
     }
 }
 
@@ -184,9 +184,8 @@ final class SessionChangeServerTests: XCTestCase {
 final class FallbackCredentialStoreTests: XCTestCase {
     struct Failing: CredentialStore {
         struct Boom: Error {}
-        func load() -> Credentials? { nil }
-        func save(_ credentials: Credentials) throws { throw Boom() }
-        func clear() throws { throw Boom() }
+        func loadAll() -> AccountList { AccountList() }
+        func saveAll(_ list: AccountList) throws { throw Boom() }
     }
 
     func testUsesFallbackWhenPrimaryCannotSave() throws {

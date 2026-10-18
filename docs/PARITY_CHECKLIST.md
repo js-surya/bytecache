@@ -5,6 +5,8 @@ Tick each cell after trying it on that platform. "Auto" = covered by automated t
 | Feature | iPhone | iPad | Mac |
 |---|---|---|---|
 | Server setup, demo button, login, sign out, change server | ☐ | ☐ | ☐ |
+| Sign in with API key (Password / API Key switch) | ☐ | ☐ | ☐ |
+| Several servers: add, switch (Settings → Servers and sidebar menu), remove, Cancel while adding | ☐ | ☐ | ☐ |
 | Share extension: Safari selection → Save | ☐ | ☐ | ☐ (Share menu) |
 | Share extension: text file from Files / Finder | ☐ | ☐ | ☐ |
 | Share extension when signed out shows message + Copy | ☐ | ☐ | ☐ |

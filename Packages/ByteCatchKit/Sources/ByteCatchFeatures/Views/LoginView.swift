@@ -13,6 +13,34 @@ public struct LoginView: View {
     public var body: some View {
         Form {
             Section {
+                Picker("Sign in with", selection: $model.method) {
+                    ForEach(OnboardingModel.LoginMethod.allCases) { Text($0.title).tag($0) }
+                }
+                .pickerStyle(.segmented)
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets())
+            }
+
+            if model.method == .apiKey {
+                Section {
+                    SecureField("API key", text: $model.apiKey)
+                        .textContentType(.password)
+                        .autocorrectionDisabled()
+                        #if os(iOS)
+                        .textInputAutocapitalization(.never)
+                        #endif
+                        .onSubmit { Task { await model.login() } }
+                } header: {
+                    Text("API key for \(server.base.host() ?? server.base.absoluteString)")
+                } footer: {
+                    if let error = model.errorMessage {
+                        Text(error).foregroundStyle(.red)
+                    } else {
+                        Text("Create a key in ByteStash under Settings → API Keys. It's stored in the Keychain on this device.")
+                    }
+                }
+            } else {
+            Section {
                 TextField("Username", text: $model.username)
                     .textContentType(.username)
                     .autocorrectionDisabled()
@@ -28,6 +56,7 @@ public struct LoginView: View {
                 if let error = model.errorMessage {
                     Text(error).foregroundStyle(.red)
                 }
+            }
             }
 
             Section {
