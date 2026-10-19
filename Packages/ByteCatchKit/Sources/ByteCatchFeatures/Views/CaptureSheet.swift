@@ -36,16 +36,35 @@ public struct CaptureSheet: View {
             }
             Section {
                 TextField("Title", text: $model.title)
+                if model.canSuggest || !model.snippetDescription.isEmpty {
+                    TextField("Description", text: $model.snippetDescription, axis: .vertical).lineLimit(1...3)
+                }
                 LanguagePicker(selection: model.language, suggestions: model.candidates) { model.pickLanguage($0) }
                 CategoryField(categories: $model.categories, known: knownCategories)
             } header: {
-                Text("Details")
+                HStack {
+                    Text("Details")
+                    Spacer()
+                    if model.canSuggest {
+                        Button { Task { await model.suggest() } } label: {
+                            if model.isSuggesting {
+                                ProgressView().controlSize(.small)
+                            } else {
+                                Label("Suggest", systemImage: "sparkles")
+                            }
+                        }
+                        .font(.caption)
+                        .textCase(nil)
+                        .disabled(model.isSuggesting)
+                    }
+                }
             } footer: {
                 if let error = model.error { Text(error).foregroundStyle(.red) }
             }
         }
         .formStyle(.grouped)
         .navigationTitle("Save to ByteCatch")
+        .task { if model.canSuggest { await model.suggest() } }
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

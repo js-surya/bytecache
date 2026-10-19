@@ -68,7 +68,8 @@ public struct ShareFlowView: View {
             let client = credentials?.makeClient()
             let model = CaptureModel(
                 text: payload.text, fileName: payload.fileName, sourceURL: payload.sourceURL,
-                pageTitle: payload.pageTitle, client: client, detector: LanguageDetector()
+                pageTitle: payload.pageTitle, client: client, detector: LanguageDetector(),
+                suggester: settings.suggester
             ) {
                 // Token rejected: forget it so the app shows login next time; keep the server.
                 if let credentials { try? store.save(credentials.signedOut) }

@@ -164,12 +164,14 @@ struct MainSplitView: View {
 
     private func startCapture(_ text: String) {
         let session = services.session
-        capture = CaptureModel(text: text, client: session.client, detector: services.detector) {
+        capture = CaptureModel(text: text, client: session.client, detector: services.detector,
+                               suggester: services.settings.suggester, knownCategories: sidebar.categories) {
             session.handleUnauthorized()
         }
     }
 
     private func startEditing(_ snippet: Snippet?) {
-        editor = SnippetEditorModel(existing: snippet, session: services.session, detector: services.detector)
+        editor = SnippetEditorModel(existing: snippet, session: services.session, detector: services.detector,
+                                    suggester: services.settings.suggester, knownCategories: sidebar.categories)
     }
 }

@@ -16,11 +16,22 @@ public struct EditorView: View {
 
     public var body: some View {
         Form {
-            Section("Details") {
+            Section {
                 TextField("Title", text: $model.draft.title)
                 TextField("Description", text: $model.draft.description, axis: .vertical)
                     .lineLimit(1...4)
                 CategoryField(categories: $model.draft.categories, known: knownCategories)
+                if model.canSuggest {
+                    Button { Task { await model.suggest() } } label: {
+                        HStack {
+                            Label("Suggest Title & Tags", systemImage: "sparkles")
+                            if model.isSuggesting { Spacer(); ProgressView().controlSize(.small) }
+                        }
+                    }
+                    .disabled(model.isSuggesting)
+                }
+            } header: {
+                Text("Details")
             }
             ForEach(model.draft.fragments.indices, id: \.self) { index in
                 Section {

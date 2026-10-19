@@ -56,6 +56,7 @@ public final class AppSettings {
     /// Device-only switches (never synced themselves).
     public var iCloudSyncEnabled: Bool { didSet { defaults.set(iCloudSyncEnabled, forKey: Key.iCloudSync) } }
     public var handoffEnabled: Bool { didSet { defaults.set(handoffEnabled, forKey: Key.handoff) } }
+    public var suggestionsEnabled: Bool { didSet { defaults.set(suggestionsEnabled, forKey: Key.suggestions) } }
     public var codeFontSize: Double {
         didSet {
             let clamped = min(max(codeFontSize, Self.fontSizes.lowerBound), Self.fontSizes.upperBound)
@@ -73,7 +74,7 @@ public final class AppSettings {
     private enum Key {
         static let appearance = "appearance", accent = "accent", codeThemeID = "codeThemeID"
         static let fontSize = "codeFontSize", lineNumbers = "showLineNumbers"
-        static let iCloudSync = "iCloudSyncEnabled", handoff = "handoffEnabled"
+        static let iCloudSync = "iCloudSyncEnabled", handoff = "handoffEnabled", suggestions = "suggestionsEnabled"
     }
 
     public init(defaults: UserDefaults = AppEnvironment.sharedDefaults) {
@@ -87,6 +88,12 @@ public final class AppSettings {
         showLineNumbers = defaults.object(forKey: Key.lineNumbers) as? Bool ?? true
         iCloudSyncEnabled = defaults.object(forKey: Key.iCloudSync) as? Bool ?? true
         handoffEnabled = defaults.object(forKey: Key.handoff) as? Bool ?? true
+        suggestionsEnabled = defaults.object(forKey: Key.suggestions) as? Bool ?? true
+    }
+
+    /// The on-device suggester when available and switched on.
+    public var suggester: (any SnippetSuggester)? {
+        suggestionsEnabled ? SnippetSuggesters.onDevice() : nil
     }
 
     /// The preferences shared through iCloud.

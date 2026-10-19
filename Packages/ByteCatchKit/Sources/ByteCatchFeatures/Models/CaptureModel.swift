@@ -13,7 +13,10 @@ public final class CaptureModel {
     public private(set) var language = "plaintext"
     public private(set) var candidates: [LanguageGuess] = []
     public var categories: [String] = []
+    /// Filled by suggestions; saved before the "Saved from" line.
+    public var snippetDescription = ""
     public private(set) var isSaving = false
+    public private(set) var isSuggesting = false
     public var error: String?
 
     public let fileName: String?
@@ -25,21 +28,29 @@ public final class CaptureModel {
     }
 
     @ObservationIgnored private var languagePicked = false
+    @ObservationIgnored private let defaultTitle: String
     private let client: APIClient?
     private let detector: LanguageDetector
+    private let suggester: (any SnippetSuggester)?
+    private let knownCategories: [String]
     private let onUnauthorized: () -> Void
 
     public init(
         text: String, fileName: String? = nil, sourceURL: URL? = nil, pageTitle: String? = nil,
-        client: APIClient?, detector: LanguageDetector, onUnauthorized: @escaping () -> Void = {}
+        client: APIClient?, detector: LanguageDetector, suggester: (any SnippetSuggester)? = nil,
+        knownCategories: [String] = [], onUnauthorized: @escaping () -> Void = {}
     ) {
         self.text = text
         self.fileName = fileName
         self.sourceURL = sourceURL
         self.client = client
         self.detector = detector
+        self.suggester = suggester
+        self.knownCategories = knownCategories
         self.onUnauthorized = onUnauthorized
-        title = Self.defaultTitle(text: text, fileName: fileName, pageTitle: pageTitle)
+        let initialTitle = Self.defaultTitle(text: text, fileName: fileName, pageTitle: pageTitle)
+        title = initialTitle
+        defaultTitle = initialTitle
         detect()
     }
 
@@ -50,6 +61,23 @@ public final class CaptureModel {
     public func pickLanguage(_ id: String) {
         language = id
         languagePicked = true
+    }
+
+    public var canSuggest: Bool { suggester != nil }
+
+    /// Fills the title (if still the default), description and categories (if empty).
+    public func suggest() async {
+        guard let suggester, !isSuggesting, text.contains(where: { !$0.isWhitespace }) else { return }
+        isSuggesting = true
+        defer { isSuggesting = false }
+        guard let suggestion = try? await suggester.suggest(code: text, language: language, knownCategories: knownCategories)
+        else { return }
+        let suggestedTitle = suggestion.title.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !suggestedTitle.isEmpty, title.trimmingCharacters(in: .whitespaces).isEmpty || title == defaultTitle {
+            title = suggestedTitle
+        }
+        if snippetDescription.isEmpty { snippetDescription = suggestion.description.trimmingCharacters(in: .whitespacesAndNewlines) }
+        if categories.isEmpty { categories = suggestion.cleanCategories }
     }
 
     @discardableResult
@@ -65,7 +93,8 @@ public final class CaptureModel {
         let draft = SnippetDraft(
             title: title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                 ? Self.defaultTitle(text: text, fileName: fileName, pageTitle: nil) : title,
-            description: sourceURL.map { "Saved from \($0.absoluteString)" } ?? "",
+            description: [snippetDescription, sourceURL.map { "Saved from \($0.absoluteString)" } ?? ""]
+                .filter { !$0.isEmpty }.joined(separator: "\n\n"),
             categories: categories.map { $0.trimmingCharacters(in: .whitespaces).lowercased() }
                 .filter { !$0.isEmpty && seen.insert($0).inserted },
             fragments: [FragmentDraft(

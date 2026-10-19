@@ -56,6 +56,12 @@ public struct SettingsView: View {
                                   value: settings.appearance.title)
                 }
                 NavigationLink {
+                    SuggestionsSettingsView()
+                } label: {
+                    SettingsLabel(title: "Smart Suggestions", systemName: "sparkles", color: .pink,
+                                  value: settings.suggestionsEnabled && SnippetSuggesters.onDevice() != nil ? "On" : "Off")
+                }
+                NavigationLink {
                     CodeThemeSettingsView()
                 } label: {
                     SettingsLabel(title: "Code Theme", systemName: "chevron.left.forwardslash.chevron.right",
@@ -368,5 +374,33 @@ struct HandoffSettingsView: View {
         .listStyle(.insetGrouped)
         #endif
         .navigationTitle("Handoff")
+    }
+}
+
+struct SuggestionsSettingsView: View {
+    @Environment(AppSettings.self) private var settings
+
+    var body: some View {
+        @Bindable var settings = settings
+        let available = SnippetSuggesters.onDevice() != nil
+        List {
+            Section {
+                Toggle("Suggest Titles & Tags", isOn: $settings.suggestionsEnabled)
+                    .disabled(!available)
+            } footer: {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("When you save code, ByteCatch suggests a title, a one-line description and categories using Apple Intelligence on this device. Your code never leaves it. Suggestions only fill empty fields — what you type always wins.")
+                    if !available {
+                        Label("Needs Apple Intelligence (iOS 26 or macOS 26 on a supported device, turned on in Settings).",
+                              systemImage: "exclamationmark.triangle")
+                            .foregroundStyle(.orange)
+                    }
+                }
+            }
+        }
+        #if os(iOS)
+        .listStyle(.insetGrouped)
+        #endif
+        .navigationTitle("Smart Suggestions")
     }
 }

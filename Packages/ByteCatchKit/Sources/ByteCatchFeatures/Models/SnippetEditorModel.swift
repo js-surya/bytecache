@@ -10,6 +10,7 @@ public final class SnippetEditorModel {
     /// Detector quick picks per fragment index.
     public private(set) var suggestions: [Int: [LanguageGuess]] = [:]
     public private(set) var isSaving = false
+    public private(set) var isSuggesting = false
     public var error: String?
 
     public let existingID: Int?
@@ -19,10 +20,15 @@ public final class SnippetEditorModel {
     @ObservationIgnored private var pinnedLanguages: Set<Int>
     private let session: SessionManager
     private let detector: LanguageDetector
+    private let suggester: (any SnippetSuggester)?
+    private let knownCategories: [String]
 
-    public init(existing: Snippet?, session: SessionManager, detector: LanguageDetector) {
+    public init(existing: Snippet?, session: SessionManager, detector: LanguageDetector,
+                suggester: (any SnippetSuggester)? = nil, knownCategories: [String] = []) {
         self.session = session
         self.detector = detector
+        self.suggester = suggester
+        self.knownCategories = knownCategories
         existingID = existing?.id
         if let existing {
             let loaded = SnippetDraft(from: existing)
@@ -73,6 +79,23 @@ public final class SnippetEditorModel {
         draft.fragments.move(fromOffsets: source, toOffset: destination)
         pinnedLanguages = Set(draft.fragments.indices.filter { draft.fragments[$0].language != "plaintext" })
         suggestions = [:]
+    }
+
+    // MARK: Suggestions
+
+    public var canSuggest: Bool { suggester != nil }
+
+    /// Fills an empty title, description and categories from the first fragment with code.
+    public func suggest() async {
+        guard let suggester, !isSuggesting,
+              let fragment = draft.fragments.first(where: { $0.code.contains { !$0.isWhitespace } }) else { return }
+        isSuggesting = true
+        defer { isSuggesting = false }
+        guard let suggestion = try? await suggester.suggest(code: fragment.code, language: fragment.language,
+                                                            knownCategories: knownCategories) else { return }
+        if draft.title.trimmingCharacters(in: .whitespaces).isEmpty { draft.title = suggestion.title }
+        if draft.description.trimmingCharacters(in: .whitespaces).isEmpty { draft.description = suggestion.description }
+        if draft.categories.isEmpty { draft.categories = suggestion.cleanCategories }
     }
 
     // MARK: Save

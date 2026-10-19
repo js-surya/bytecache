@@ -27,6 +27,13 @@ Tick each cell after trying it on that platform. "Auto" = covered by automated t
 | Spotlight finds a viewed snippet; tapping opens it | ☐ | ☐ | ☐ |
 | Settings (iOS Settings style, icon rows) | ☐ (sheet) | ☐ (sheet) | ☐ (Settings window) |
 | Appearance: Automatic / Light / Dark, accent colour | ☐ | ☐ | ☐ |
+| Markdown preview (Preview / Source) | ☐ | ☐ | ☐ |
+| App Lock: Face ID / Touch ID / passcode, timeout, privacy cover | ☐ | ☐ | ☐ |
+| API keys: list, create (shown once), delete; change password | ☐ | ☐ | ☐ |
+| Widgets: Pinned / Recent, copy button, tap to open, Locked state | ☐ (+ Lock Screen) | ☐ | ☐ |
+| Save Clipboard: Control Center / Lock Screen control (iOS 18+), Action Button & Siri shortcut | ☐ | ☐ | ☐ (shortcut) |
+| Scan code: camera (device only) / photo; Mac: image file / paste image | ☐ | ☐ | ☐ |
+| Smart suggestions (Apple Intelligence, iOS/macOS 26) | ☐ | ☐ | ☐ |
 | iCloud sync of settings + server list (needs signed build + iCloud); switch off works | ☐ | ☐ | ☐ |
 | Handoff: view snippet on one device → continue on another; web fallback; switch off works | ☐ | ☐ | ☐ |
 | Code theme (22 themes), font size, line numbers — viewer, editor, share sheet | ☐ | ☐ | ☐ |
