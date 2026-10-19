@@ -1,16 +1,20 @@
 import ByteCatchCore
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// One file of a snippet: header with copy button, then the code.
 public struct FragmentCard: View {
     let fragment: Fragment
+    var snippetTitle = ""
     @State private var copied = false
+    @State private var exporting = false
     @State private var showSource = false
 
     private var isMarkdown: Bool { MarkdownDocument.isMarkdown(language: fragment.language) }
 
-    public init(fragment: Fragment) {
+    public init(fragment: Fragment, snippetTitle: String = "") {
         self.fragment = fragment
+        self.snippetTitle = snippetTitle
     }
 
     public var body: some View {
@@ -37,6 +41,18 @@ public struct FragmentCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.separator))
         .draggable(fragment.code)
+        .contextMenu {
+            Button { Pasteboard.copy(fragment.code) } label: { Label("Copy Code", symbol: .copy) }
+            Button { exporting = true } label: { Label("Save File…", symbol: .download) }
+        }
+        .fileExporter(isPresented: $exporting,
+                      document: SnippetFileDocument(wrapper: exportFile.0),
+                      contentType: exportFile.1,
+                      defaultFilename: exportFile.0.preferredFilename) { _ in }
+    }
+
+    private var exportFile: (FileWrapper, UTType) {
+        SnippetExport.fileWrapper(for: fragment, snippetTitle: snippetTitle)
     }
 
     private var title: some View {

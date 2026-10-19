@@ -28,6 +28,7 @@ Tick each cell after trying it on that platform. "Auto" = covered by automated t
 | Settings (iOS Settings style, icon rows) | ☐ (sheet) | ☐ (sheet) | ☐ (Settings window) |
 | Appearance: Automatic / Light / Dark, accent colour | ☐ | ☐ | ☐ |
 | Markdown preview (Preview / Source) | ☐ | ☐ | ☐ |
+| Save snippet to Files (title.ext; folder for multi-file; per-card Save File…) | ☐ | ☐ | ☐ |
 | App Lock: Face ID / Touch ID / passcode, timeout, privacy cover | ☐ | ☐ | ☐ |
 | API keys: list, create (shown once), delete; change password | ☐ | ☐ | ☐ |
 | Widgets: Pinned / Recent, copy button, tap to open, Locked state | ☐ (+ Lock Screen) | ☐ | ☐ |

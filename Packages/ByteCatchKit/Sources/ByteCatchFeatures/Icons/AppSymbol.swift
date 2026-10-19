@@ -35,6 +35,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case starOff
     case newSnippet
     case share
+    case download
     case pin
     case pinFill
     case pinOff
@@ -102,6 +103,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .starOff: "star.slash"
         case .newSnippet: "square.and.pencil"
         case .share: "square.and.arrow.up"
+        case .download: "square.and.arrow.down"
         case .pin: "pin"
         case .pinFill: "pin.fill"
         case .pinOff: "pin.slash"
@@ -171,6 +173,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .starOff: "star-off"
         case .newSnippet: "square-pen"
         case .share: "share"
+        case .download: "download"
         case .pin: "pin"
         case .pinFill: "pin-fill"
         case .pinOff: "pin-off"

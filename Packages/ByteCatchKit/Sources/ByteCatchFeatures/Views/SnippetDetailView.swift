@@ -7,6 +7,8 @@ public struct SnippetDetailView: View {
     let onEdit: () -> Void
 
     @Environment(\.supportsMultipleWindows) private var supportsMultipleWindows
+    @State private var exporting = false
+    @State private var exportMessage: String?
     @Environment(\.openWindow) private var openWindow
     let showsOpenInWindow: Bool
 
@@ -48,13 +50,24 @@ public struct SnippetDetailView: View {
                     }
                 }
                 ForEach(fragments) { fragment in
-                    FragmentCard(fragment: fragment)
+                    FragmentCard(fragment: fragment, snippetTitle: snippet.title)
                 }
             }
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .navigationTitle(snippet.title)
+        .fileExporter(isPresented: $exporting,
+                      document: SnippetFileDocument(wrapper: SnippetExport.fileWrapper(for: snippet)),
+                      contentType: SnippetExport.contentType(for: snippet),
+                      defaultFilename: SnippetExport.defaultFilename(for: snippet)) { result in
+            if case .failure(let error) = result { exportMessage = error.localizedDescription }
+        }
+        .alert("Couldn't Save", isPresented: Binding(get: { exportMessage != nil }, set: { if !$0 { exportMessage = nil } })) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(exportMessage ?? "")
+        }
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
@@ -71,6 +84,9 @@ public struct SnippetDetailView: View {
                     }
                 }
                 ShareLink(item: allCode)
+                Button { exporting = true } label: {
+                    Label(snippet.fragments.count > 1 ? "Save Files…" : "Save File…", symbol: .download)
+                }
                 if showsOpenInWindow && supportsMultipleWindows {
                     Button { openWindow(value: snippet.id) } label: {
                         Label("Open in New Window", symbol: .newWindow)

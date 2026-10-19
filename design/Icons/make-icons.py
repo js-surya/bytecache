@@ -28,7 +28,7 @@ TABLE = [
     ("textSmaller", "textformat.size.smaller", "a-arrow-down"), ("textLarger", "textformat.size.larger", "a-arrow-up"),
     ("noText", "text.badge.xmark", "file-x"), ("tag", "tag", "tag"),
     ("star", "star", "star"), ("starFill", "star.fill", "star:fill"), ("starOff", "star.slash", "star-off"),
-    ("newSnippet", "square.and.pencil", "square-pen"), ("share", "square.and.arrow.up", "share"),
+    ("newSnippet", "square.and.pencil", "square-pen"), ("share", "square.and.arrow.up", "share"), ("download", "square.and.arrow.down", "download"),
     ("pin", "pin", "pin"), ("pinFill", "pin.fill", "pin:fill"), ("pinOff", "pin.slash", "pin-off"),
     ("signedOut", "person.crop.circle.badge.exclamationmark", "user-x"), ("person", "person.fill", "user"),
     ("edit", "pencil", "pencil"), ("newWindow", "macwindow.badge.plus", "app-window"),
