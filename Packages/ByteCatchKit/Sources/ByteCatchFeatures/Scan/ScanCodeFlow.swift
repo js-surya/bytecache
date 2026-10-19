@@ -21,7 +21,7 @@ struct ScanCodeFlow: ViewModifier {
         content
             .confirmationDialog("Scan Code", isPresented: $isPresented, titleVisibility: .visible) {
                 #if os(iOS)
-                if CameraScanner.isAvailable {
+                if CameraScanner.isAvailable || Self.previewCamera {
                     Button("Camera") { usingCamera = true }
                 }
                 Button("Choose Photo") { pickingPhoto = true }
@@ -49,12 +49,12 @@ struct ScanCodeFlow: ViewModifier {
                 if let data = try? Data(contentsOf: url) { run(data) }
             }
             #if os(iOS)
+            .onAppear { if Self.previewCamera { usingCamera = true } }
             .fullScreenCover(isPresented: $usingCamera) {
                 CameraScanner { data in
                     usingCamera = false
                     if let data { run(data) }
                 }
-                .ignoresSafeArea()
             }
             #endif
             .overlay {
@@ -77,6 +77,15 @@ struct ScanCodeFlow: ViewModifier {
         }
     }
 
+    /// Debug builds: `-BCScanPreview` shows the camera screen on the simulator (no camera there).
+    static var previewCamera: Bool {
+        #if DEBUG
+        ProcessInfo.processInfo.arguments.contains("-BCScanPreview")
+        #else
+        false
+        #endif
+    }
+
     #if os(macOS)
     static func pastedImage() -> Data? {
         let board = NSPasteboard.general
@@ -94,29 +103,94 @@ extension View {
 }
 
 #if os(iOS)
-/// Live camera with text highlighting (VisionKit). Capture takes a still for layout-aware recognition.
-struct CameraScanner: UIViewControllerRepresentable {
+/// Live camera with text highlighting (VisionKit) and a camera-style shutter at the bottom, where the
+/// thumb is. The shutter takes a still for layout-aware recognition.
+struct CameraScanner: View {
     let onFinish: (Data?) -> Void
+    @State private var handle = ScannerHandle()
+    @State private var capturing = false
 
     static var isAvailable: Bool {
         DataScannerViewController.isSupported && DataScannerViewController.isAvailable
     }
 
-    func makeUIViewController(context: Context) -> UINavigationController {
-        let scanner = DataScannerViewController(recognizedDataTypes: [.text()], qualityLevel: .accurate,
-                                                isHighlightingEnabled: true)
-        scanner.navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .cancel, primaryAction: UIAction { _ in onFinish(nil) })
-        scanner.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Capture", primaryAction: UIAction { [weak scanner] _ in
-            Task { @MainActor in
-                let image = try? await scanner?.capturePhoto()
-                onFinish(image?.jpegData(compressionQuality: 0.95))
+    var body: some View {
+        ZStack {
+            if Self.isAvailable {
+                ScannerView(handle: handle).ignoresSafeArea()
+            } else {
+                // Debug preview on the simulator, which has no camera.
+                Color.black.ignoresSafeArea()
             }
-        })
-        scanner.navigationItem.title = "Point at code"
-        try? scanner.startScanning()
-        return UINavigationController(rootViewController: scanner)
+            VStack(spacing: 0) {
+                HStack {
+                    Button("Cancel") { onFinish(nil) }
+                        .buttonStyle(.bordered)
+                    Spacer()
+                    Text("Point at code").font(.headline).foregroundStyle(.white)
+                        .padding(.horizontal, 12).padding(.vertical, 6)
+                        .background(.black.opacity(0.35), in: Capsule())
+                    Spacer()
+                    // Balances Cancel so the title stays centred.
+                    Button("Cancel") {}.buttonStyle(.bordered).hidden()
+                }
+                .padding(.horizontal)
+                .padding(.top, 8)
+                Spacer()
+                shutter
+                    .padding(.top, 18)
+                    .padding(.bottom, 10)
+                    .frame(maxWidth: .infinity)
+                    .background(.black.opacity(0.45))
+            }
+        }
+        .preferredColorScheme(.dark)
     }
 
-    func updateUIViewController(_ controller: UINavigationController, context: Context) {}
+    private var shutter: some View {
+        Button(action: capture) {
+            ZStack {
+                Circle().strokeBorder(.white, lineWidth: 5).frame(width: 78, height: 78)
+                Circle().fill(.white).frame(width: 64, height: 64).scaleEffect(capturing ? 0.85 : 1)
+                if capturing { ProgressView().tint(.black) }
+            }
+            .frame(width: 88, height: 88)
+            .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .disabled(capturing)
+        .accessibilityLabel("Capture")
+        .accessibilityHint("Takes a picture and reads the code in it.")
+        .animation(.easeOut(duration: 0.15), value: capturing)
+    }
+
+    private func capture() {
+        guard let scanner = handle.scanner else { return }
+        capturing = true
+        Task { @MainActor in
+            let image = try? await scanner.capturePhoto()
+            capturing = false
+            onFinish(image?.jpegData(compressionQuality: 0.95))
+        }
+    }
+}
+
+@MainActor
+final class ScannerHandle {
+    weak var scanner: DataScannerViewController?
+}
+
+private struct ScannerView: UIViewControllerRepresentable {
+    let handle: ScannerHandle
+
+    func makeUIViewController(context: Context) -> DataScannerViewController {
+        let scanner = DataScannerViewController(recognizedDataTypes: [.text()], qualityLevel: .accurate,
+                                                isHighlightingEnabled: true)
+        handle.scanner = scanner
+        try? scanner.startScanning()
+        return scanner
+    }
+
+    func updateUIViewController(_ scanner: DataScannerViewController, context: Context) {}
 }
 #endif
