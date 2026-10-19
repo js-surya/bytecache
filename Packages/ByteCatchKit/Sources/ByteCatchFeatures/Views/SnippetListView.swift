@@ -86,19 +86,18 @@ public struct SnippetListView: View {
 
     @ViewBuilder
     private var listContent: some View {
-            if model.pinnedSection.isEmpty {
-                ForEach(model.snippets) { row($0) }
-            } else {
-                Section {
-                    ForEach(model.pinnedSection) { row($0) }
-                } header: {
-                    Label("Pinned", symbol: .pinFill).foregroundStyle(.orange)
-                }
-                Section("Snippets") {
-                    ForEach(model.otherSection) { row($0) }
-                }
+        if model.pinnedSection.isEmpty {
+            ForEach(model.snippets) { row($0) }
+        } else {
+            Section {
+                ForEach(model.pinnedSection) { row($0) }
+            } header: {
+                Label("Pinned", symbol: .pinFill).foregroundStyle(.orange)
             }
-        
+            Section("Snippets") {
+                ForEach(model.otherSection) { row($0) }
+            }
+        }
     }
 
     private func row(_ snippet: Snippet) -> some View {
