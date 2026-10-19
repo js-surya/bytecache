@@ -39,7 +39,13 @@ struct MainSplitView: View {
             }
             #if DEBUG
             if ProcessInfo.processInfo.arguments.contains("-BCSelectFirst") { selectedSnippet = list.snippets.first?.id }
-            if ProcessInfo.processInfo.arguments.contains("-BCNewSnippet"), editor == nil { startEditing(nil) }
+            if ProcessInfo.processInfo.arguments.contains("-BCNewSnippet"), editor == nil {
+                startEditing(nil)
+                if let code = ProcessInfo.processInfo.environment["BC_DEBUG_CODE"], let editor {
+                    editor.draft.fragments[0].code = code
+                    editor.codeChanged(fragment: 0)
+                }
+            }
             #endif
         }
         .userActivity(SnippetActivity.type, isActive: services.settings.handoffEnabled && selected != nil) { activity in

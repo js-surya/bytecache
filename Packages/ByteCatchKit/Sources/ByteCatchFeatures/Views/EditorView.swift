@@ -46,13 +46,10 @@ public struct EditorView: View {
                         suggestions: model.suggestions[index] ?? []
                     ) { model.setLanguage($0, fragment: index) }
                     SecretWarning(text: text(index, \.code))
-                    TextEditor(text: text(index, \.code))
-                        .codeEditorStyle()
-                        .autocorrectionDisabled()
-                        #if os(iOS)
-                        .textInputAutocapitalization(.never)
-                        #endif
-                        .frame(minHeight: 160)
+                    CodeEditorView(text: text(index, \.code),
+                                   language: model.draft.fragments[safe: index]?.language ?? "plaintext")
+                        .frame(minHeight: 240, idealHeight: 360)
+                        .listRowInsets(EdgeInsets(top: 6, leading: 6, bottom: 6, trailing: 6))
                         .onChange(of: model.draft.fragments[safe: index]?.code) { model.codeChanged(fragment: index) }
                 } header: {
                     HStack {

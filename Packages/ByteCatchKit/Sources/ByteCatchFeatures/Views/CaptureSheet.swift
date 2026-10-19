@@ -29,13 +29,9 @@ public struct CaptureSheet: View {
                 Section { SecretWarning(text: $model.text) }
             }
             Section("Code") {
-                TextEditor(text: $model.text)
-                    .codeEditorStyle()
-                    .autocorrectionDisabled()
-                    #if os(iOS)
-                    .textInputAutocapitalization(.never)
-                    #endif
-                    .frame(minHeight: 120, maxHeight: 220)
+                CodeEditorView(text: $model.text, language: model.language)
+                    .frame(minHeight: 140, idealHeight: 220, maxHeight: 260)
+                    .listRowInsets(EdgeInsets(top: 6, leading: 6, bottom: 6, trailing: 6))
                     .onChange(of: model.text) { model.textChanged() }
                 if !model.text.contains(where: { !$0.isWhitespace }) {
                     Text("Select the code first, then share.").font(.footnote).foregroundStyle(.secondary)
