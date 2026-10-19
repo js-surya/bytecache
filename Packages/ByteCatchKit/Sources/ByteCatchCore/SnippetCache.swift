@@ -79,7 +79,9 @@ public final class SnippetCache {
         }
         let descriptor = FetchDescriptor(predicate: predicate, sortBy: [SortDescriptor(\.updatedAt, order: .reverse)])
         let snippets = ((try? context.fetch(descriptor)) ?? []).compactMap(decode)
-        return sorted(snippets.filter { matches($0, query) }, by: query.sort)
+        // Pinned first, like the server.
+        let ordered = sorted(snippets.filter { matches($0, query) }, by: query.sort)
+        return ordered.filter(\.isPinned) + ordered.filter { !$0.isPinned }
     }
 
     public func snippet(id: Int, server: ServerURL) -> Snippet? {

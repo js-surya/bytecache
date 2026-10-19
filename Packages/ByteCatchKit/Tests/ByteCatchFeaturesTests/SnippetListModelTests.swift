@@ -110,6 +110,44 @@ final class SnippetListModelTests: XCTestCase {
 }
 
 @MainActor
+final class PinnedOrderTests: XCTestCase {
+    private func ids(_ model: SnippetListModel) -> [Int] { model.snippets.map(\.id) }
+
+    func testPinningMovesToTopAndUnpinningMovesBelowPinned() async {
+        let page = TestJSON.page([TestJSON.snippet(1, pinned: true), TestJSON.snippet(2), TestJSON.snippet(3)])
+        let (session, _) = await TestSession.signedIn([.json(page), .json("{}")])
+        let model = SnippetListModel(session: session, cache: nil)
+        await model.refresh()
+        await model.togglePin(model.snippets[2])
+        XCTAssertEqual(ids(model), [3, 1, 2], "newly pinned goes to the top")
+        await model.togglePin(model.snippets[0])
+        XCTAssertEqual(ids(model), [1, 3, 2], "unpinned goes below the pinned ones")
+    }
+
+    func testPinnedSplitForSections() async {
+        let page = TestJSON.page([TestJSON.snippet(1, pinned: true), TestJSON.snippet(2)])
+        let (session, _) = await TestSession.signedIn([.json(page)])
+        let model = SnippetListModel(session: session, cache: nil)
+        await model.refresh()
+        XCTAssertEqual(model.pinnedSection.map(\.id), [1])
+        XCTAssertEqual(model.otherSection.map(\.id), [2])
+        model.selection = .pinned
+        XCTAssertTrue(model.pinnedSection.isEmpty, "no Pinned header inside the Pinned list itself")
+        XCTAssertEqual(model.otherSection.map(\.id), [1, 2])
+    }
+
+    func testOfflineCacheListsPinnedFirst() async throws {
+        let cache = try SnippetCache(inMemory: true)
+        let decoder = JSONDecoder.byteStash
+        let older = try decoder.decode(Snippet.self, from: Data(TestJSON.snippet(1, pinned: true).utf8))
+        var newer = try decoder.decode(Snippet.self, from: Data(TestJSON.snippet(2).utf8))
+        newer.updatedAt = Date()
+        cache.store([older, newer], server: TestSession.server)
+        XCTAssertEqual(cache.all(server: TestSession.server, matching: SnippetQuery()).map(\.id), [1, 2])
+    }
+}
+
+@MainActor
 final class SnippetRevealTests: XCTestCase {
     func testRevealFetchesMissingSnippet() async {
         let (session, transport) = await TestSession.signedIn([.json(TestJSON.page([TestJSON.snippet(1)])), .json(TestJSON.snippet(99, title: "Far"))])

@@ -15,35 +15,17 @@ public struct SnippetListView: View {
 
     public var body: some View {
         List(selection: $selection) {
-            ForEach(model.snippets) { snippet in
-                SnippetRow(snippet: snippet)
-                    .tag(snippet.id)
-                    .task { await model.loadMoreIfNeeded(current: snippet) }
-                    .contextMenu { SnippetActions(snippet: snippet, model: model) }
-                    #if os(iOS)
-                    .swipeActions(edge: .leading) {
-                        Button { Task { await model.togglePin(snippet) } } label: {
-                            Label(snippet.isPinned ? "Unpin" : "Pin", symbol: snippet.isPinned ? .pinOff : .pin)
-                        }.tint(.orange)
-                        Button { Task { await model.toggleFavorite(snippet) } } label: {
-                            Label(snippet.isFavorite ? "Unfavorite" : "Favorite", symbol: snippet.isFavorite ? .starOff : .star)
-                        }.tint(.yellow)
-                    }
-                    .swipeActions(edge: .trailing) {
-                        if model.selection == .recycleBin {
-                            Button(role: .destructive) { Task { await model.deletePermanently(snippet) } } label: {
-                                Label("Delete Forever", symbol: .trashForever)
-                            }
-                            Button { Task { await model.restore(snippet) } } label: {
-                                Label("Restore", symbol: .restore)
-                            }.tint(.green)
-                        } else {
-                            Button(role: .destructive) { Task { await model.recycle(snippet) } } label: {
-                                Label("Recycle", symbol: .trash)
-                            }
-                        }
-                    }
-                    #endif
+            if model.pinnedSection.isEmpty {
+                ForEach(model.snippets) { row($0) }
+            } else {
+                Section {
+                    ForEach(model.pinnedSection) { row($0) }
+                } header: {
+                    Label("Pinned", symbol: .pinFill).foregroundStyle(.orange)
+                }
+                Section("Snippets") {
+                    ForEach(model.otherSection) { row($0) }
+                }
             }
         }
         .overlay {
@@ -92,6 +74,37 @@ public struct SnippetListView: View {
         } message: {
             Text(model.error ?? "")
         }
+    }
+
+    private func row(_ snippet: Snippet) -> some View {
+        SnippetRow(snippet: snippet)
+            .tag(snippet.id)
+            .task { await model.loadMoreIfNeeded(current: snippet) }
+            .contextMenu { SnippetActions(snippet: snippet, model: model) }
+            #if os(iOS)
+            .swipeActions(edge: .leading) {
+                Button { Task { await model.togglePin(snippet) } } label: {
+                    Label(snippet.isPinned ? "Unpin" : "Pin", symbol: snippet.isPinned ? .pinOff : .pin)
+                }.tint(.orange)
+                Button { Task { await model.toggleFavorite(snippet) } } label: {
+                    Label(snippet.isFavorite ? "Unfavorite" : "Favorite", symbol: snippet.isFavorite ? .starOff : .star)
+                }.tint(.yellow)
+            }
+            .swipeActions(edge: .trailing) {
+                if model.selection == .recycleBin {
+                    Button(role: .destructive) { Task { await model.deletePermanently(snippet) } } label: {
+                        Label("Delete Forever", symbol: .trashForever)
+                    }
+                    Button { Task { await model.restore(snippet) } } label: {
+                        Label("Restore", symbol: .restore)
+                    }.tint(.green)
+                } else {
+                    Button(role: .destructive) { Task { await model.recycle(snippet) } } label: {
+                        Label("Recycle", symbol: .trash)
+                    }
+                }
+            }
+            #endif
     }
 }
 

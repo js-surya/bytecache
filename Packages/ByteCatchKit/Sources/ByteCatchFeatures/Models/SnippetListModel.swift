@@ -101,10 +101,32 @@ public final class SnippetListModel {
 
     // MARK: Row actions
 
+    /// Pinned snippets are shown first (as the server sorts them). Pinning moves a snippet to the
+    /// top; unpinning moves it just below the pinned ones.
     public func togglePin(_ snippet: Snippet) async {
-        await mutate(snippet, change: { $0.isPinned.toggle() }) { client, s throws(APIError) in
-            try await client.setPinned(id: s.id, s.isPinned)
+        guard let client = session.client, let index = snippets.firstIndex(where: { $0.id == snippet.id }) else { return }
+        let before = snippets
+        var updated = snippets.remove(at: index)
+        updated.isPinned.toggle()
+        let destination = updated.isPinned ? 0 : snippets.filter(\.isPinned).count
+        snippets.insert(updated, at: destination)
+        do {
+            try await client.setPinned(id: updated.id, updated.isPinned)
+            cache?.upsert(updated, server: client.server)
+        } catch {
+            snippets = before
+            handle(error, offlineQuery: nil, server: client.server)
         }
+    }
+
+    /// For a "Pinned" section header; empty inside the Pinned and Recycle Bin lists.
+    public var pinnedSection: [Snippet] {
+        guard selection != .pinned, selection != .recycleBin else { return [] }
+        return snippets.filter(\.isPinned)
+    }
+
+    public var otherSection: [Snippet] {
+        pinnedSection.isEmpty ? snippets : snippets.filter { !$0.isPinned }
     }
 
     public func toggleFavorite(_ snippet: Snippet) async {

@@ -27,6 +27,12 @@ public struct SnippetDetailView: View {
                     Text(snippet.title.isEmpty ? "Untitled snippet" : snippet.title)
                         .font(.title2.bold())
                         .textSelection(.enabled)
+                    if snippet.isPinned || snippet.isFavorite {
+                        HStack(spacing: 8) {
+                            if snippet.isPinned { StatusChip(title: "Pinned", symbol: .pinFill, color: .orange) }
+                            if snippet.isFavorite { StatusChip(title: "Favorite", symbol: .starFill, color: .yellow) }
+                        }
+                    }
                     if !snippet.description.isEmpty {
                         Text(snippet.description).foregroundStyle(.secondary).textSelection(.enabled)
                     }
@@ -57,9 +63,11 @@ public struct SnippetDetailView: View {
                 if let list {
                     Button { Task { await list.togglePin(snippet) } } label: {
                         Label(snippet.isPinned ? "Unpin" : "Pin", symbol: snippet.isPinned ? .pinFill : .pin)
+                            .foregroundStyle(snippet.isPinned ? AnyShapeStyle(.orange) : AnyShapeStyle(.tint))
                     }
                     Button { Task { await list.toggleFavorite(snippet) } } label: {
                         Label(snippet.isFavorite ? "Unfavorite" : "Favorite", symbol: snippet.isFavorite ? .starFill : .star)
+                            .foregroundStyle(snippet.isFavorite ? AnyShapeStyle(.yellow) : AnyShapeStyle(.tint))
                     }
                 }
                 ShareLink(item: allCode)
@@ -71,5 +79,20 @@ public struct SnippetDetailView: View {
                 Button(action: onEdit) { Label("Edit", symbol: .edit) }
             }
         }
+    }
+}
+
+/// "Pinned" / "Favorite" label under a snippet's title.
+struct StatusChip: View {
+    let title: String
+    let symbol: AppSymbol
+    let color: Color
+
+    var body: some View {
+        Label { Text(title) } icon: { Icon(symbol, size: 12) }
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(color)
+            .padding(.horizontal, 8).padding(.vertical, 3)
+            .background(color.opacity(0.15), in: Capsule())
     }
 }
