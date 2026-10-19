@@ -85,3 +85,34 @@ final class SnippetExportWriteTests: XCTestCase {
         XCTAssertEqual(try String(contentsOf: target.appending(path: "style.css"), encoding: .utf8), "p{}")
     }
 }
+
+final class SnippetExportChoiceTests: XCTestCase {
+    private let snippet = Snippet(
+        id: 1, title: "My App", description: "", updatedAt: nil, expiryDate: nil, isPublic: false, isPinned: false,
+        isFavorite: false, categories: [],
+        fragments: [Fragment(id: 10, fileName: "app.js", code: "a", language: "javascript", position: 0),
+                    Fragment(id: 11, fileName: "main", code: "b", language: "css", position: 1)],
+        shareCount: 0)
+
+    func testChoicesListAllThenEachFileWithItsSavedName() {
+        let choices = SnippetExport.choices(for: snippet)
+        XCTAssertEqual(choices.map(\.title), ["All Files (Folder)", "app.js", "My App.css"])
+    }
+
+    func testEachChoiceProducesTheRightFile() {
+        let choices = SnippetExport.choices(for: snippet)
+        let all = choices[0].export()
+        XCTAssertTrue(all.wrapper.isDirectory)
+        XCTAssertEqual(all.contentType, .folder)
+        let css = choices[2].export()
+        XCTAssertEqual(css.wrapper.preferredFilename, "My App.css")
+        XCTAssertEqual(css.wrapper.regularFileContents, Data("b".utf8))
+        XCTAssertTrue(css.contentType.conforms(to: .text))
+    }
+
+    func testSingleFileSnippetHasOneChoice() {
+        var one = snippet
+        one.fragments = [snippet.fragments[0]]
+        XCTAssertEqual(SnippetExport.choices(for: one).map(\.title), ["My App.js"])
+    }
+}

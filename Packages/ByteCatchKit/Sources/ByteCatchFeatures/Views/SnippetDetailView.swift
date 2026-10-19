@@ -8,6 +8,7 @@ public struct SnippetDetailView: View {
 
     @Environment(\.supportsMultipleWindows) private var supportsMultipleWindows
     @State private var exporting = false
+    @State private var exportFile: ExportFile?
     @State private var exportMessage: String?
     @Environment(\.openWindow) private var openWindow
     let showsOpenInWindow: Bool
@@ -17,6 +18,15 @@ public struct SnippetDetailView: View {
         self.list = list
         self.showsOpenInWindow = showsOpenInWindow
         self.onEdit = onEdit
+    }
+
+    private var wholeSnippet: ExportFile {
+        ExportFile(wrapper: SnippetExport.fileWrapper(for: snippet), contentType: SnippetExport.contentType(for: snippet))
+    }
+
+    private func save(_ choice: ExportChoice) {
+        exportFile = choice.export()
+        exporting = true
     }
 
     private var fragments: [Fragment] { snippet.fragments.sorted { $0.position < $1.position } }
@@ -58,9 +68,9 @@ public struct SnippetDetailView: View {
         }
         .navigationTitle(snippet.title)
         .fileExporter(isPresented: $exporting,
-                      document: SnippetFileDocument(wrapper: SnippetExport.fileWrapper(for: snippet)),
-                      contentType: SnippetExport.contentType(for: snippet),
-                      defaultFilename: SnippetExport.defaultFilename(for: snippet)) { result in
+                      document: SnippetFileDocument(wrapper: (exportFile ?? wholeSnippet).wrapper),
+                      contentType: (exportFile ?? wholeSnippet).contentType,
+                      defaultFilename: (exportFile ?? wholeSnippet).filename) { result in
             if case .failure(let error) = result { exportMessage = error.localizedDescription }
         }
         .alert("Couldn't Save", isPresented: Binding(get: { exportMessage != nil }, set: { if !$0 { exportMessage = nil } })) {
@@ -84,8 +94,18 @@ public struct SnippetDetailView: View {
                     }
                 }
                 ShareLink(item: allCode)
-                Button { exporting = true } label: {
-                    Label(snippet.fragments.count > 1 ? "Save Files…" : "Save File…", symbol: .download)
+                let choices = SnippetExport.choices(for: snippet)
+                if choices.count > 1 {
+                    Menu {
+                        ForEach(choices) { choice in
+                            Button(choice.id == "all" ? "\(choice.title)…" : choice.title) { save(choice) }
+                            if choice.id == "all" { Divider() }
+                        }
+                    } label: {
+                        Label("Save", symbol: .download)
+                    }
+                } else if let only = choices.first {
+                    Button { save(only) } label: { Label("Save File…", symbol: .download) }
                 }
                 if showsOpenInWindow && supportsMultipleWindows {
                     Button { openWindow(value: snippet.id) } label: {

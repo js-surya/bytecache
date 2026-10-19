@@ -116,3 +116,42 @@ public struct SnippetFileDocument: FileDocument {
         wrapper
     }
 }
+
+/// A file (or folder) ready for `fileExporter`.
+public struct ExportFile {
+    public let wrapper: FileWrapper
+    public let contentType: UTType
+    public var filename: String { wrapper.preferredFilename ?? "snippet" }
+}
+
+/// One entry in the Save menu: the whole snippet, or a single file of it.
+public struct ExportChoice: Identifiable {
+    public let id: String
+    public let title: String
+    private let make: () -> ExportFile
+
+    init(id: String, title: String, make: @escaping () -> ExportFile) {
+        self.id = id
+        self.title = title
+        self.make = make
+    }
+
+    public func export() -> ExportFile { make() }
+}
+
+extension SnippetExport {
+    /// Single-file snippets: one choice. Several files: "All Files (Folder)", then each file by its saved name.
+    public static func choices(for snippet: Snippet) -> [ExportChoice] {
+        let whole = ExportChoice(id: "all", title: snippet.fragments.count > 1 ? "All Files (Folder)" : fileName(for: snippet)) {
+            ExportFile(wrapper: fileWrapper(for: snippet), contentType: contentType(for: snippet))
+        }
+        guard snippet.fragments.count > 1 else { return [whole] }
+        let files = snippet.fragments.sorted { $0.position < $1.position }.map { fragment in
+            let (wrapper, type) = fileWrapper(for: fragment, snippetTitle: snippet.title)
+            return ExportChoice(id: "fragment-\(fragment.id)", title: wrapper.preferredFilename ?? "file") {
+                ExportFile(wrapper: fileWrapper(for: fragment, snippetTitle: snippet.title).0, contentType: type)
+            }
+        }
+        return [whole] + files
+    }
+}
