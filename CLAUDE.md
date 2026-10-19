@@ -5,7 +5,7 @@ Unofficial native ByteStash client for iPhone, iPad and Mac (SwiftUI, one codeba
 - Design: `docs/superpowers/specs/2026-10-18-bytecatch-design.md`
 - Plan (work task by task, TDD, commit per task): `docs/superpowers/plans/2026-10-18-bytecatch.md`
 - Batch 2 plan: `docs/superpowers/plans/2026-10-19-batch2.md` (all done).
-- All 15 plan tasks are implemented on branch `feature/bytecatch-v1`; progress ledger in `.superpowers/sdd/2026-10-18-bytecatch/progress.md`. Remaining: manual parity pass (`docs/PARITY_CHECKLIST.md`).
+- Work on `main` (GitHub: js-surya/bytecatch); use a short branch per Linear issue (e.g. `cp-14-report-a-bug`) and merge into `main`. All 15 plan tasks are done; progress ledger in `.superpowers/sdd/2026-10-18-bytecatch/progress.md`. Remaining: manual parity pass (`docs/PARITY_CHECKLIST.md`).
 
 ## Layout
 - `Packages/ByteCatchKit` — all logic. `ByteCatchCore` (API, auth, cache), `ByteCatchLanguage` (detection), `ByteCatchFeatures` (view models + shared SwiftUI views). New files here need no project changes.
