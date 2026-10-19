@@ -1,0 +1,44 @@
+name: Bug report
+description: Something in ByteCatch doesn't work as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please don't paste API keys, tokens, passwords or private code.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you see, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open …
+        2. Tap …
+        3. See …
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Device
+      options: [iPhone, iPad, Mac]
+      multiple: true
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: ByteCatch version (Settings → About), OS version and ByteStash server version
+      placeholder: ByteCatch 1.0 (1), iOS 26.1, ByteStash 1.6.0
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Optional. Remove anything private first.

@@ -1,27 +1,103 @@
-# ByteCatch
+<p align="center">
+  <img src="docs/screenshots/icon.png" width="128" height="128" alt="ByteCatch app icon">
+</p>
 
-An unofficial native client for [ByteStash](https://github.com/jordan-dalby/ByteStash), the self-hosted code snippet manager, for iPhone, iPad and Mac.
+<h1 align="center">ByteCatch</h1>
 
-- **Catch code from anywhere:** select code in Safari or any app → Share → ByteCatch. The language is detected on-device.
-- **Browse and copy:** search, filter by language/category, pinned, favorites, recycle bin, syntax highlighting, copy per file.
-- **Edit:** multi-file snippets, categories, public flag.
-- **Native everywhere:** three-column layout on iPad and Mac, keyboard shortcuts, drag and drop, multiple windows, Shortcuts/Siri/Spotlight, offline reading.
+<p align="center">
+  A native iPhone, iPad and Mac client for <a href="https://github.com/jordan-dalby/ByteStash">ByteStash</a>, the self-hosted code snippet manager.<br>
+  Catch code from anywhere, find it again, and copy it in one tap.
+</p>
 
-ByteCatch is not affiliated with the ByteStash project. It talks to ByteStash's HTTP API and contains no ByteStash code.
+<p align="center">
+  <img alt="Platforms" src="https://img.shields.io/badge/platforms-iOS%20%7C%20iPadOS%20%7C%20macOS-blue">
+  <img alt="Swift" src="https://img.shields.io/badge/Swift-6-orange">
+  <img alt="SwiftUI" src="https://img.shields.io/badge/UI-SwiftUI-informational">
+  <img alt="Data collected" src="https://img.shields.io/badge/data%20collected-none-brightgreen">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/editor-light.png" width="240" alt="Code editor with syntax colouring and line numbers">
+  <img src="docs/screenshots/editor-dark.png" width="240" alt="The same editor in dark mode">
+  <img src="docs/screenshots/settings.png" width="240" alt="Settings in the style of the iOS Settings app">
+</p>
+<p align="center">
+  <img src="docs/screenshots/ipad.png" width="600" alt="iPad: snippet list and a highlighted snippet side by side">
+</p>
+
+> ByteCatch is an independent, unofficial app. It is not affiliated with the ByteStash project, talks only to ByteStash's HTTP API and contains no ByteStash code.
+
+## Features
+
+**Capture**
+- Share sheet from Safari or any app: select code → Share → ByteCatch
+- Save what's on the clipboard from Control Center, the Lock Screen, the Action Button or Siri
+- Scan code with the camera or from a photo or screenshot, on the device
+- Saved while offline? It uploads by itself when you're back online
+- Warns before you save something that looks like a password or API key
+
+**Find and use**
+- On-device language detection (rules plus a Core ML model, 94% top-1)
+- Search, filter by language or category, pinned, favourites, most used, recycle bin
+- Syntax highlighting in 22 editor themes (GitHub, Dracula, Monokai, Nord, …)
+- Copy any file in one tap, save it as a file with the right extension, or share a link with a QR code
+- Widgets, Spotlight, Shortcuts, Handoff, and a Markdown preview
+
+**Edit**
+- A real code editor: live colouring, line numbers, auto-indent, auto-closing brackets, matching-bracket highlight, find and replace
+- Multi-file snippets, categories, public snippets, bulk actions
+- Title and tag suggestions and "Explain this snippet" with Apple Intelligence (iOS / macOS 26)
+
+**Yours**
+- Several servers, password or API-key login, App Lock with Face ID or Touch ID
+- Backup to ZIP or JSON; import from GitHub Gists, VS Code snippet files and folders of code
+- iCloud sync of settings and your server list (never logins or code)
+- Same features on iPhone, iPad and Mac (native macOS, not Catalyst)
+
+## Requirements
+
+- A [ByteStash](https://github.com/jordan-dalby/ByteStash) server (tested with v1.6), or the public demo to try it out
+- iOS / iPadOS 17 or later, macOS 14 or later; some features need iOS / macOS 18 or 26
 
 ## Build
-Requirements: Xcode 27+, XcodeGen (`brew install xcodegen`).
+
+You need Xcode 27 or later and [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`).
 
 ```sh
-cp Config/Signing.xcconfig.example Config/Signing.xcconfig   # set your Team ID
+git clone https://github.com/js-surya/bytecatch.git
+cd bytecatch
+cp Config/Signing.xcconfig.example Config/Signing.xcconfig   # put your Apple Team ID in it
 open ByteCatch.xcodeproj
-scripts/test.sh                                            # package tests + iOS and macOS builds
 ```
 
-Try it against the public demo (don't store real code there): tap **Try the demo server**.
+To try it without your own server, tap **Try the demo server** on the first screen. It's public, so don't save real code there.
 
-## Layout
-- `Packages/ByteCatchKit` — `ByteCatchCore` (API, auth, cache), `ByteCatchLanguage` (detection), `ByteCatchFeatures` (view models, shared SwiftUI).
-- `App/`, `ShareExtension-iOS/`, `ShareExtension-macOS/` — thin targets.
-- `Tools/LanguageModelTrainer` — reproducible training of the language model (sources and licenses in `Packages/ByteCatchKit/Sources/ByteCatchLanguage/DATA.md`).
-- `docs/` — design, plan, privacy policy, App Store notes, parity checklist.
+Run all the tests and both builds:
+
+```sh
+scripts/test.sh
+```
+
+## Project layout
+
+| Path | What's there |
+|---|---|
+| `Packages/ByteCatchKit` | All the logic, as a Swift package: `ByteCatchCore` (API, login, cache, offline queue), `ByteCatchLanguage` (language detection), `ByteCatchFeatures` (view models and shared SwiftUI views) |
+| `App/` | The thin app target for iOS and macOS |
+| `ShareExtension-iOS/`, `ShareExtension-macOS/`, `Widgets/` | Extensions |
+| `Tools/LanguageModelTrainer` | Reproducible training of the language model ([data sources and licences](Packages/ByteCatchKit/Sources/ByteCatchLanguage/DATA.md)) |
+| `docs/` | Design, plans, [privacy policy](docs/PRIVACY.md) and the [parity checklist](docs/PARITY_CHECKLIST.md) |
+
+## Privacy
+
+ByteCatch collects no data: no analytics, tracking or ads, and no ByteCatch server. Your snippets only go to the ByteStash server you choose. Language detection, scanning and suggestions run on your device. Details are in the [privacy policy](docs/PRIVACY.md).
+
+## Contributing
+
+Bug reports and ideas are welcome. Please use the [issue forms](../../issues/new/choose). See [CONTRIBUTING.md](.github/CONTRIBUTING.md) before opening a pull request.
+
+## Credits
+
+Built with ❤️ by [SyntaxError](https://github.com/js-surya) and Claude.
+
+Uses [HighlightSwift](https://github.com/appstefan/HighlightSwift) (MIT), [highlight.js](https://highlightjs.org) (BSD-3-Clause) and [Lucide](https://lucide.dev) icons (ISC). The colour palettes belong to their authors.

@@ -1,0 +1,22 @@
+name: Feature request
+description: Suggest an idea for ByteCatch
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like to do?
+      description: Describe the problem or the moment where ByteCatch could help more.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: How could it work? Mockups and examples are welcome.
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Where?
+      options: [iPhone, iPad, Mac, All]
+      multiple: true
