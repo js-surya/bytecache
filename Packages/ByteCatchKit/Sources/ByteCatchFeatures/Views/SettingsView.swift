@@ -67,6 +67,12 @@ public struct SettingsView: View {
                     SettingsLabel(title: "Code Theme", symbol: .code,
                                   color: .purple, value: settings.codeTheme.name)
                 }
+                NavigationLink {
+                    HapticsSettingsView()
+                } label: {
+                    SettingsLabel(title: "Haptics", symbol: .haptics, color: .red,
+                                  value: settings.hapticsEnabled ? settings.hapticStrength.title : "Off")
+                }
             }
 
             Section {
@@ -149,6 +155,48 @@ public struct SettingsView: View {
         .listStyle(.insetGrouped)
         #endif
         .navigationTitle("Settings")
+        // A light tick whenever a setting changes (honours the Haptics setting itself).
+        .onChange(of: changeSignature) { Haptics.play(.selection) }
+    }
+
+    private struct ChangeSignature: Equatable {
+        var synced: SyncedSettings
+        var flags: [Bool]
+    }
+
+    private var changeSignature: ChangeSignature {
+        ChangeSignature(synced: settings.synced, flags: [settings.iCloudSyncEnabled, settings.handoffEnabled,
+                                                         settings.suggestionsEnabled, settings.hapticsEnabled])
+    }
+}
+
+struct HapticsSettingsView: View {
+    @Environment(AppSettings.self) private var settings
+
+    var body: some View {
+        @Bindable var settings = settings
+        List {
+            Section {
+                Toggle("Haptics", isOn: $settings.hapticsEnabled)
+                if settings.hapticsEnabled {
+                    Picker("Strength", selection: $settings.hapticStrength) {
+                        ForEach(HapticStrength.allCases) { Text($0.title).tag($0) }
+                    }
+                    .pickerStyle(.segmented)
+                }
+            } footer: {
+                #if os(macOS)
+                Text("Gentle taps when you scan code, when a scan works or fails, and when you change a setting. On Mac you feel them on a Force Touch trackpad.")
+                #else
+                Text("Gentle taps when you scan code, when a scan works or fails, and when you change a setting. Changing the strength plays a sample.")
+                #endif
+            }
+        }
+        #if os(iOS)
+        .listStyle(.insetGrouped)
+        #endif
+        .navigationTitle("Haptics")
+        .onChange(of: settings.hapticStrength) { Haptics.play(.tap) }
     }
 }
 

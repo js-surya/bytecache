@@ -145,6 +145,7 @@ struct CameraScanner: View {
             }
         }
         .preferredColorScheme(.dark)
+        .onAppear { Haptics.prepare() }
     }
 
     private var shutter: some View {
@@ -166,6 +167,7 @@ struct CameraScanner: View {
 
     private func capture() {
         guard let scanner = handle.scanner else { return }
+        Haptics.play(.tap)
         capturing = true
         Task { @MainActor in
             let image = try? await scanner.capturePhoto()

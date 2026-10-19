@@ -104,11 +104,14 @@ public final class ScanCodeModel {
                 .replacingOccurrences(of: "\\s+$", with: "", options: .regularExpression)
             guard !trimmed.isEmpty else {
                 error = "No text found in that image. Try a sharper, closer shot."
+                Haptics.play(.error)
                 return nil
             }
+            Haptics.play(.success)
             return trimmed
         } catch {
             self.error = "ByteCatch couldn't read that image."
+            Haptics.play(.error)
             return nil
         }
     }

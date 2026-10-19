@@ -44,6 +44,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case edit
     case newWindow
     case handoff
+    case haptics
     case lockOpen
     case changePassword
     case lock
@@ -115,6 +116,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .edit: "pencil"
         case .newWindow: "macwindow.badge.plus"
         case .handoff: "macbook.and.iphone"
+        case .haptics: "iphone.radiowaves.left.and.right"
         case .lockOpen: "lock.slash"
         case .changePassword: "lock.rotation"
         case .lock: "lock.fill"
@@ -188,6 +190,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .edit: "pencil"
         case .newWindow: "app-window"
         case .handoff: "monitor-smartphone"
+        case .haptics: "vibrate"
         case .lockOpen: "lock-open"
         case .changePassword: "rotate-ccw-key"
         case .lock: "lock"
