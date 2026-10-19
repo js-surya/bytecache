@@ -5,6 +5,7 @@ import SwiftUI
 public struct SettingsView: View {
     let session: SessionManager
     @Environment(AppSettings.self) private var settings
+    @Environment(AppLockModel.self) private var lock
 
     public init(session: SessionManager) {
         self.session = session
@@ -49,6 +50,15 @@ public struct SettingsView: View {
                 } label: {
                     SettingsLabel(title: "Code Theme", systemName: "chevron.left.forwardslash.chevron.right",
                                   color: .purple, value: settings.codeTheme.name)
+                }
+            }
+
+            Section {
+                NavigationLink {
+                    AppLockSettingsView(lock: lock)
+                } label: {
+                    SettingsLabel(title: "App Lock", systemName: lock.biometry.systemImage, color: .green,
+                                  value: lock.isEnabled ? lock.biometry.name : "Off")
                 }
             }
 

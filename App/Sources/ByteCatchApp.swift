@@ -10,6 +10,8 @@ struct ByteCatchApp: App {
             RootView(services: services)
                 .appSettingsStyle(services.settings)
                 .environment(services.cloudSync)
+                .environment(services.lock)
+                .appLockCover(services.lock)
         }
         .commands { SnippetCommandsMenu() }
         WindowGroup("Snippet", for: Int.self) { $id in
@@ -17,6 +19,8 @@ struct ByteCatchApp: App {
                 SnippetWindow(id: id, services: services)
                     .appSettingsStyle(services.settings)
                 .environment(services.cloudSync)
+                .environment(services.lock)
+                .appLockCover(services.lock)
             }
         }
         #if os(macOS)
@@ -26,6 +30,8 @@ struct ByteCatchApp: App {
             }
             .appSettingsStyle(services.settings)
                 .environment(services.cloudSync)
+                .environment(services.lock)
+                .appLockCover(services.lock)
             .frame(width: 520, height: 560)
         }
         #endif

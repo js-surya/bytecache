@@ -13,6 +13,7 @@ public final class AppServices {
     public let detector: LanguageDetector
     public let settings: AppSettings
     public let cloudSync: CloudSyncCoordinator
+    public let lock: AppLockModel
 
     public init(
         store: any CredentialStore = AppEnvironment.makeCredentialStore(),
@@ -20,13 +21,16 @@ public final class AppServices {
         cache: SnippetCache? = try? SnippetCache(),
         detector: LanguageDetector = LanguageDetector(),
         settings: AppSettings = AppSettings(),
-        cloud: (any KeyValueSyncStore)? = nil
+        cloud: (any KeyValueSyncStore)? = nil,
+        lock: AppLockModel = AppLockModel()
     ) {
         session = SessionManager(store: store, transport: transport)
         onboarding = OnboardingModel(session: session)
         self.cache = cache
         self.detector = detector
         self.settings = settings
+        self.lock = lock
+        lock.appDidLaunch()
         cloudSync = CloudSyncCoordinator(settings: settings, session: session, cloud: cloud ?? UbiquitousSyncStore())
     }
 }

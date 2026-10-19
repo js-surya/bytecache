@@ -47,6 +47,7 @@ targets:
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: true
         NSUserActivityTypes: [app.bytecatch.ByteCatch.snippet]
+        NSFaceIDUsageDescription: ByteCatch uses Face ID to keep your snippets private when App Lock is on.
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: true
           NSAllowsLocalNetworking: true
