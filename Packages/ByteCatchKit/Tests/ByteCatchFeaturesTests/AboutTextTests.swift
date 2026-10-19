@@ -1,8 +1,10 @@
 import XCTest
 @testable import ByteCatchFeatures
 
+/// CP-13: credits and the developer's GitHub link.
 final class AboutTextTests: XCTestCase {
-    func testTaglineMarksClientAsUnofficial() {
-        XCTAssertTrue(AboutText.tagline.localizedCaseInsensitiveContains("unofficial"))
+    func testCreditsAndGitHubLink() {
+        XCTAssertEqual(AboutText.credit, "Built with ❤️ by SyntaxError and Claude")
+        XCTAssertEqual(AboutText.developerGitHub.absoluteString, "https://github.com/js-surya")
     }
 }

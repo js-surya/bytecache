@@ -157,6 +157,9 @@ public struct SettingsView: View {
         .navigationTitle("Settings")
         // A light tick whenever a setting changes (honours the Haptics setting itself).
         .onChange(of: changeSignature) { Haptics.play(.selection) }
+        #if DEBUG
+        .modifier(DebugSettingsPage(session: session))
+        #endif
     }
 
     private struct ChangeSignature: Equatable {
@@ -169,6 +172,24 @@ public struct SettingsView: View {
                                                          settings.suggestionsEnabled, settings.hapticsEnabled])
     }
 }
+
+#if DEBUG
+/// Env `BC_SETTINGS_PAGE=about|haptics|servers` opens that page, for screenshots.
+private struct DebugSettingsPage: ViewModifier {
+    let session: SessionManager
+    @State private var page = ProcessInfo.processInfo.environment["BC_SETTINGS_PAGE"]
+
+    func body(content: Content) -> some View {
+        content.navigationDestination(isPresented: Binding(get: { page != nil }, set: { if !$0 { page = nil } })) {
+            switch page {
+            case "haptics": HapticsSettingsView()
+            case "servers": ServersView(session: session)
+            default: AboutView()
+            }
+        }
+    }
+}
+#endif
 
 struct HapticsSettingsView: View {
     @Environment(AppSettings.self) private var settings
@@ -397,6 +418,18 @@ struct AboutView: View {
                 LabeledContent("Version", value: AboutText.version)
                 Text(AboutText.tagline)
                 Text("ByteCatch is not affiliated with the ByteStash project.").foregroundStyle(.secondary)
+            }
+            Section("Credits") {
+                Text(AboutText.credit)
+                Link(destination: AboutText.developerGitHub) {
+                    HStack {
+                        Label("GitHub", symbol: .link)
+                        Spacer()
+                        Text("js-surya").foregroundStyle(.secondary)
+                    }
+                }
+                .accessibilityLabel("SyntaxError on GitHub, js-surya")
+                .accessibilityHint("Opens in your browser")
             }
             Section("Acknowledgements") {
                 Text("HighlightSwift — MIT License, © 2023 Stefan Britton")

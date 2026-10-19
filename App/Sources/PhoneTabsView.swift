@@ -125,7 +125,12 @@ struct PhoneTabsView: View {
             }
         }
         .onChange(of: tab) { searchPresented = tab == .search }
-        .onAppear { if tab == .search { searchPresented = true } }
+        .onAppear {
+            if tab == .search { searchPresented = true }
+            #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("-BCShowSettings") { showingSettings = true }
+            #endif
+        }
         .tabBarMinimizeBehavior(.onScrollDown)
         .sheet(isPresented: $showingSettings) {
             NavigationStack {
