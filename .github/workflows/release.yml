@@ -1,13 +1,17 @@
 name: Build and release
 
-# Pull requests into main: run the tests and build the iPhone/iPad and Mac apps (downloadable from the run).
-# Merges into main: if the version in project.yml has no release yet, publish one with the builds,
-# the source code and release notes. Change the version with scripts/set-version.sh X.Y.Z.
+# Features are merged into `develop` (no CI run). A release is one pull request from `develop` into `main`:
+# - the pull request runs the tests and builds the iPhone/iPad and Mac apps (downloadable from the run);
+# - merging it (a regular merge, not squash) publishes a release if the version in project.yml is new,
+#   with the builds, the source code and notes listing every change since the previous release.
+# Change the version with scripts/set-version.sh X.Y.Z. Docs-only changes don't start a run.
 on:
   pull_request:
     branches: [main]
+    paths-ignore: ['**.md', 'docs/**', '.github/ISSUE_TEMPLATE/**']
   push:
     branches: [main]
+    paths-ignore: ['**.md', 'docs/**', '.github/ISSUE_TEMPLATE/**']
   workflow_dispatch:
 
 permissions:
@@ -84,8 +88,16 @@ jobs:
           Requires iOS / iPadOS 17 or macOS 14 or later, and a [ByteStash](https://github.com/jordan-dalby/ByteStash) server (or the public demo).
           Check downloads against \`SHA256SUMS.txt\`.
           NOTES
+          # Every change since the previous release (features land on develop, so pull-request-based
+          # notes would miss them). Housekeeping commits (chore/ci/docs/test) are left out.
+          previous=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || true)
+          {
+            echo
+            echo "## What's changed"
+            git log --no-merges --format='%s' ${previous:+$previous..}HEAD \
+              | grep -vE '^(chore|ci|docs|test)(\(|:)' | sed 's/^/- /'
+          } >> notes.md
           gh release create "v$VERSION" dist/* \
             --target "$GITHUB_SHA" \
             --title "ByteCache $VERSION" \
-            --notes-file notes.md \
-            --generate-notes
+            --notes-file notes.md

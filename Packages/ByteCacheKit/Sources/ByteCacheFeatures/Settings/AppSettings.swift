@@ -149,6 +149,9 @@ extension View {
             .environment(\.iconStyle, settings.iconStyle)
             .preferredColorScheme(settings.appearance.colorScheme)
             .tint(settings.accent.color)
+            #if os(iOS)
+            .background(WindowTint(color: settings.accent.color))
+            #endif
     }
 }
 
@@ -173,3 +176,31 @@ public struct SyncedSettings: Codable, Equatable, Sendable {
         self.searchInCode = searchInCode
     }
 }
+
+#if os(iOS)
+/// SwiftUI's `.tint` doesn't reach system bar buttons such as the iPad sidebar toggle; they take
+/// the window's tint. This keeps the window's tint on the accent colour.
+private struct WindowTint: UIViewRepresentable {
+    let color: Color
+
+    func makeUIView(context: Context) -> TintingView { TintingView() }
+
+    func updateUIView(_ view: TintingView, context: Context) {
+        view.tint = UIColor(color)
+    }
+
+    final class TintingView: UIView {
+        var tint: UIColor? { didSet { apply() } }
+
+        override func didMoveToWindow() {
+            super.didMoveToWindow()
+            apply()
+        }
+
+        private func apply() {
+            guard let tint, let window, window.tintColor != tint else { return }
+            window.tintColor = tint
+        }
+    }
+}
+#endif

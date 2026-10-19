@@ -52,15 +52,11 @@ public struct SidebarView: View {
             #endif
             await model.load()
         }
-        .toolbar {
-            ToolbarItem(placement: .navigation) {
-                ServerMenu(session: session)
-            }
-        }
         #if os(iOS)
         .toolbar {
+            SettingsToolbarItem { showingSettings = true }
             ToolbarItem(placement: .topBarTrailing) {
-                Button { showingSettings = true } label: { Label("Settings", symbol: .settings) }
+                ServerMenu(session: session)
             }
         }
         .sheet(isPresented: $showingSettings) {
@@ -69,6 +65,12 @@ public struct SidebarView: View {
                     .toolbar { Button("Done") { showingSettings = false } }
             }
             .appSettingsStyle(settings)
+        }
+        #else
+        .toolbar {
+            ToolbarItem(placement: .navigation) {
+                ServerMenu(session: session)
+            }
         }
         #endif
     }

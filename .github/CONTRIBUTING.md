@@ -22,8 +22,8 @@ Thanks for helping! A few things keep the project healthy.
 Short, conventional messages such as `fix(scan): …` or `feat(editor): …`, with the issue number when there is one.
 
 ## Branches and releases
-- Every change goes on its own branch and into `main` through a pull request. Several small fixes can share one branch.
-- Each pull request is tested and built automatically; the iPhone/iPad and Mac builds can be downloaded from the run.
-- **To release:** set the new version on the branch with `scripts/set-version.sh X.Y.Z` (commit the result). When that pull request is merged, GitHub publishes release `vX.Y.Z` with the builds, the source code and release notes. Merges that don't change the version don't create a release.
-- Label pull requests `feature`, `bug` or `improvement` so they land in the right section of the release notes (`skip-changelog` leaves one out).
+- `main` holds released code. `develop` collects work for the next release.
+- Every change goes on its own branch and into **`develop`** through a pull request (several small fixes can share one branch). Run `scripts/test.sh` first; pull requests into `develop` don't use GitHub's build machines.
+- **To release:** on `develop`, set the version with `scripts/set-version.sh X.Y.Z` and commit, then open a pull request from `develop` into `main`. GitHub runs the tests and builds the iPhone/iPad and Mac apps (downloadable from the run). **Merge it with a regular merge, not squash**: GitHub then publishes release `vX.Y.Z` with the builds, the source code and notes listing every change since the previous release.
+- Docs-only changes don't start a build.
 - Build the release files locally with `scripts/package-release.sh`.

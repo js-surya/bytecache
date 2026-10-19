@@ -171,12 +171,9 @@ struct PhoneTabsView: View {
         }
     }
 
-    /// Settings from every tab, top left — the usual iPhone spot for account and settings.
-    @ToolbarContentBuilder
-    private var settingsButton: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button { showingSettings = true } label: { Label("Settings", symbol: .settings) }
-        }
+    /// Settings from every tab, top left (shared with the Library, so its place can't drift).
+    private var settingsButton: SettingsToolbarItem {
+        SettingsToolbarItem { showingSettings = true }
     }
 
     private func list(_ model: SnippetListModel, selection: Binding<Snippet.ID?>) -> some View {
