@@ -69,7 +69,15 @@ struct PhoneTabsView: View {
         _pinned = State(initialValue: model(.pinned))
         _favorites = State(initialValue: model(.favorites))
         _library = State(initialValue: model(.all))
-        _search = State(initialValue: model(.all))
+        let search = model(.all)
+        #if DEBUG
+        // `-BCSearch <text>`: start with that search (screenshots; use with `-BCTab search`).
+        if let i = ProcessInfo.processInfo.arguments.firstIndex(of: "-BCSearch"),
+           ProcessInfo.processInfo.arguments.indices.contains(i + 1) {
+            search.searchText = ProcessInfo.processInfo.arguments[i + 1]
+        }
+        #endif
+        _search = State(initialValue: search)
     }
 
     var body: some View {

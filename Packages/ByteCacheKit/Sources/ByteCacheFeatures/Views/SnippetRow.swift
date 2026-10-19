@@ -4,10 +4,16 @@ import SwiftUI
 public struct SnippetRow: View {
     let snippet: Snippet
     var showOwner = false
+    /// The current search, highlighted in the title, description and code preview.
+    var search = ""
+    /// Whether the search looks inside code, so the preview can show the matching line.
+    var searchCode = false
 
-    public init(snippet: Snippet, showOwner: Bool = false) {
+    public init(snippet: Snippet, showOwner: Bool = false, search: String = "", searchCode: Bool = false) {
         self.snippet = snippet
         self.showOwner = showOwner
+        self.search = search
+        self.searchCode = searchCode
     }
 
     private var firstFragment: Fragment? {
@@ -15,7 +21,25 @@ public struct SnippetRow: View {
     }
 
     private var preview: String {
-        firstFragment?.code.split(whereSeparator: \.isNewline).first.map(String.init) ?? ""
+        if searchCode {
+            for fragment in snippet.fragments.sorted(by: { $0.position < $1.position }) {
+                if let line = SearchHighlight.matchingLine(in: fragment.code, query: search) { return line }
+            }
+        }
+        return firstFragment?.code.split(whereSeparator: \.isNewline).first.map(String.init) ?? ""
+    }
+
+    /// Shown only while it holds a match, since rows don't show descriptions otherwise.
+    private var matchingDescription: String? {
+        SearchHighlight.matchingLine(in: snippet.description, query: search)
+    }
+
+    private func highlighted(_ text: String) -> AttributedString {
+        var result = SearchHighlight.mark(text, query: search)
+        for run in result.runs where run.inlinePresentationIntent == .stronglyEmphasized {
+            result[run.range].swiftUI.backgroundColor = .yellow.opacity(0.35)
+        }
+        return result
     }
 
     public var body: some View {
@@ -24,12 +48,18 @@ public struct SnippetRow: View {
                 if snippet.isPinned { Icon(.pinFill, size: 13).foregroundStyle(.orange).imageScale(.small) }
                 if snippet.isFavorite { Icon(.starFill, size: 13).foregroundStyle(.yellow).imageScale(.small) }
                 if snippet.isPublic && !showOwner { Icon(.globe, size: 13).foregroundStyle(.blue).imageScale(.small) }
-                Text(snippet.title.isEmpty ? "Untitled snippet" : snippet.title)
+                Text(highlighted(snippet.title.isEmpty ? "Untitled snippet" : snippet.title))
                     .font(.headline)
                     .lineLimit(1)
             }
+            if let matchingDescription {
+                Text(highlighted(matchingDescription))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
             if !preview.isEmpty {
-                Text(preview)
+                Text(highlighted(preview))
                     .font(.system(.caption, design: .monospaced))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
