@@ -52,6 +52,7 @@ targets:
         CFBundleURLTypes:
           - CFBundleURLName: app.bytecatch.ByteCatch
             CFBundleURLSchemes: [bytecatch]
+        NSCameraUsageDescription: ByteCatch uses the camera to scan code so you can save it as a snippet.
         NSFaceIDUsageDescription: ByteCatch uses Face ID to keep your snippets private when App Lock is on.
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: true

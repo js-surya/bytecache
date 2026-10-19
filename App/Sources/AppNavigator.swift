@@ -8,12 +8,13 @@ final class AppNavigator {
     var pendingSnippetID: Int?
     /// Set by the Save Clipboard control/shortcut and `bytecatch://capture/clipboard`.
     var pendingClipboardCapture = false
+    var pendingScan = false
 
     func handle(_ link: DeepLink) {
         switch link {
         case .snippet(let id): pendingSnippetID = id
         case .captureClipboard: pendingClipboardCapture = true
-        case .scanCode: break
+        case .scanCode: pendingScan = true
         }
     }
 }

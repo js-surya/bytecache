@@ -174,6 +174,21 @@ struct SaveClipboardControl: ControlWidget {
 }
 #endif
 
+#if os(iOS)
+@available(iOS 18.0, *)
+struct ScanCodeControl: ControlWidget {
+    var body: some ControlWidgetConfiguration {
+        StaticControlConfiguration(kind: "app.bytecatch.scanCode") {
+            ControlWidgetButton(action: ScanCodeIntent()) {
+                Label("Scan Code", systemImage: "camera.viewfinder")
+            }
+        }
+        .displayName("Scan Code")
+        .description("Scan code from the camera into ByteCatch.")
+    }
+}
+#endif
+
 @main
 struct ByteCatchWidgets: WidgetBundle {
     var body: some Widget {
@@ -182,6 +197,7 @@ struct ByteCatchWidgets: WidgetBundle {
         #if os(iOS)
         if #available(iOS 18.0, *) {
             SaveClipboardControl()
+            ScanCodeControl()
         }
         #endif
     }

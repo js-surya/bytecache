@@ -14,6 +14,7 @@ struct MainSplitView: View {
     @State private var capture: CaptureModel?
     @State private var clipboard = ClipboardWatcher()
     @State private var clipboardEmpty = false
+    @State private var scanning = false
     @Environment(\.scenePhase) private var scenePhase
 
     init(services: AppServices) {
@@ -42,6 +43,9 @@ struct MainSplitView: View {
                     return true
                 }
                 .toolbar {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button { scanning = true } label: { Label("Scan Code", systemImage: "camera.viewfinder") }
+                    }
                     ToolbarItem(placement: .primaryAction) {
                         Button { startEditing(nil) } label: { Label("New Snippet", systemImage: "square.and.pencil") }
                     }
@@ -87,6 +91,12 @@ struct MainSplitView: View {
                 clipboardEmpty = true
             }
         }
+        .task(id: AppNavigator.shared.pendingScan) {
+            guard AppNavigator.shared.pendingScan else { return }
+            AppNavigator.shared.pendingScan = false
+            scanning = true
+        }
+        .scanCodeFlow(isPresented: $scanning) { startCapture($0) }
         .alert("Nothing to Save", isPresented: $clipboardEmpty) {
             Button("OK", role: .cancel) {}
         } message: {

@@ -84,6 +84,12 @@ struct ByteCatchShortcuts: AppShortcutsProvider {
             systemImageName: "doc.on.clipboard"
         )
         AppShortcut(
+            intent: ScanCodeIntent(),
+            phrases: ["Scan code with \(.applicationName)"],
+            shortTitle: "Scan Code",
+            systemImageName: "camera.viewfinder"
+        )
+        AppShortcut(
             intent: SearchSnippetsIntent(),
             phrases: ["Search \(.applicationName)", "Find a snippet in \(.applicationName)"],
             shortTitle: "Search Snippets",

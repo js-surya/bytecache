@@ -44,6 +44,8 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>ByteCatch uses the camera to scan code so you can save it as a snippet.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>ByteCatch uses Face ID to keep your snippets private when App Lock is on.</string>
 	<key>NSLocalNetworkUsageDescription</key>

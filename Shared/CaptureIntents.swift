@@ -13,3 +13,15 @@ struct SaveClipboardIntent: AppIntent {
         return .result()
     }
 }
+
+/// Opens ByteCatch's Scan Code options (camera or photo on iPhone/iPad, image on Mac).
+struct ScanCodeIntent: AppIntent {
+    static let title: LocalizedStringResource = "Scan Code with ByteCatch"
+    static let description = IntentDescription("Opens ByteCatch to scan code from the camera or a picture.")
+    static var openAppWhenRun: Bool { true }
+
+    func perform() async throws -> some IntentResult {
+        PendingCapture.request(.scanCode)
+        return .result()
+    }
+}
