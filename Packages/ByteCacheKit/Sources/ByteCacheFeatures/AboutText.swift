@@ -8,7 +8,8 @@ public enum AboutText {
     public static let purpose = "A client for your ByteStash server"
     public static let privacy = "ByteCache collects no data."
     public static let credit = "Built with ❤️ by SyntaxError and Claude"
-    public static let developerGitHub = URL(string: "https://github.com/js-surya")!
+    /// The project's source code (the About footer shows no account name).
+    public static let sourceCode = URL(string: "https://github.com/js-surya/bytecache")!
 
     /// What people see: "1.1.0".
     public static var displayVersion: String {

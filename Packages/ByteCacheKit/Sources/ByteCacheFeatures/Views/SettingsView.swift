@@ -215,7 +215,7 @@ public struct SettingsView: View {
 }
 
 #if DEBUG
-/// Env `BC_SETTINGS_PAGE=about|haptics|servers|report|mcp` opens that page, for screenshots.
+/// Env `BC_SETTINGS_PAGE=about|about-footer|haptics|servers|report|mcp` opens that page, for screenshots.
 private struct DebugSettingsPage: ViewModifier {
     let session: SessionManager
     @State private var page = ProcessInfo.processInfo.environment["BC_SETTINGS_PAGE"]
@@ -227,6 +227,15 @@ private struct DebugSettingsPage: ViewModifier {
             case "servers": ServersView(session: session)
             case "report": ReportBugView(model: ReportBugModel(session: session))
             case "mcp": MCPSettingsView(model: MCPSettingsModel(session: session))
+            case "about-footer":
+                SettingsList {
+                    Section {
+                        AboutFooter()
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets(top: 24, leading: 0, bottom: 24, trailing: 0))
+                    }
+                }
+                .navigationTitle("About")
             default: AboutView()
             }
         }
@@ -533,26 +542,63 @@ struct AboutView: View {
                         .navigationTitle("Devicon Licence")
                     }
                     Text("Dracula, Monokai, Nord, Gruvbox, Night Owl and Catppuccin colour palettes by their respective authors (MIT).")
+                Text("The GitHub mark is a trademark of GitHub, Inc., used to link to GitHub.")
                     Text("Language model trained on permissively licensed open-source code.").foregroundStyle(.secondary)
                 }
                 .font(.footnote)
             } header: {
                 Text("Acknowledgements")
             }
-            Section("Credits") {
-                Text(AboutText.credit)
-                Link(destination: AboutText.developerGitHub) {
-                    HStack {
-                        Label("GitHub", symbol: .link)
-                        Spacer()
-                        Text("js-surya").foregroundStyle(.secondary)
-                    }
-                }
-                .accessibilityLabel("SyntaxError on GitHub, js-surya")
-                .accessibilityHint("Opens in your browser")
+            Section {
+                AboutFooter()
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 24, leading: 0, bottom: 24, trailing: 0))
             }
         }
         .navigationTitle("About")
+    }
+}
+
+/// The sign-off at the bottom of About: app icon, name, tagline, credit and a link to the source code.
+private struct AboutFooter: View {
+    var body: some View {
+        VStack(spacing: 10) {
+            Image("about-app-icon", bundle: .module)
+                .resizable()
+                .frame(width: 64, height: 64)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
+                .accessibilityHidden(true)
+            VStack(spacing: 2) {
+                Text(AboutText.appName).font(.headline)
+                Text(AboutText.tagline).font(.subheadline).foregroundStyle(.secondary)
+            }
+            Text(AboutText.credit)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.top, 4)
+            Link(destination: AboutText.sourceCode) {
+                Label {
+                    Text("Source code")
+                } icon: {
+                    Image("brand-github", bundle: .module)
+                        .resizable()
+                        .renderingMode(.template)
+                        .frame(width: 16, height: 16)
+                }
+                .font(.subheadline.weight(.medium))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 7)
+                .background(.tint.opacity(0.12), in: Capsule())
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.tint)
+            .padding(.top, 2)
+            .accessibilityLabel("Source code on GitHub")
+            .accessibilityHint("Opens in your browser")
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 

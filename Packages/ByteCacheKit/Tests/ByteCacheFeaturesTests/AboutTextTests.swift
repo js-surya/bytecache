@@ -11,7 +11,7 @@ final class AboutTextTests: XCTestCase {
 
     func testCreditsAndGitHubLink() {
         XCTAssertEqual(AboutText.credit, "Built with ❤️ by SyntaxError and Claude")
-        XCTAssertEqual(AboutText.developerGitHub.absoluteString, "https://github.com/js-surya")
+        XCTAssertEqual(AboutText.sourceCode.absoluteString, "https://github.com/js-surya/bytecache", "links to the project, not a profile")
     }
 
     /// CP-26: people see "1.1.0"; bug reports keep the build number ("1.1.0 (12)").
