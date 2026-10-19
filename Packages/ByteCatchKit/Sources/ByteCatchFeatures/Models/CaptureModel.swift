@@ -18,6 +18,8 @@ public final class CaptureModel {
     public private(set) var isSaving = false
     public private(set) var isSuggesting = false
     public var error: String?
+    /// The last save failed offline and went to the pending queue instead.
+    public private(set) var didQueue = false
 
     public let fileName: String?
     public let sourceURL: URL?
@@ -33,12 +35,14 @@ public final class CaptureModel {
     private let detector: LanguageDetector
     private let suggester: (any SnippetSuggester)?
     private let knownCategories: [String]
+    private let queue: PendingSaveQueue?
     private let onUnauthorized: () -> Void
 
     public init(
         text: String, fileName: String? = nil, sourceURL: URL? = nil, pageTitle: String? = nil,
         client: APIClient?, detector: LanguageDetector, suggester: (any SnippetSuggester)? = nil,
-        knownCategories: [String] = [], onUnauthorized: @escaping () -> Void = {}
+        knownCategories: [String] = [], queue: PendingSaveQueue? = nil,
+        onUnauthorized: @escaping () -> Void = {}
     ) {
         self.text = text
         self.fileName = fileName
@@ -47,6 +51,7 @@ public final class CaptureModel {
         self.detector = detector
         self.suggester = suggester
         self.knownCategories = knownCategories
+        self.queue = queue
         self.onUnauthorized = onUnauthorized
         let initialTitle = Self.defaultTitle(text: text, fileName: fileName, pageTitle: pageTitle)
         title = initialTitle
@@ -107,7 +112,10 @@ public final class CaptureModel {
         do {
             return try await client.create(draft)
         } catch {
-            if error == .unauthorized {
+            if error == .offline, let queue, (try? queue.enqueue(draft, server: client.server)) != nil {
+                didQueue = true
+                self.error = nil
+            } else if error == .unauthorized {
                 onUnauthorized()
                 self.error = Self.signInMessage
             } else {

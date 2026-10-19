@@ -15,6 +15,8 @@ public final class AppServices {
     public let cloudSync: CloudSyncCoordinator
     public let lock: AppLockModel
     public let widgets: WidgetSnapshotWriter
+    /// Uploads snippets saved while offline.
+    public let saveQueue: SaveQueueFlusher
 
     public init(
         store: any CredentialStore = AppEnvironment.makeCredentialStore(),
@@ -23,7 +25,8 @@ public final class AppServices {
         detector: LanguageDetector = LanguageDetector(),
         settings: AppSettings = AppSettings(),
         cloud: (any KeyValueSyncStore)? = nil,
-        lock: AppLockModel = AppLockModel()
+        lock: AppLockModel = AppLockModel(),
+        pendingSaves: PendingSaveQueue = .shared
     ) {
         session = SessionManager(store: store, transport: transport)
         onboarding = OnboardingModel(session: session)
@@ -32,6 +35,7 @@ public final class AppServices {
         self.settings = settings
         self.lock = lock
         widgets = WidgetSnapshotWriter(session: session)
+        saveQueue = SaveQueueFlusher(session: session, queue: pendingSaves)
         lock.appDidLaunch()
         cloudSync = CloudSyncCoordinator(settings: settings, session: session, cloud: cloud ?? UbiquitousSyncStore())
     }

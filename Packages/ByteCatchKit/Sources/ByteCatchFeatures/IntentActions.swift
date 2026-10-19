@@ -4,12 +4,15 @@ import Foundation
 
 public enum IntentFailure: Error, Equatable {
     case signedOut, emptyText
+    /// Offline: kept on the device and uploaded later.
+    case queued
     case api(APIError)
 
     public var message: String {
         switch self {
         case .signedOut: "Open ByteCatch and sign in first."
         case .emptyText: "There's no code to save."
+        case .queued: "You're offline, so ByteCatch saved this on your device. It uploads automatically when you're back online."
         case .api(let error): ErrorText.message(for: error)
         }
     }
@@ -21,11 +24,12 @@ public enum IntentFailure: Error, Equatable {
 public enum IntentActions {
     public static func save(
         text: String, title: String?, language: String?, store: any CredentialStore,
-        transport: any HTTPTransport = URLSession.shared, detector: LanguageDetector
+        transport: any HTTPTransport = URLSession.shared, detector: LanguageDetector,
+        queue: PendingSaveQueue? = nil
     ) async throws(IntentFailure) -> Snippet {
         guard text.contains(where: { !$0.isWhitespace }) else { throw .emptyText }
         guard let client = client(store: store, transport: transport) else { throw .signedOut }
-        let model = CaptureModel(text: text, client: client, detector: detector) {
+        let model = CaptureModel(text: text, client: client, detector: detector, queue: queue) {
             forgetToken(in: store)
         }
         if let title, !title.trimmingCharacters(in: .whitespaces).isEmpty { model.title = title }
@@ -35,7 +39,7 @@ public enum IntentActions {
         } catch .unauthorized {
             throw .signedOut
         } catch {
-            throw .api(error)
+            throw model.didQueue ? .queued : .api(error)
         }
     }
 

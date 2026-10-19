@@ -10,6 +10,7 @@ public struct ShareFlowView: View {
         case ready(CaptureModel)
         case problem(String)
         case saved
+        case queued
     }
 
     let items: [NSExtensionItem]
@@ -29,7 +30,13 @@ public struct ShareFlowView: View {
                 case .loading:
                     ProgressView()
                 case .ready(let model):
-                    CaptureSheet(model: model) { saved in
+                    CaptureSheet(model: model, onQueued: {
+                        phase = .queued
+                        Task {
+                            try? await Task.sleep(for: .seconds(1.6))
+                            onFinish()
+                        }
+                    }) { saved in
                         if saved != nil {
                             phase = .saved
                             Task {
@@ -51,6 +58,12 @@ public struct ShareFlowView: View {
                 case .saved:
                     ContentUnavailableView("Saved to ByteCatch", symbol: .checkCircle)
                         .foregroundStyle(.green)
+                case .queued:
+                    ContentUnavailableView {
+                        Label("Saved Offline", symbol: .offline)
+                    } description: {
+                        Text("ByteCatch uploads it when you're back online.")
+                    }
                 }
             }
         }
@@ -69,7 +82,7 @@ public struct ShareFlowView: View {
             let model = CaptureModel(
                 text: payload.text, fileName: payload.fileName, sourceURL: payload.sourceURL,
                 pageTitle: payload.pageTitle, client: client, detector: LanguageDetector(),
-                suggester: settings.suggester
+                suggester: settings.suggester, queue: .shared
             ) {
                 // Token rejected: forget it so the app shows login next time; keep the server.
                 if let credentials { try? store.save(credentials.signedOut) }

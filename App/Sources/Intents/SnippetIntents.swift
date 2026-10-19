@@ -33,7 +33,7 @@ struct SaveToByteCatchIntent: AppIntent {
         do {
             let snippet = try await IntentActions.save(
                 text: text, title: snippetTitle, language: language,
-                store: AppEnvironment.makeCredentialStore(), detector: LanguageDetector()
+                store: AppEnvironment.makeCredentialStore(), detector: LanguageDetector(), queue: .shared
             )
             return .result(value: snippet.title, dialog: "Saved “\(snippet.title)”.")
         } catch {

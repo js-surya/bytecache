@@ -1,6 +1,6 @@
 import Foundation
 
-public struct FragmentDraft: Encodable, Equatable, Sendable {
+public struct FragmentDraft: Codable, Equatable, Sendable {
     public var fileName: String
     public var code: String
     public var language: String
@@ -18,7 +18,7 @@ public struct FragmentDraft: Encodable, Equatable, Sendable {
 
 /// Body for `POST /api/snippets` and `PUT /api/snippets/:id`.
 /// PUT replaces everything, so a draft always carries every field including `is_public`.
-public struct SnippetDraft: Encodable, Equatable, Sendable {
+public struct SnippetDraft: Codable, Equatable, Sendable {
     public var title: String
     public var description: String
     public var categories: [String]
@@ -60,5 +60,15 @@ public struct SnippetDraft: Encodable, Equatable, Sendable {
         try c.encode(categories, forKey: .categories)
         try c.encode(fragments, forKey: .fragments)
         try c.encode(isPublic ? 1 : 0, forKey: .isPublic)
+    }
+
+    /// Reads back what `encode` wrote (used by the offline save queue).
+    public init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        title = try c.decode(String.self, forKey: .title)
+        description = try c.decode(String.self, forKey: .description)
+        categories = try c.decode([String].self, forKey: .categories)
+        fragments = try c.decode([FragmentDraft].self, forKey: .fragments)
+        isPublic = try c.decode(Int.self, forKey: .isPublic) != 0
     }
 }

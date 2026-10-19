@@ -6,10 +6,14 @@ public struct CaptureSheet: View {
     @Bindable var model: CaptureModel
     let knownCategories: [String]
     let onDone: (Snippet?) -> Void
+    let onQueued: () -> Void
 
-    public init(model: CaptureModel, knownCategories: [String] = [], onDone: @escaping (Snippet?) -> Void) {
+    /// `onQueued` runs when the save went to the offline queue instead of the server.
+    public init(model: CaptureModel, knownCategories: [String] = [], onQueued: @escaping () -> Void = {},
+                onDone: @escaping (Snippet?) -> Void) {
         self.model = model
         self.knownCategories = knownCategories
+        self.onQueued = onQueued
         self.onDone = onDone
     }
 
@@ -80,7 +84,13 @@ public struct CaptureSheet: View {
                     ProgressView()
                 } else {
                     Button("Save") {
-                        Task { if let saved = try? await model.save() { onDone(saved) } }
+                        Task {
+                            if let saved = try? await model.save() {
+                                onDone(saved)
+                            } else if model.didQueue {
+                                onQueued()
+                            }
+                        }
                     }
                     .disabled(!model.canSave)
                     .keyboardShortcut("s", modifiers: .command)

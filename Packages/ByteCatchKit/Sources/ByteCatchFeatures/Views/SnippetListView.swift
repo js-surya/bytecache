@@ -6,6 +6,7 @@ public struct SnippetListView: View {
     @Binding var selection: Snippet.ID?
     let showsSearchField: Bool
     @Environment(AppSettings.self) private var settings
+    @Environment(SaveQueueFlusher.self) private var saveQueue: SaveQueueFlusher?
 
     /// `showsSearchField: false` when a Search tab owns searching (iPhone tab layout).
     public init(model: SnippetListModel, selection: Binding<Snippet.ID?>, showsSearchField: Bool = true) {
@@ -86,6 +87,9 @@ public struct SnippetListView: View {
 
     @ViewBuilder
     private var listContent: some View {
+        if let saveQueue, saveQueue.pendingCount > 0, model.selection == .all, !model.isSelecting {
+            Section { PendingSavesRow(flusher: saveQueue) }
+        }
         if model.pinnedSection.isEmpty {
             ForEach(model.snippets) { row($0) }
         } else {

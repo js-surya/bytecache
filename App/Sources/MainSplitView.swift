@@ -85,11 +85,26 @@ struct MainSplitView: View {
             if await list.reveal(id: id) { selectedSnippet = id }
             AppNavigator.shared.pendingSnippetID = nil
         }
-        .onChange(of: scenePhase) { if scenePhase == .active { clipboard.check() } }
+        .onChange(of: scenePhase) {
+            guard scenePhase == .active else { return }
+            clipboard.check()
+            Task { await services.saveQueue.flush() }
+        }
+        .task {
+            services.saveQueue.startMonitoring()
+            await services.saveQueue.flush()
+        }
+        .onChange(of: services.saveQueue.uploadedGeneration) {
+            Task { await list.refresh(); await sidebar.load() }
+        }
+        .environment(services.saveQueue)
         .focusedSceneValue(\.snippetCommands, commands)
         .sheet(item: $capture) { model in
             NavigationStack {
-                CaptureSheet(model: model, knownCategories: sidebar.categories) { saved in
+                CaptureSheet(model: model, knownCategories: sidebar.categories, onQueued: {
+                    services.saveQueue.refresh()
+                    capture = nil
+                }) { saved in
                     if let saved {
                         list.didSave(saved)
                         selectedSnippet = saved.id
@@ -198,7 +213,8 @@ struct MainSplitView: View {
     private func startCapture(_ text: String) {
         let session = services.session
         capture = CaptureModel(text: text, client: session.client, detector: services.detector,
-                               suggester: services.settings.suggester, knownCategories: sidebar.categories) {
+                               suggester: services.settings.suggester, knownCategories: sidebar.categories,
+                               queue: .shared) {
             session.handleUnauthorized()
         }
     }
