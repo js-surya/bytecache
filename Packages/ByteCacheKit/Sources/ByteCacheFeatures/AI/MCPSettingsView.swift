@@ -15,6 +15,7 @@ struct MCPSettingsView: View {
                         Spacer()
                         Button { Pasteboard.copy(endpoint.absoluteString) } label: { Label("Copy", symbol: .copy) }
                             .labelStyle(.iconOnly)
+                            .buttonStyle(.borderless)
                             .accessibilityLabel("Copy endpoint")
                     }
                 }
@@ -22,14 +23,16 @@ struct MCPSettingsView: View {
                     Label {
                         Text("This server is on a private network, so it works with assistants on your own devices (Claude Code, Claude Desktop, Cursor, VS Code). Web assistants like Claude.ai, ChatGPT and Perplexity connect from their company's servers and can't reach it unless you make ByteStash reachable from the internet, for example with Tailscale Funnel.")
                     } icon: {
-                        Icon(.info)
+                        Icon(.infoCircle)
                     }
+                    .labelStyle(NoticeLabelStyle())
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                 }
                 if !model.isHTTPS {
                     Label("Assistants outside your network need an HTTPS address. Put ByteStash behind HTTPS to use them.",
                           symbol: .warning)
+                        .labelStyle(NoticeLabelStyle())
                         .font(.footnote)
                         .foregroundStyle(.orange)
                 }
@@ -113,6 +116,16 @@ struct MCPSettingsView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(model.error ?? "")
+        }
+    }
+}
+
+/// Icon aligned with the first line of a multi-line notice (the default label centres it on Mac).
+private struct NoticeLabelStyle: LabelStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            configuration.icon
+            configuration.title.fixedSize(horizontal: false, vertical: true)
         }
     }
 }

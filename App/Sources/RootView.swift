@@ -18,12 +18,23 @@ struct RootView: View {
 
     let services: AppServices
     @State private var restored = false
+
+    /// Debug: `-BCLoadingPreview` shows only the loading animation (screenshots).
+    private static var previewLoading: Bool {
+        #if DEBUG
+        ProcessInfo.processInfo.arguments.contains("-BCLoadingPreview")
+        #else
+        false
+        #endif
+    }
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         Group {
-            if !restored {
-                ProgressView()
+            if Self.previewLoading {
+                LoadingMark("Loading snippets…")
+            } else if !restored {
+                LoadingMark()
             } else {
                 switch services.session.state {
                 case .needsServer:
@@ -43,6 +54,19 @@ struct RootView: View {
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active, let link = PendingCapture.consume() { AppNavigator.shared.handle(link) }
+            if phase == .active { Task { await services.updates.appBecameActive() } }
+        }
+        .sheet(item: Bindable(services.updates).offered) { release in
+            UpdateSheet(release: release, kind: .update, current: services.updates.runningVersion) {
+                services.updates.skipOffered()
+            }
+            .appSettingsStyle(services.settings)
+        }
+        .background {
+            // A second sheet needs its own anchor view.
+            Color.clear.sheet(item: Bindable(services.updates).whatsNew) { release in
+                UpdateSheet(release: release, kind: .whatsNew).appSettingsStyle(services.settings)
+            }
         }
         .onChange(of: services.session.state) {
             if case .signedIn = services.session.state { return }
@@ -54,6 +78,7 @@ struct RootView: View {
         }
         .task {
             guard !restored else { return }
+            Task { await services.updates.appBecameActive() }
             await services.session.restore()
             #if DEBUG
             // `-BCDemoLogin` launch argument: sign in to the public demo (screenshots, quick checks).
@@ -68,6 +93,15 @@ struct RootView: View {
                let server = env["BC_DEBUG_SERVER"], let key = env["BC_DEBUG_API_KEY"] {
                 try? await services.session.connect(server)
                 try? await services.session.loginWithAPIKey(key)
+            }
+            // `-BCCopyToast`: show the "Copied" toast every 3 s (screenshots).
+            if ProcessInfo.processInfo.arguments.contains("-BCCopyToast") {
+                Task {
+                    while true {
+                        try? await Task.sleep(for: .seconds(3))
+                        CopyFeedback.copied()
+                    }
+                }
             }
             // `-BCOpenSnippet <id>`: open a snippet once signed in (screenshots).
             if let i = ProcessInfo.processInfo.arguments.firstIndex(of: "-BCOpenSnippet"),

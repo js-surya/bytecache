@@ -13,12 +13,14 @@ final class SettingsPersistenceTests: XCTestCase {
         first.iconStyle = .lucide
         first.searchInCode = true
         first.showLineNumbers = false
+        first.wrapLines = true
         first.codeFontSize = 18
         first.iCloudSyncEnabled = false
         first.handoffEnabled = false
         first.suggestionsEnabled = false
         first.hapticsEnabled = false
         first.hapticStrength = .strong
+        first.languageIconStyle = .monochrome
         let second = AppSettings(defaults: defaults)
         XCTAssertEqual(second.appearance, .dark)
         XCTAssertEqual(second.accent, .orange)
@@ -26,12 +28,15 @@ final class SettingsPersistenceTests: XCTestCase {
         XCTAssertEqual(second.iconStyle, .lucide)
         XCTAssertTrue(second.searchInCode)
         XCTAssertFalse(second.showLineNumbers)
+        XCTAssertTrue(second.wrapLines)
         XCTAssertEqual(second.codeFontSize, 18)
         XCTAssertFalse(second.iCloudSyncEnabled)
         XCTAssertFalse(second.handoffEnabled)
         XCTAssertFalse(second.suggestionsEnabled)
         XCTAssertFalse(second.hapticsEnabled)
         XCTAssertEqual(second.hapticStrength, .strong)
+        XCTAssertEqual(second.languageIconStyle, .monochrome)
+        XCTAssertEqual(AppSettings(defaults: UserDefaults(suiteName: UUID().uuidString)!).languageIconStyle, .color, "colour by default")
     }
 
     func testSettingsSectionsHaveHeaders() {

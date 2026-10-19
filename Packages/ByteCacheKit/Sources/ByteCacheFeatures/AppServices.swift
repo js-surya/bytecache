@@ -17,6 +17,8 @@ public final class AppServices {
     public let widgets: WidgetSnapshotWriter
     /// Uploads snippets saved while offline.
     public let saveQueue: SaveQueueFlusher
+    /// New releases on GitHub, and What's New after an update.
+    public let updates: UpdateModel
 
     public init(
         store: any CredentialStore = AppEnvironment.makeCredentialStore(),
@@ -36,7 +38,21 @@ public final class AppServices {
         self.lock = lock
         widgets = WidgetSnapshotWriter(session: session)
         saveQueue = SaveQueueFlusher(session: session, queue: pendingSaves)
+        updates = UpdateModel(settings: settings, checker: Self.makeUpdateChecker())
         lock.appDidLaunch()
         cloudSync = CloudSyncCoordinator(settings: settings, session: session, cloud: cloud ?? UbiquitousSyncStore())
+    }
+}
+
+extension AppServices {
+    /// Debug builds: env BC_DEBUG_PRETEND_VERSION (e.g. 1.0.0) makes the update check think it's older.
+    static func makeUpdateChecker() -> UpdateChecker {
+        #if DEBUG
+        if let pretend = ProcessInfo.processInfo.environment["BC_DEBUG_PRETEND_VERSION"].flatMap(AppVersion.init) {
+            // A fresh record each launch, so the once-a-day limit never hides the sheet while testing.
+            return UpdateChecker(current: pretend, defaults: UserDefaults(suiteName: "bytecache.debug.updates.\(UUID().uuidString)") ?? .standard)
+        }
+        #endif
+        return UpdateChecker()
     }
 }

@@ -113,7 +113,7 @@ struct BackupView: View {
     }
 
     var body: some View {
-        List {
+        SettingsList {
             Section {
                 Button { Task { await model.prepareZip(); exporting = model.exportFile != nil } } label: {
                     SettingsLabel(title: "Export as ZIP…", symbol: .download, color: .blue)
@@ -154,9 +154,6 @@ struct BackupView: View {
             }
         }
         .foregroundStyle(.primary)
-        #if os(iOS)
-        .listStyle(.insetGrouped)
-        #endif
         .navigationTitle("Backup & Import")
         .disabled(model.working != nil)
         .overlay {

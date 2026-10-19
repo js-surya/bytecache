@@ -28,6 +28,7 @@
 		9E027E1A2EF50BA795BB18AA /* ShareExtension-macOS.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3C4D6B6B9A17D93D3850B091 /* ShareExtension-macOS.appex */; platformFilters = (macos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9ECFC35132FB64E0F996AFF3 /* AppNavigator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9726FF73B6C1194388EF5567 /* AppNavigator.swift */; };
 		A4137A1A3811E335A4147088 /* SnippetIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31B029EDF2F3CF30E816DE4A /* SnippetIntents.swift */; };
+		B344819E8E58AB1F39806F61 /* CopyToastWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8C8EFCD0268D6C0B45AFC0C /* CopyToastWindow.swift */; };
 		C7CD13EB204B578681633864 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17972E61B4760BDAF57D8C17 /* ShareViewController.swift */; };
 		C90FB439F45CCA0A3524BDA3 /* CaptureIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ACD1D351BD1F41237F48DAC /* CaptureIntents.swift */; };
 		D80FEA4CBC5047637FB9CE0D /* PhoneTabsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B2FE666D74E00213F8F8F0F /* PhoneTabsView.swift */; };
@@ -105,6 +106,7 @@
 		BFEEE9045F51F9585F2E0CA6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		C55C34FAB5D6C2E966CA6C48 /* ByteCache-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ByteCache-iOS.entitlements"; sourceTree = "<group>"; };
 		C670EAA82E45A829A5652A5E /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
+		C8C8EFCD0268D6C0B45AFC0C /* CopyToastWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopyToastWindow.swift; sourceTree = "<group>"; };
 		D132C6DCD693053E8D76A755 /* SnippetDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetDestination.swift; sourceTree = "<group>"; };
 		D4EA547E44752BA94E44928C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		DF52031A767D75BC19B35E48 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -260,6 +262,7 @@
 			children = (
 				9726FF73B6C1194388EF5567 /* AppNavigator.swift */,
 				33E4BE438EFEE3536D9B0D57 /* ByteCacheApp.swift */,
+				C8C8EFCD0268D6C0B45AFC0C /* CopyToastWindow.swift */,
 				F147A1AC4A5FDB504FD181E5 /* MainSplitView.swift */,
 				0B2FE666D74E00213F8F8F0F /* PhoneTabsView.swift */,
 				F9367137F32B48ABE54F0F9E /* RootView.swift */,
@@ -462,6 +465,7 @@
 				9ECFC35132FB64E0F996AFF3 /* AppNavigator.swift in Sources */,
 				7C57527CDB440E6F2C77A227 /* ByteCacheApp.swift in Sources */,
 				C90FB439F45CCA0A3524BDA3 /* CaptureIntents.swift in Sources */,
+				B344819E8E58AB1F39806F61 /* CopyToastWindow.swift in Sources */,
 				70370D6431E5981CA063004B /* MainSplitView.swift in Sources */,
 				D80FEA4CBC5047637FB9CE0D /* PhoneTabsView.swift in Sources */,
 				E8123D5FE9E7532AE8F9C9B0 /* RootView.swift in Sources */,
@@ -704,7 +708,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.1.5;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -793,7 +797,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.1.5;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;

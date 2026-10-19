@@ -64,7 +64,10 @@ public struct FragmentCard: View {
         HStack(spacing: 6) {
             Text(fragment.fileName.isEmpty ? "Untitled" : fragment.fileName)
                 .font(.subheadline.weight(.semibold))
-            Text(LanguageName.display(fragment.language))
+            HStack(spacing: 3) {
+                LanguageIconView(fragment.language, size: 12)
+                Text(LanguageName.display(fragment.language))
+            }
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -87,7 +90,7 @@ public struct FragmentCard: View {
 
     private func copyButton(iconOnly: Bool) -> some View {
         Button {
-            Pasteboard.copy(fragment.code)
+            Pasteboard.copy(fragment.code, toast: false)
             onCopy()
             copied = true
             Task {

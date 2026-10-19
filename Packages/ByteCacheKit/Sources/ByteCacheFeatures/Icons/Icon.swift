@@ -16,6 +16,8 @@ extension AppSymbol {
 }
 
 /// An app icon in the user's chosen style. `size` pins a Lucide icon's size; SF Symbols follow the font.
+/// Decorative, so hidden from VoiceOver (it would read the asset name): the surrounding `Label`,
+/// button label or `accessibilityLabel` says what it means.
 public struct Icon: View {
     let symbol: AppSymbol
     let size: CGFloat?
@@ -27,11 +29,14 @@ public struct Icon: View {
     }
 
     public var body: some View {
-        if style == .lucide, let size {
-            symbol.image(style).resizable().scaledToFit().frame(width: size, height: size)
-        } else {
-            symbol.image(style)
+        Group {
+            if style == .lucide, let size {
+                symbol.image(style).resizable().scaledToFit().frame(width: size, height: size)
+            } else {
+                symbol.image(style)
+            }
         }
+        .accessibilityHidden(true)
     }
 }
 

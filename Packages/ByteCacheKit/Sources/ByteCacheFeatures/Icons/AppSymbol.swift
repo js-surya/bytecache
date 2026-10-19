@@ -28,6 +28,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case allSnippets
     case textSmaller
     case textLarger
+    case wrapLines
     case noText
     case tag
     case star
@@ -48,6 +49,12 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case bug
     case assistant
     case refresh
+    case infoCircle
+    case database
+    case terminal
+    case plainText
+    case configFile
+    case chip
     case lockOpen
     case changePassword
     case lock
@@ -103,6 +110,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .allSnippets: "tray.full"
         case .textSmaller: "textformat.size.smaller"
         case .textLarger: "textformat.size.larger"
+        case .wrapLines: "arrow.turn.down.left"
         case .noText: "text.badge.xmark"
         case .tag: "tag"
         case .star: "star"
@@ -123,6 +131,12 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .bug: "ladybug"
         case .assistant: "brain.head.profile"
         case .refresh: "arrow.clockwise"
+        case .infoCircle: "info.circle"
+        case .database: "cylinder.split.1x2"
+        case .terminal: "terminal"
+        case .plainText: "doc.plaintext"
+        case .configFile: "gearshape"
+        case .chip: "cpu"
         case .lockOpen: "lock.slash"
         case .changePassword: "lock.rotation"
         case .lock: "lock.fill"
@@ -180,6 +194,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .allSnippets: "library"
         case .textSmaller: "a-arrow-down"
         case .textLarger: "a-arrow-up"
+        case .wrapLines: "wrap-text"
         case .noText: "file-x"
         case .tag: "tag"
         case .star: "star"
@@ -200,6 +215,12 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .bug: "bug"
         case .assistant: "bot"
         case .refresh: "refresh-cw"
+        case .infoCircle: "info"
+        case .database: "database"
+        case .terminal: "square-terminal"
+        case .plainText: "file-text"
+        case .configFile: "cog"
+        case .chip: "cpu"
         case .lockOpen: "lock-open"
         case .changePassword: "rotate-ccw-key"
         case .lock: "lock"

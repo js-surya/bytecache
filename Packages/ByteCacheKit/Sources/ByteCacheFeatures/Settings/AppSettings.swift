@@ -59,13 +59,21 @@ public final class AppSettings {
     public var accent: AccentChoice { didSet { defaults.set(accent.rawValue, forKey: Key.accent) } }
     public var codeThemeID: String { didSet { defaults.set(codeThemeID, forKey: Key.codeThemeID) } }
     public var iconStyle: IconStyle { didSet { defaults.set(iconStyle.rawValue, forKey: Key.iconStyle) } }
+    /// Language logos in their brand colours or tinted like the other icons.
+    public var languageIconStyle: LanguageIconStyle {
+        didSet { defaults.set(languageIconStyle.rawValue, forKey: Key.languageIconStyle) }
+    }
     /// Search matches code as well as titles and descriptions.
     public var searchInCode: Bool { didSet { defaults.set(searchInCode, forKey: Key.searchInCode) } }
     public var showLineNumbers: Bool { didSet { defaults.set(showLineNumbers, forKey: Key.lineNumbers) } }
+    /// Long lines wrap in the code view instead of scrolling sideways.
+    public var wrapLines: Bool { didSet { defaults.set(wrapLines, forKey: Key.wrapLines) } }
     /// Device-only switches (never synced themselves).
     public var iCloudSyncEnabled: Bool { didSet { defaults.set(iCloudSyncEnabled, forKey: Key.iCloudSync) } }
     public var handoffEnabled: Bool { didSet { defaults.set(handoffEnabled, forKey: Key.handoff) } }
     public var suggestionsEnabled: Bool { didSet { defaults.set(suggestionsEnabled, forKey: Key.suggestions) } }
+    /// Device-only: whether to look for new releases on GitHub once a day.
+    public var checkForUpdates: Bool { didSet { defaults.set(checkForUpdates, forKey: Key.checkForUpdates) } }
     /// Device-only: phones differ, so haptics aren't synced.
     public var hapticsEnabled: Bool {
         didSet {
@@ -95,9 +103,11 @@ public final class AppSettings {
 
     private enum Key {
         static let appearance = "appearance", accent = "accent", codeThemeID = "codeThemeID", iconStyle = "iconStyle", searchInCode = "searchInCode"
-        static let fontSize = "codeFontSize", lineNumbers = "showLineNumbers"
+        static let languageIconStyle = "languageIconStyle"
+        static let fontSize = "codeFontSize", lineNumbers = "showLineNumbers", wrapLines = "wrapLines"
         static let iCloudSync = "iCloudSyncEnabled", handoff = "handoffEnabled", suggestions = "suggestionsEnabled"
         static let haptics = "hapticsEnabled", hapticStrength = "hapticStrength"
+        static let checkForUpdates = "checkForUpdates"
     }
 
     public init(defaults: UserDefaults = AppEnvironment.sharedDefaults) {
@@ -105,15 +115,18 @@ public final class AppSettings {
         appearance = defaults.string(forKey: Key.appearance).flatMap(AppAppearance.init) ?? .system
         accent = defaults.string(forKey: Key.accent).flatMap(AccentChoice.init) ?? .blue
         iconStyle = defaults.string(forKey: Key.iconStyle).flatMap(IconStyle.init) ?? .sfSymbols
+        languageIconStyle = defaults.string(forKey: Key.languageIconStyle).flatMap(LanguageIconStyle.init) ?? .color
         searchInCode = defaults.bool(forKey: Key.searchInCode)
         let storedTheme = defaults.string(forKey: Key.codeThemeID) ?? CodeTheme.defaultID
         codeThemeID = CodeTheme.named(storedTheme) == nil ? CodeTheme.defaultID : storedTheme
         let size = defaults.object(forKey: Key.fontSize) as? Double ?? 14
         codeFontSize = min(max(size, Self.fontSizes.lowerBound), Self.fontSizes.upperBound)
         showLineNumbers = defaults.object(forKey: Key.lineNumbers) as? Bool ?? true
+        wrapLines = defaults.bool(forKey: Key.wrapLines)
         iCloudSyncEnabled = defaults.object(forKey: Key.iCloudSync) as? Bool ?? true
         handoffEnabled = defaults.object(forKey: Key.handoff) as? Bool ?? true
         suggestionsEnabled = defaults.object(forKey: Key.suggestions) as? Bool ?? true
+        checkForUpdates = defaults.object(forKey: Key.checkForUpdates) as? Bool ?? true
         hapticsEnabled = defaults.object(forKey: Key.haptics) as? Bool ?? true
         hapticStrength = defaults.string(forKey: Key.hapticStrength).flatMap(HapticStrength.init) ?? .medium
         Haptics.configure(enabled: hapticsEnabled, strength: hapticStrength)
@@ -128,7 +141,7 @@ public final class AppSettings {
     public var synced: SyncedSettings {
         SyncedSettings(appearance: appearance, accent: accent, codeThemeID: codeThemeID,
                        codeFontSize: codeFontSize, showLineNumbers: showLineNumbers, iconStyle: iconStyle,
-                       searchInCode: searchInCode)
+                       searchInCode: searchInCode, languageIconStyle: languageIconStyle, wrapLines: wrapLines)
     }
 
     public func apply(_ remote: SyncedSettings) {
@@ -139,6 +152,8 @@ public final class AppSettings {
         if showLineNumbers != remote.showLineNumbers { showLineNumbers = remote.showLineNumbers }
         if let style = remote.iconStyle, iconStyle != style { iconStyle = style }
         if let code = remote.searchInCode, searchInCode != code { searchInCode = code }
+        if let style = remote.languageIconStyle, languageIconStyle != style { languageIconStyle = style }
+        if let wrap = remote.wrapLines, wrapLines != wrap { wrapLines = wrap }
     }
 }
 
@@ -164,9 +179,12 @@ public struct SyncedSettings: Codable, Equatable, Sendable {
     /// Optional: absent in settings synced by earlier versions.
     public var iconStyle: IconStyle?
     public var searchInCode: Bool?
+    public var languageIconStyle: LanguageIconStyle?
+    public var wrapLines: Bool?
 
     public init(appearance: AppAppearance, accent: AccentChoice, codeThemeID: String, codeFontSize: Double,
-                showLineNumbers: Bool, iconStyle: IconStyle? = nil, searchInCode: Bool? = nil) {
+                showLineNumbers: Bool, iconStyle: IconStyle? = nil, searchInCode: Bool? = nil,
+                languageIconStyle: LanguageIconStyle? = nil, wrapLines: Bool? = nil) {
         self.appearance = appearance
         self.accent = accent
         self.codeThemeID = codeThemeID
@@ -174,6 +192,8 @@ public struct SyncedSettings: Codable, Equatable, Sendable {
         self.showLineNumbers = showLineNumbers
         self.iconStyle = iconStyle
         self.searchInCode = searchInCode
+        self.languageIconStyle = languageIconStyle
+        self.wrapLines = wrapLines
     }
 }
 

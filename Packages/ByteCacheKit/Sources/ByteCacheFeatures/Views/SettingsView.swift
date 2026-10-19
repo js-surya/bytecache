@@ -29,7 +29,7 @@ public struct SettingsView: View {
     }
 
     public var body: some View {
-        List {
+        SettingsList {
             Section {
                 if case .signedIn(let server, let user) = session.state {
                     HStack(spacing: 14) {
@@ -185,7 +185,7 @@ public struct SettingsView: View {
                 NavigationLink {
                     AboutView()
                 } label: {
-                    SettingsLabel(title: "About", symbol: .info, color: .gray, value: AboutText.version)
+                    SettingsLabel(title: "About", symbol: .info, color: .gray, value: AboutText.displayVersion)
                 }
             } header: {
                 Text(SettingsSection.about.title)
@@ -195,9 +195,6 @@ public struct SettingsView: View {
                     .padding(.top, 8)
             }
         }
-        #if os(iOS)
-        .listStyle(.insetGrouped)
-        #endif
         .navigationTitle("Settings")
         // A light tick whenever a setting changes (honours the Haptics setting itself).
         .onChange(of: changeSignature) { Haptics.play(.selection) }
@@ -218,7 +215,7 @@ public struct SettingsView: View {
 }
 
 #if DEBUG
-/// Env `BC_SETTINGS_PAGE=about|haptics|servers|report|mcp` opens that page, for screenshots.
+/// Env `BC_SETTINGS_PAGE=about|about-footer|haptics|servers|report|mcp` opens that page, for screenshots.
 private struct DebugSettingsPage: ViewModifier {
     let session: SessionManager
     @State private var page = ProcessInfo.processInfo.environment["BC_SETTINGS_PAGE"]
@@ -230,6 +227,15 @@ private struct DebugSettingsPage: ViewModifier {
             case "servers": ServersView(session: session)
             case "report": ReportBugView(model: ReportBugModel(session: session))
             case "mcp": MCPSettingsView(model: MCPSettingsModel(session: session))
+            case "about-footer":
+                SettingsList {
+                    Section {
+                        AboutFooter()
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets(top: 24, leading: 0, bottom: 24, trailing: 0))
+                    }
+                }
+                .navigationTitle("About")
             default: AboutView()
             }
         }
@@ -242,7 +248,7 @@ struct HapticsSettingsView: View {
 
     var body: some View {
         @Bindable var settings = settings
-        List {
+        SettingsList {
             Section {
                 Toggle("Haptics", isOn: $settings.hapticsEnabled)
                 if settings.hapticsEnabled {
@@ -259,9 +265,6 @@ struct HapticsSettingsView: View {
                 #endif
             }
         }
-        #if os(iOS)
-        .listStyle(.insetGrouped)
-        #endif
         .navigationTitle("Haptics")
         .onChange(of: settings.hapticStrength) { Haptics.play(.tap) }
     }
@@ -272,7 +275,7 @@ struct AppearanceSettingsView: View {
 
     var body: some View {
         @Bindable var settings = settings
-        List {
+        SettingsList {
             Section("Appearance") {
                 HStack(spacing: 0) {
                     ForEach(AppAppearance.allCases) { option in
@@ -319,6 +322,32 @@ struct AppearanceSettingsView: View {
             } footer: {
                 Text("Changes the icons inside ByteCache. Widgets, Control Center and system menus keep Apple's SF Symbols.")
             }
+            Section {
+                ForEach(LanguageIconStyle.allCases) { style in
+                    Button { settings.languageIconStyle = style } label: {
+                        HStack(spacing: 14) {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(style.title).foregroundStyle(.primary)
+                                HStack(spacing: 14) {
+                                    ForEach(["python", "swift", "javascript", "rust", "dockerfile", "go", "sql"], id: \.self) { language in
+                                        LanguageIconView(language, size: 20, style: style)
+                                    }
+                                }
+                                .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            if settings.languageIconStyle == style {
+                                Icon(.check).foregroundStyle(.tint).fontWeight(.semibold)
+                            }
+                        }
+                    }
+                    .accessibilityAddTraits(settings.languageIconStyle == style ? .isSelected : [])
+                }
+            } header: {
+                Text("Language Icons")
+            } footer: {
+                Text("Shown next to languages in the sidebar, snippet lists, files and the language picker. Logos from Devicon; trademarks belong to their owners.")
+            }
             Section("Accent Color") {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 14) {
                     ForEach(AccentChoice.allCases) { choice in
@@ -340,9 +369,6 @@ struct AppearanceSettingsView: View {
                 .padding(.vertical, 6)
             }
         }
-        #if os(iOS)
-        .listStyle(.insetGrouped)
-        #endif
         .navigationTitle("Appearance")
     }
 }
@@ -392,7 +418,7 @@ struct CodeThemeSettingsView: View {
 
     var body: some View {
         @Bindable var settings = settings
-        List {
+        SettingsList {
             Section {
                 CodeView(code: Self.sample, language: "swift")
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
@@ -409,15 +435,13 @@ struct CodeThemeSettingsView: View {
                 }
                 LabeledContent("Font Size", value: "\(Int(settings.codeFontSize)) pt")
                 Toggle("Line Numbers", isOn: $settings.showLineNumbers)
+                Toggle("Wrap Long Lines", isOn: $settings.wrapLines)
             }
 
             themeSection("Follows Appearance", .adaptive)
             themeSection("Dark", .dark)
             themeSection("Light", .light)
         }
-        #if os(iOS)
-        .listStyle(.insetGrouped)
-        #endif
         .navigationTitle("Code Theme")
     }
 
@@ -442,13 +466,14 @@ struct CodeThemeSettingsView: View {
 
 struct PrivacyInfoView: View {
     var body: some View {
-        List {
+        SettingsList {
             Section {
                 Label("No analytics, tracking or ads.", symbol: .eyeOff)
                 Label("Snippets go only to the server you enter.", symbol: .server)
                 Label("Your login is kept in the Keychain; your password is never stored.", symbol: .key)
                 Label("Copied text is read only when you tap Paste.", symbol: .clipboard)
                 Label("Language detection runs on this device.", symbol: .cpu)
+                Label("Once a day ByteCache asks GitHub whether there's a newer version (turn off in About → Updates).", symbol: .download)
             } footer: {
                 Text(AboutText.privacy)
             }
@@ -458,44 +483,123 @@ struct PrivacyInfoView: View {
 }
 
 struct AboutView: View {
+    @Environment(AppSettings.self) private var settings
+    @Environment(UpdateModel.self) private var updates: UpdateModel?
+
     var body: some View {
-        List {
+        @Bindable var settings = settings
+        SettingsList {
             Section {
-                LabeledContent("Version", value: AboutText.version)
+                LabeledContent("Version", value: AboutText.displayVersion)
                 Text(AboutText.tagline)
                 Text("ByteCache is not affiliated with the ByteStash project.").foregroundStyle(.secondary)
             }
-            Section("Credits") {
-                Text(AboutText.credit)
-                Link(destination: AboutText.developerGitHub) {
-                    HStack {
-                        Label("GitHub", symbol: .link)
-                        Spacer()
-                        Text("js-surya").foregroundStyle(.secondary)
+            if let updates {
+                Section {
+                    Toggle("Check for Updates", isOn: $settings.checkForUpdates)
+                    Button {
+                        Task { await updates.checkNow() }
+                    } label: {
+                        HStack {
+                            Text("Check Now")
+                            if updates.isChecking {
+                                Spacer()
+                                ProgressView().controlSize(.small)
+                            }
+                        }
                     }
-                }
-                .accessibilityLabel("SyntaxError on GitHub, js-surya")
-                .accessibilityHint("Opens in your browser")
-            }
-            Section("Acknowledgements") {
-                Text("HighlightSwift — MIT License, © 2023 Stefan Britton")
-                Text("highlight.js — BSD 3-Clause License, © 2006 Ivan Sagalaev")
-                NavigationLink("Lucide icons — ISC License, © Lucide Icons and Contributors (some icons © Cole Bemis, MIT)") {
-                    ScrollView {
-                        Text(Bundle.module.url(forResource: "LUCIDE-LICENSE", withExtension: "txt")
-                            .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "")
-                            .font(.footnote.monospaced())
-                            .textSelection(.enabled)
-                            .padding()
+                    .disabled(updates.isChecking)
+                    if let status = updates.status {
+                        Text(status).foregroundStyle(.secondary)
                     }
-                    .navigationTitle("Lucide Licence")
+                } header: {
+                    Text("Updates")
+                } footer: {
+                    Text("ByteCache is installed from GitHub, so it can't update itself. Once a day it asks GitHub whether there's a newer release and tells you; nothing about you is sent.")
                 }
-                Text("Dracula, Monokai, Nord, Gruvbox, Night Owl and Catppuccin colour palettes by their respective authors (MIT).")
-                Text("Language model trained on permissively licensed open-source code.").foregroundStyle(.secondary)
             }
-            .font(.footnote)
+            Section {
+                Group {
+                    Text("HighlightSwift — MIT License, © 2023 Stefan Britton")
+                    Text("highlight.js — BSD 3-Clause License, © 2006 Ivan Sagalaev")
+                    NavigationLink("Lucide icons — ISC License, © Lucide Icons and Contributors (some icons © Cole Bemis, MIT)") {
+                        ScrollView {
+                            Text(Bundle.module.url(forResource: "LUCIDE-LICENSE", withExtension: "txt")
+                                .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "")
+                                .font(.footnote.monospaced())
+                                .textSelection(.enabled)
+                                .padding()
+                        }
+                        .navigationTitle("Lucide Licence")
+                    }
+                    NavigationLink("Devicon language logos — MIT License, © konpa and Devicon contributors. Logos are trademarks of their owners, used only to identify languages.") {
+                        ScrollView {
+                            Text(Bundle.module.url(forResource: "DEVICON-LICENSE", withExtension: "txt")
+                                .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "")
+                                .font(.footnote.monospaced())
+                                .textSelection(.enabled)
+                                .padding()
+                        }
+                        .navigationTitle("Devicon Licence")
+                    }
+                    Text("Dracula, Monokai, Nord, Gruvbox, Night Owl and Catppuccin colour palettes by their respective authors (MIT).")
+                Text("The GitHub mark is a trademark of GitHub, Inc., used to link to GitHub.")
+                    Text("Language model trained on permissively licensed open-source code.").foregroundStyle(.secondary)
+                }
+                .font(.footnote)
+            } header: {
+                Text("Acknowledgements")
+            }
+            Section {
+                AboutFooter()
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 24, leading: 0, bottom: 24, trailing: 0))
+            }
         }
         .navigationTitle("About")
+    }
+}
+
+/// The sign-off at the bottom of About: app icon, name, tagline, credit and a link to the source code.
+private struct AboutFooter: View {
+    var body: some View {
+        VStack(spacing: 10) {
+            Image("about-app-icon", bundle: .module)
+                .resizable()
+                .frame(width: 64, height: 64)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
+                .accessibilityHidden(true)
+            VStack(spacing: 2) {
+                Text(AboutText.appName).font(.headline)
+                Text(AboutText.tagline).font(.subheadline).foregroundStyle(.secondary)
+            }
+            Text(AboutText.credit)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.top, 4)
+            Link(destination: AboutText.sourceCode) {
+                Label {
+                    Text("Source code")
+                } icon: {
+                    Image("brand-github", bundle: .module)
+                        .resizable()
+                        .renderingMode(.template)
+                        .frame(width: 16, height: 16)
+                }
+                .font(.subheadline.weight(.medium))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 7)
+                .background(.tint.opacity(0.12), in: Capsule())
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.tint)
+            .padding(.top, 2)
+            .accessibilityLabel("Source code on GitHub")
+            .accessibilityHint("Opens in your browser")
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 
@@ -505,7 +609,7 @@ struct ICloudSyncSettingsView: View {
 
     var body: some View {
         @Bindable var settings = settings
-        List {
+        SettingsList {
             Section {
                 Toggle("iCloud Sync", isOn: $settings.iCloudSyncEnabled)
                     .onChange(of: settings.iCloudSyncEnabled) {
@@ -531,9 +635,6 @@ struct ICloudSyncSettingsView: View {
                 Text("Servers added on another device appear here signed out — sign in once on each device. Removing a server removes it from all your devices.")
             }
         }
-        #if os(iOS)
-        .listStyle(.insetGrouped)
-        #endif
         .navigationTitle("iCloud Sync")
     }
 }
@@ -543,16 +644,13 @@ struct HandoffSettingsView: View {
 
     var body: some View {
         @Bindable var settings = settings
-        List {
+        SettingsList {
             Section {
                 Toggle("Handoff", isOn: $settings.handoffEnabled)
             } footer: {
                 Text("Pick up the snippet you're viewing on your other iPhone, iPad or Mac. Your devices need the same Apple Account, with Bluetooth and Wi-Fi on. Devices without ByteCache open the snippet in the ByteStash web app. Handoff also needs to be on in the system settings (General → AirPlay & Continuity on iPhone and iPad, General → AirDrop & Handoff on Mac).")
             }
         }
-        #if os(iOS)
-        .listStyle(.insetGrouped)
-        #endif
         .navigationTitle("Handoff")
     }
 }
@@ -563,7 +661,7 @@ struct SuggestionsSettingsView: View {
     var body: some View {
         @Bindable var settings = settings
         let available = SnippetSuggesters.onDevice() != nil
-        List {
+        SettingsList {
             Section {
                 Toggle("Suggest Titles & Tags", isOn: $settings.suggestionsEnabled)
                     .disabled(!available)
@@ -578,9 +676,6 @@ struct SuggestionsSettingsView: View {
                 }
             }
         }
-        #if os(iOS)
-        .listStyle(.insetGrouped)
-        #endif
         .navigationTitle("Smart Suggestions")
     }
 }

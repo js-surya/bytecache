@@ -1,7 +1,8 @@
 import HighlightSwift
 import SwiftUI
 
-/// Read-only, syntax-highlighted code in the user's code theme; scrolls sideways instead of wrapping.
+/// Read-only, syntax-highlighted code in the user's code theme. Scrolls sideways, or wraps long
+/// lines when Wrap Long Lines is on.
 public struct CodeView: View {
     let code: String
     let language: String
@@ -14,31 +15,117 @@ public struct CodeView: View {
     }
 
     private var lineNumbers: String {
-        let count = max(code.split(separator: "\n", omittingEmptySubsequences: false).count, 1)
-        return (1...count).map(String.init).joined(separator: "\n")
+        (1...CodeLines.plain(code).count).map(String.init).joined(separator: "\n")
     }
 
     public var body: some View {
         let palette = settings.codeTheme.palette(for: colorScheme)
-        ScrollView(.horizontal) {
-            HStack(alignment: .top, spacing: 12) {
-                if settings.showLineNumbers {
-                    Text(lineNumbers)
-                        .foregroundStyle(CodeTheme.color(palette.foreground).opacity(0.4))
-                        .multilineTextAlignment(.trailing)
-                        .accessibilityHidden(true)
+        Group {
+            if settings.wrapLines && settings.showLineNumbers {
+                WrappedCodeLines(code: code, language: language, palette: palette)
+            } else if settings.wrapLines {
+                highlighted(palette)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                ScrollView(.horizontal) {
+                    HStack(alignment: .top, spacing: 12) {
+                        if settings.showLineNumbers {
+                            Text(lineNumbers)
+                                .foregroundStyle(CodeTheme.color(palette.foreground).opacity(0.4))
+                                .multilineTextAlignment(.trailing)
+                                .accessibilityHidden(true)
+                        }
+                        highlighted(palette)
+                    }
+                    .padding(12)
                 }
-                CodeText(code)
-                    .highlightMode(HighlightAlias.mode(for: language))
-                    .codeTextColors(.custom(dark: palette.colors, light: palette.colors))
-                    .foregroundStyle(CodeTheme.color(palette.foreground))
-                    .textSelection(.enabled)
             }
-            .font(.system(size: settings.codeFontSize, design: .monospaced))
-            .padding(12)
         }
+        .padding(settings.wrapLines ? 12 : 0)
+        .font(.system(size: settings.codeFontSize, design: .monospaced))
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(CodeTheme.color(palette.background))
+    }
+
+    private func highlighted(_ palette: CodeTheme.Palette) -> some View {
+        CodeText(code)
+            .highlightMode(HighlightAlias.mode(for: language))
+            .codeTextColors(.custom(dark: palette.colors, light: palette.colors))
+            .foregroundStyle(CodeTheme.color(palette.foreground))
+            .textSelection(.enabled)
+    }
+}
+
+/// Wrapped code with line numbers: one row per logical line, so each number stays next to the
+/// first visual line of its (possibly wrapped) line. The whole file is highlighted at once, so
+/// multi-line comments and strings keep their colours.
+private struct WrappedCodeLines: View {
+    let code: String
+    let language: String
+    let palette: CodeTheme.Palette
+    @State private var lines: [AttributedString]?
+
+    private static let highlighter = Highlight()
+
+    var body: some View {
+        let rows = lines ?? CodeLines.plain(code).map { AttributedString($0) }
+        let widest = String(repeating: "8", count: String(rows.count).count)
+        let numberColor = CodeTheme.color(palette.foreground).opacity(0.4)
+        LazyVStack(alignment: .leading, spacing: 0) {
+            ForEach(rows.indices, id: \.self) { index in
+                HStack(alignment: .firstTextBaseline, spacing: 12) {
+                    ZStack(alignment: .trailing) {
+                        Text(widest).hidden()
+                        Text("\(index + 1)").foregroundStyle(numberColor)
+                    }
+                    .accessibilityHidden(true)
+                    // An empty Text has no height; a space keeps blank lines.
+                    Text(rows[index].characters.isEmpty ? AttributedString(" ") : rows[index])
+                        .foregroundStyle(CodeTheme.color(palette.foreground))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+        }
+        .textSelection(.enabled)
+        .task(id: "\(code.hashValue) \(language) \(palette.hashValue)") {
+            lines = nil
+            guard let result = try? await Self.highlighter.request(code, mode: HighlightAlias.mode(for: language),
+                                                                    colors: palette.colors) else { return }
+            lines = CodeLines.split(result.attributedText, original: code)
+        }
+    }
+}
+
+/// Splits code into logical lines, for line numbers.
+enum CodeLines {
+    static func plain(_ code: String) -> [String] {
+        code.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+    }
+
+    /// Splits highlighted text into the same lines as `original`. Puts back the leading and trailing
+    /// whitespace the highlighter trims. Nil if the lines don't match, to fall back to plain text.
+    static func split(_ highlighted: AttributedString, original: String) -> [AttributedString]? {
+        var text = highlighted
+        let plainText = String(text.characters)
+        if plainText != original {
+            let leading = original.prefix { $0.isWhitespace }
+            let trailing = String(original.reversed().prefix { $0.isWhitespace }.reversed())
+            if !plainText.hasPrefix(leading) { text = AttributedString(leading) + text }
+            if !trailing.isEmpty, !String(text.characters).hasSuffix(trailing) { text += AttributedString(trailing) }
+        }
+        var lines: [AttributedString] = []
+        var start = text.startIndex
+        var index = text.startIndex
+        while index < text.endIndex {
+            let next = text.characters.index(after: index)
+            if text.characters[index] == "\n" {
+                lines.append(AttributedString(text[start..<index]))
+                start = next
+            }
+            index = next
+        }
+        lines.append(AttributedString(text[start..<text.endIndex]))
+        return lines.count == plain(original).count ? lines : nil
     }
 }
 

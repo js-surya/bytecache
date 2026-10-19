@@ -127,9 +127,11 @@ enum EditorKeyBar {
             config.title = key
             config.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 10, bottom: 6, trailing: 10)
             config.attributedTitle = AttributedString(key, attributes: AttributeContainer([.font: UIFont.monospacedSystemFont(ofSize: 16, weight: .medium)]))
-            return UIButton(configuration: config, primaryAction: UIAction { [weak view] _ in
+            let button = UIButton(configuration: config, primaryAction: UIAction { [weak view] _ in
                 view?.coordinator?.type(key == "⇥" ? "\t" : key)
             })
+            if key == "⇥" { button.accessibilityLabel = "Tab" }
+            return button
         }
         var find = UIButton.Configuration.gray()
         find.image = UIImage(systemName: "magnifyingglass")

@@ -53,11 +53,11 @@ public struct DeviceInfo: Equatable, Sendable {
         let machine = withUnsafeBytes(of: &system.machine) { String(decoding: $0.prefix { $0 != 0 }, as: UTF8.self) }
         #if os(macOS)
         let model = Self.sysctl("hw.model") ?? machine
-        return DeviceInfo(app: AboutText.version, os: "macOS \(version)", model: model, platform: "Mac")
+        return DeviceInfo(app: AboutText.versionWithBuild, os: "macOS \(version)", model: model, platform: "Mac")
         #else
         let simulator = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"]
         let pad = UIDevice.current.userInterfaceIdiom == .pad
-        return DeviceInfo(app: AboutText.version, os: "\(pad ? "iPadOS" : "iOS") \(version)",
+        return DeviceInfo(app: AboutText.versionWithBuild, os: "\(pad ? "iPadOS" : "iOS") \(version)",
                           model: simulator.map { "\($0) (Simulator)" } ?? machine, platform: pad ? "iPad" : "iPhone")
         #endif
     }

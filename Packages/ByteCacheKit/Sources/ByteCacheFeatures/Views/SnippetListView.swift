@@ -30,7 +30,9 @@ public struct SnippetListView: View {
             if model.isSelecting { BulkActionBar(model: model) }
         }
         .overlay {
-            if model.snippets.isEmpty && !model.isLoading {
+            if model.snippets.isEmpty && model.isLoading {
+                LoadingMark()
+            } else if model.snippets.isEmpty && !model.isLoading {
                 if model.searchText.isEmpty {
                     ContentUnavailableView("No Snippets", symbol: .tray, description: Text("Nothing here yet."))
                 } else {
@@ -105,7 +107,7 @@ public struct SnippetListView: View {
     }
 
     private func row(_ snippet: Snippet) -> some View {
-        SnippetRow(snippet: snippet, showOwner: model.isReadOnly)
+        SnippetRow(snippet: snippet, showOwner: model.isReadOnly, search: model.searchText, searchCode: model.searchCode)
             .tag(snippet.id)
             .task { await model.loadMoreIfNeeded(current: snippet) }
             .contextMenu { SnippetActions(snippet: snippet, model: model) }

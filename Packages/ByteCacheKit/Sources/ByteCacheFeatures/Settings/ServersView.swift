@@ -28,7 +28,7 @@ struct ServersView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        List {
+        SettingsList {
             Section {
                 ForEach(session.accounts) { account in
                     Button {
@@ -50,6 +50,7 @@ struct ServersView: View {
                                 .accessibilityLabel("Edit \(account.displayName)")
                         }
                     }
+                    .accessibilityAddTraits(account.id == session.activeAccountID ? .isSelected : [])
                     .tint(.primary)
                     .accessibilityAddTraits(account.id == session.activeAccountID ? .isSelected : [])
                     .swipeActions(edge: .leading) {
@@ -80,9 +81,6 @@ struct ServersView: View {
                 }
             }
         }
-        #if os(iOS)
-        .listStyle(.insetGrouped)
-        #endif
         .navigationTitle("Servers")
         .sheet(item: $editing) { account in
             NavigationStack { ServerEditView(session: session, account: account) }

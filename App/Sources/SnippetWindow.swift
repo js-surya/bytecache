@@ -20,7 +20,7 @@ struct SnippetWindow: View {
                 } else if let failed {
                     ContentUnavailableView("Couldn't Open Snippet", symbol: .warning, description: Text(failed))
                 } else {
-                    ProgressView()
+                    LoadingMark()
                 }
             }
         }
