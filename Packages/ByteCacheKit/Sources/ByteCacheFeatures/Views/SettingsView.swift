@@ -29,7 +29,7 @@ public struct SettingsView: View {
     }
 
     public var body: some View {
-        List {
+        SettingsList {
             Section {
                 if case .signedIn(let server, let user) = session.state {
                     HStack(spacing: 14) {
@@ -195,9 +195,6 @@ public struct SettingsView: View {
                     .padding(.top, 8)
             }
         }
-        #if os(iOS)
-        .listStyle(.insetGrouped)
-        #endif
         .navigationTitle("Settings")
         // A light tick whenever a setting changes (honours the Haptics setting itself).
         .onChange(of: changeSignature) { Haptics.play(.selection) }
@@ -242,7 +239,7 @@ struct HapticsSettingsView: View {
 
     var body: some View {
         @Bindable var settings = settings
-        List {
+        SettingsList {
             Section {
                 Toggle("Haptics", isOn: $settings.hapticsEnabled)
                 if settings.hapticsEnabled {
@@ -259,9 +256,6 @@ struct HapticsSettingsView: View {
                 #endif
             }
         }
-        #if os(iOS)
-        .listStyle(.insetGrouped)
-        #endif
         .navigationTitle("Haptics")
         .onChange(of: settings.hapticStrength) { Haptics.play(.tap) }
     }
@@ -272,7 +266,7 @@ struct AppearanceSettingsView: View {
 
     var body: some View {
         @Bindable var settings = settings
-        List {
+        SettingsList {
             Section("Appearance") {
                 HStack(spacing: 0) {
                     ForEach(AppAppearance.allCases) { option in
@@ -340,9 +334,6 @@ struct AppearanceSettingsView: View {
                 .padding(.vertical, 6)
             }
         }
-        #if os(iOS)
-        .listStyle(.insetGrouped)
-        #endif
         .navigationTitle("Appearance")
     }
 }
@@ -392,7 +383,7 @@ struct CodeThemeSettingsView: View {
 
     var body: some View {
         @Bindable var settings = settings
-        List {
+        SettingsList {
             Section {
                 CodeView(code: Self.sample, language: "swift")
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
@@ -415,9 +406,6 @@ struct CodeThemeSettingsView: View {
             themeSection("Dark", .dark)
             themeSection("Light", .light)
         }
-        #if os(iOS)
-        .listStyle(.insetGrouped)
-        #endif
         .navigationTitle("Code Theme")
     }
 
@@ -442,7 +430,7 @@ struct CodeThemeSettingsView: View {
 
 struct PrivacyInfoView: View {
     var body: some View {
-        List {
+        SettingsList {
             Section {
                 Label("No analytics, tracking or ads.", symbol: .eyeOff)
                 Label("Snippets go only to the server you enter.", symbol: .server)
@@ -459,7 +447,7 @@ struct PrivacyInfoView: View {
 
 struct AboutView: View {
     var body: some View {
-        List {
+        SettingsList {
             Section {
                 LabeledContent("Version", value: AboutText.version)
                 Text(AboutText.tagline)
@@ -505,7 +493,7 @@ struct ICloudSyncSettingsView: View {
 
     var body: some View {
         @Bindable var settings = settings
-        List {
+        SettingsList {
             Section {
                 Toggle("iCloud Sync", isOn: $settings.iCloudSyncEnabled)
                     .onChange(of: settings.iCloudSyncEnabled) {
@@ -531,9 +519,6 @@ struct ICloudSyncSettingsView: View {
                 Text("Servers added on another device appear here signed out — sign in once on each device. Removing a server removes it from all your devices.")
             }
         }
-        #if os(iOS)
-        .listStyle(.insetGrouped)
-        #endif
         .navigationTitle("iCloud Sync")
     }
 }
@@ -543,16 +528,13 @@ struct HandoffSettingsView: View {
 
     var body: some View {
         @Bindable var settings = settings
-        List {
+        SettingsList {
             Section {
                 Toggle("Handoff", isOn: $settings.handoffEnabled)
             } footer: {
                 Text("Pick up the snippet you're viewing on your other iPhone, iPad or Mac. Your devices need the same Apple Account, with Bluetooth and Wi-Fi on. Devices without ByteCache open the snippet in the ByteStash web app. Handoff also needs to be on in the system settings (General → AirPlay & Continuity on iPhone and iPad, General → AirDrop & Handoff on Mac).")
             }
         }
-        #if os(iOS)
-        .listStyle(.insetGrouped)
-        #endif
         .navigationTitle("Handoff")
     }
 }
@@ -563,7 +545,7 @@ struct SuggestionsSettingsView: View {
     var body: some View {
         @Bindable var settings = settings
         let available = SnippetSuggesters.onDevice() != nil
-        List {
+        SettingsList {
             Section {
                 Toggle("Suggest Titles & Tags", isOn: $settings.suggestionsEnabled)
                     .disabled(!available)
@@ -578,9 +560,6 @@ struct SuggestionsSettingsView: View {
                 }
             }
         }
-        #if os(iOS)
-        .listStyle(.insetGrouped)
-        #endif
         .navigationTitle("Smart Suggestions")
     }
 }

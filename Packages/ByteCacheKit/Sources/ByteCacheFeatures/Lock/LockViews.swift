@@ -81,7 +81,7 @@ struct AppLockSettingsView: View {
 
     var body: some View {
         @Bindable var lock = lock
-        List {
+        SettingsList {
             Section {
                 Toggle(isOn: Binding(get: { lock.isEnabled }, set: { on in
                     Task {
@@ -107,9 +107,6 @@ struct AppLockSettingsView: View {
                 }
             }
         }
-        #if os(iOS)
-        .listStyle(.insetGrouped)
-        #endif
         .navigationTitle("App Lock")
     }
 }

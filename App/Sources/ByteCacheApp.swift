@@ -25,14 +25,12 @@ struct ByteCacheApp: App {
         }
         #if os(macOS)
         Settings {
-            NavigationStack {
-                SettingsView(session: services.session)
-            }
+            MacSettingsView(session: services.session)
             .appSettingsStyle(services.settings)
                 .environment(services.cloudSync)
                 .environment(services.lock)
                 .appLockCover(services.lock)
-            .frame(width: 520, height: 560)
+            .frame(minWidth: 720, idealWidth: 780, minHeight: 520, idealHeight: 600)
         }
         #endif
     }

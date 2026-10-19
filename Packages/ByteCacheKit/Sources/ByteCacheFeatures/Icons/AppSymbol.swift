@@ -48,6 +48,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case bug
     case assistant
     case refresh
+    case infoCircle
     case lockOpen
     case changePassword
     case lock
@@ -123,6 +124,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .bug: "ladybug"
         case .assistant: "brain.head.profile"
         case .refresh: "arrow.clockwise"
+        case .infoCircle: "info.circle"
         case .lockOpen: "lock.slash"
         case .changePassword: "lock.rotation"
         case .lock: "lock.fill"
@@ -200,6 +202,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .bug: "bug"
         case .assistant: "bot"
         case .refresh: "refresh-cw"
+        case .infoCircle: "info"
         case .lockOpen: "lock-open"
         case .changePassword: "rotate-ccw-key"
         case .lock: "lock"

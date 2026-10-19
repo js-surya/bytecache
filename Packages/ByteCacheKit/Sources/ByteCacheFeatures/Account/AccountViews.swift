@@ -7,7 +7,7 @@ struct APIKeysView: View {
     @State private var copied = false
 
     var body: some View {
-        List {
+        SettingsList {
             if !model.canManage {
                 ContentUnavailableView("Password Sign-In Needed", symbol: .keyOff,
                                        description: Text("ByteStash only lets you manage API keys when you're signed in with a password."))
@@ -85,9 +85,6 @@ struct APIKeysView: View {
                 }
             }
         }
-        #if os(iOS)
-        .listStyle(.insetGrouped)
-        #endif
         .navigationTitle("API Keys")
         .refreshable { await model.loadKeys() }
         .task { await model.loadKeys() }

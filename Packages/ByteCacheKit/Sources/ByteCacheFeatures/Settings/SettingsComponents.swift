@@ -61,3 +61,20 @@ struct ThemeSwatch: View {
         Capsule().fill(color).frame(width: width, height: 4)
     }
 }
+
+/// The container for every Settings page: an inset-grouped list on iPhone and iPad, and a grouped
+/// form on Mac, which wraps section footers and shows toggles as switches on the right like iOS.
+struct SettingsList<Content: View>: View {
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        #if os(macOS)
+        Form { content }
+            .formStyle(.grouped)
+            .toggleStyle(.switch)
+        #else
+        List { content }
+            .listStyle(.insetGrouped)
+        #endif
+    }
+}
