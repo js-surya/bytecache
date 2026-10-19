@@ -48,7 +48,7 @@ public struct ClipboardBanner: View {
 
     public var body: some View {
         HStack {
-            Image(systemName: "doc.on.clipboard")
+            Icon(.clipboard)
             Text("Save copied code?").font(.subheadline)
             Spacer()
             PasteButton(payloadType: String.self) { strings in
@@ -60,7 +60,7 @@ public struct ClipboardBanner: View {
             }
             .labelStyle(.titleAndIcon)
             .controlSize(.small)
-            Button { watcher.dismiss() } label: { Image(systemName: "xmark") }
+            Button { watcher.dismiss() } label: { Icon(.close) }
                 .buttonStyle(.borderless)
                 .accessibilityLabel("Dismiss")
         }

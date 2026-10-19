@@ -9,7 +9,7 @@ struct APIKeysView: View {
     var body: some View {
         List {
             if !model.canManage {
-                ContentUnavailableView("Password Sign-In Needed", systemImage: "key.slash",
+                ContentUnavailableView("Password Sign-In Needed", symbol: .keyOff,
                                        description: Text("ByteStash only lets you manage API keys when you're signed in with a password."))
             } else {
                 if let created = model.newKey {
@@ -21,7 +21,7 @@ struct APIKeysView: View {
                             Pasteboard.copy(created.key)
                             copied = true
                         } label: {
-                            Label(copied ? "Copied" : "Copy Key", systemImage: copied ? "checkmark" : "doc.on.doc")
+                            Label(copied ? "Copied" : "Copy Key", symbol: copied ? .check : .copy)
                         }
                         Button("Done") {
                             model.dismissNewKey()
@@ -70,7 +70,7 @@ struct APIKeysView: View {
                         }
                         .contextMenu {
                             Button(role: .destructive) { Task { await model.deleteKey(key) } } label: {
-                                Label("Delete Key", systemImage: "trash")
+                                Label("Delete Key", symbol: .trash)
                             }
                         }
                     }
@@ -109,10 +109,10 @@ struct ChangePasswordView: View {
     var body: some View {
         Form {
             if !model.canManage {
-                ContentUnavailableView("Password Sign-In Needed", systemImage: "key.slash",
+                ContentUnavailableView("Password Sign-In Needed", symbol: .keyOff,
                                        description: Text("You're signed in with an API key. Sign in with your password to change it."))
             } else if !model.allowPasswordChanges {
-                ContentUnavailableView("Turned Off on This Server", systemImage: "lock.slash",
+                ContentUnavailableView("Turned Off on This Server", symbol: .lockOpen,
                                        description: Text("The ByteStash administrator has disabled password changes."))
             } else {
                 Section {
@@ -130,7 +130,7 @@ struct ChangePasswordView: View {
                     } else if let error = model.error {
                         Text(error).foregroundStyle(.red)
                     } else if model.passwordChanged {
-                        Label("Password changed.", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+                        Label("Password changed.", symbol: .checkCircle).foregroundStyle(.green)
                     }
                 }
                 Section {

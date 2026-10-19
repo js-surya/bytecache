@@ -18,7 +18,7 @@ public struct SettingsView: View {
                     HStack(spacing: 14) {
                         Group {
                             if user.username == SessionManager.apiKeyUserName {
-                                Image(systemName: "key.fill")
+                                Icon(.key)
                             } else {
                                 Text(String(user.username.prefix(1)).uppercased())
                             }
@@ -38,12 +38,12 @@ public struct SettingsView: View {
                     NavigationLink {
                         APIKeysView(model: AccountModel(session: session))
                     } label: {
-                        SettingsLabel(title: "API Keys", systemName: "key.fill", color: .orange)
+                        SettingsLabel(title: "API Keys", symbol: .key, color: .orange)
                     }
                     NavigationLink {
                         ChangePasswordView(model: AccountModel(session: session))
                     } label: {
-                        SettingsLabel(title: "Change Password", systemName: "lock.rotation", color: .gray)
+                        SettingsLabel(title: "Change Password", symbol: .changePassword, color: .gray)
                     }
                 }
             }
@@ -52,19 +52,19 @@ public struct SettingsView: View {
                 NavigationLink {
                     AppearanceSettingsView()
                 } label: {
-                    SettingsLabel(title: "Appearance", systemName: "circle.lefthalf.filled", color: .blue,
-                                  value: settings.appearance.title)
+                    SettingsLabel(title: "Appearance", symbol: .appearance, color: .blue,
+                                  value: settings.appearance.title + (settings.iconStyle == .lucide ? " · Lucide" : ""))
                 }
                 NavigationLink {
                     SuggestionsSettingsView()
                 } label: {
-                    SettingsLabel(title: "Smart Suggestions", systemName: "sparkles", color: .pink,
+                    SettingsLabel(title: "Smart Suggestions", symbol: .sparkles, color: .pink,
                                   value: settings.suggestionsEnabled && SnippetSuggesters.onDevice() != nil ? "On" : "Off")
                 }
                 NavigationLink {
                     CodeThemeSettingsView()
                 } label: {
-                    SettingsLabel(title: "Code Theme", systemName: "chevron.left.forwardslash.chevron.right",
+                    SettingsLabel(title: "Code Theme", symbol: .code,
                                   color: .purple, value: settings.codeTheme.name)
                 }
             }
@@ -73,7 +73,7 @@ public struct SettingsView: View {
                 NavigationLink {
                     AppLockSettingsView(lock: lock)
                 } label: {
-                    SettingsLabel(title: "App Lock", systemName: lock.biometry.systemImage, color: .green,
+                    SettingsLabel(title: "App Lock", symbol: lock.biometry.symbol, color: .green,
                                   value: lock.isEnabled ? lock.biometry.name : "Off")
                 }
             }
@@ -82,13 +82,13 @@ public struct SettingsView: View {
                 NavigationLink {
                     ICloudSyncSettingsView()
                 } label: {
-                    SettingsLabel(title: "iCloud Sync", systemName: "icloud.fill", color: .cyan,
+                    SettingsLabel(title: "iCloud Sync", symbol: .icloud, color: .cyan,
                                   value: settings.iCloudSyncEnabled ? "On" : "Off")
                 }
                 NavigationLink {
                     HandoffSettingsView()
                 } label: {
-                    SettingsLabel(title: "Handoff", systemName: "macbook.and.iphone", color: .blue,
+                    SettingsLabel(title: "Handoff", symbol: .handoff, color: .blue,
                                   value: settings.handoffEnabled ? "On" : "Off")
                 }
             }
@@ -97,7 +97,7 @@ public struct SettingsView: View {
                 NavigationLink {
                     ServersView(session: session)
                 } label: {
-                    SettingsLabel(title: "Servers", systemName: "server.rack", color: .green,
+                    SettingsLabel(title: "Servers", symbol: .server, color: .green,
                                   value: session.accounts.count > 1 ? "\(session.accounts.count)" : session.accounts.first?.displayName)
                 }
             }
@@ -116,12 +116,12 @@ public struct SettingsView: View {
                 NavigationLink {
                     PrivacyInfoView()
                 } label: {
-                    SettingsLabel(title: "Privacy", systemName: "hand.raised.fill", color: .blue)
+                    SettingsLabel(title: "Privacy", symbol: .privacy, color: .blue)
                 }
                 NavigationLink {
                     AboutView()
                 } label: {
-                    SettingsLabel(title: "About", systemName: "info", color: .gray, value: AboutText.version)
+                    SettingsLabel(title: "About", symbol: .info, color: .gray, value: AboutText.version)
                 }
             } footer: {
                 Text("\(AboutText.appName) — \(AboutText.tagline)")
@@ -149,7 +149,7 @@ struct AppearanceSettingsView: View {
                             VStack(spacing: 8) {
                                 AppearancePreview(option: option)
                                 Text(option.title).font(.subheadline)
-                                Image(systemName: settings.appearance == option ? "checkmark.circle.fill" : "circle")
+                                Icon(settings.appearance == option ? .checkCircle : .circle)
                                     .foregroundStyle(settings.appearance == option ? settings.accent.color : .secondary)
                                     .font(.title3)
                             }
@@ -161,6 +161,33 @@ struct AppearanceSettingsView: View {
                 }
                 .padding(.vertical, 8)
             }
+            Section {
+                ForEach(IconStyle.allCases) { style in
+                    Button { settings.iconStyle = style } label: {
+                        HStack(spacing: 14) {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(style.title).foregroundStyle(.primary)
+                                HStack(spacing: 14) {
+                                    ForEach([AppSymbol.pin, .star, .copy, .server, .key, .scan, .settings], id: \.self) { symbol in
+                                        Icon(symbol, size: 18).font(.system(size: 16))
+                                    }
+                                }
+                                .foregroundStyle(.secondary)
+                                .environment(\.iconStyle, style)
+                            }
+                            Spacer()
+                            if settings.iconStyle == style {
+                                Icon(.check).foregroundStyle(.tint).fontWeight(.semibold)
+                            }
+                        }
+                    }
+                    .accessibilityAddTraits(settings.iconStyle == style ? .isSelected : [])
+                }
+            } header: {
+                Text("Icon Style")
+            } footer: {
+                Text("Changes the icons inside ByteCatch. Widgets, Control Center and system menus keep Apple's SF Symbols.")
+            }
             Section("Accent Color") {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 14) {
                     ForEach(AccentChoice.allCases) { choice in
@@ -170,7 +197,7 @@ struct AppearanceSettingsView: View {
                                 .frame(width: 34, height: 34)
                                 .overlay {
                                     if settings.accent == choice {
-                                        Image(systemName: "checkmark").font(.caption.bold()).foregroundStyle(.white)
+                                        Icon(.check).font(.caption.bold()).foregroundStyle(.white)
                                     }
                                 }
                         }
@@ -245,9 +272,9 @@ struct CodeThemeSettingsView: View {
 
             Section("Text") {
                 HStack {
-                    Image(systemName: "textformat.size.smaller").foregroundStyle(.secondary)
+                    Icon(.textSmaller).foregroundStyle(.secondary)
                     Slider(value: $settings.codeFontSize, in: AppSettings.fontSizes, step: 1)
-                    Image(systemName: "textformat.size.larger").foregroundStyle(.secondary)
+                    Icon(.textLarger).foregroundStyle(.secondary)
                 }
                 LabeledContent("Font Size", value: "\(Int(settings.codeFontSize)) pt")
                 Toggle("Line Numbers", isOn: $settings.showLineNumbers)
@@ -272,7 +299,7 @@ struct CodeThemeSettingsView: View {
                         Text(theme.name).foregroundStyle(.primary)
                         Spacer()
                         if settings.codeThemeID == theme.id {
-                            Image(systemName: "checkmark").foregroundStyle(.tint).fontWeight(.semibold)
+                            Icon(.check).foregroundStyle(.tint).fontWeight(.semibold)
                         }
                     }
                 }
@@ -286,11 +313,11 @@ struct PrivacyInfoView: View {
     var body: some View {
         List {
             Section {
-                Label("No analytics, tracking or ads.", systemImage: "eye.slash")
-                Label("Snippets go only to the server you enter.", systemImage: "server.rack")
-                Label("Your login is kept in the Keychain; your password is never stored.", systemImage: "key")
-                Label("Copied text is read only when you tap Paste.", systemImage: "doc.on.clipboard")
-                Label("Language detection runs on this device.", systemImage: "cpu")
+                Label("No analytics, tracking or ads.", symbol: .eyeOff)
+                Label("Snippets go only to the server you enter.", symbol: .server)
+                Label("Your login is kept in the Keychain; your password is never stored.", symbol: .key)
+                Label("Copied text is read only when you tap Paste.", symbol: .clipboard)
+                Label("Language detection runs on this device.", symbol: .cpu)
             } footer: {
                 Text(AboutText.privacy)
             }
@@ -310,6 +337,16 @@ struct AboutView: View {
             Section("Acknowledgements") {
                 Text("HighlightSwift — MIT License, © 2023 Stefan Britton")
                 Text("highlight.js — BSD 3-Clause License, © 2006 Ivan Sagalaev")
+                NavigationLink("Lucide icons — ISC License, © Lucide Icons and Contributors (some icons © Cole Bemis, MIT)") {
+                    ScrollView {
+                        Text(Bundle.module.url(forResource: "LUCIDE-LICENSE", withExtension: "txt")
+                            .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "")
+                            .font(.footnote.monospaced())
+                            .textSelection(.enabled)
+                            .padding()
+                    }
+                    .navigationTitle("Lucide Licence")
+                }
                 Text("Dracula, Monokai, Nord, Gruvbox, Night Owl and Catppuccin colour palettes by their respective authors (MIT).")
                 Text("Language model trained on permissively licensed open-source code.").foregroundStyle(.secondary)
             }
@@ -333,18 +370,18 @@ struct ICloudSyncSettingsView: View {
                     }
             } footer: {
                 if !UbiquitousSyncStore.isAvailable {
-                    Label("This device isn't signed in to iCloud.", systemImage: "exclamationmark.icloud")
+                    Label("This device isn't signed in to iCloud.", symbol: .icloudWarning)
                         .foregroundStyle(.orange)
                 }
             }
             Section("Synced") {
-                Label("Appearance and accent colour", systemImage: "circle.lefthalf.filled")
-                Label("Code theme, font size, line numbers", systemImage: "chevron.left.forwardslash.chevron.right")
-                Label("Server list", systemImage: "server.rack")
+                Label("Appearance and accent colour", symbol: .appearance)
+                Label("Code theme, font size, line numbers", symbol: .code)
+                Label("Server list", symbol: .server)
             }
             Section {
-                Label("Logins and API keys", systemImage: "key")
-                Label("Snippets (they live on your servers)", systemImage: "doc.text")
+                Label("Logins and API keys", symbol: .key)
+                Label("Snippets (they live on your servers)", symbol: .document)
             } header: {
                 Text("Stays on this device")
             } footer: {
@@ -392,7 +429,7 @@ struct SuggestionsSettingsView: View {
                     Text("When you save code, ByteCatch suggests a title, a one-line description and categories using Apple Intelligence on this device. Your code never leaves it. Suggestions only fill empty fields — what you type always wins.")
                     if !available {
                         Label("Needs Apple Intelligence (iOS 26 or macOS 26 on a supported device, turned on in Settings).",
-                              systemImage: "exclamationmark.triangle")
+                              symbol: .warning)
                             .foregroundStyle(.orange)
                     }
                 }

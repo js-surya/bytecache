@@ -44,10 +44,10 @@ struct MainSplitView: View {
                 }
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
-                        Button { scanning = true } label: { Label("Scan Code", systemImage: "camera.viewfinder") }
+                        Button { scanning = true } label: { Label("Scan Code", symbol: .scan) }
                     }
                     ToolbarItem(placement: .primaryAction) {
-                        Button { startEditing(nil) } label: { Label("New Snippet", systemImage: "square.and.pencil") }
+                        Button { startEditing(nil) } label: { Label("New Snippet", symbol: .newSnippet) }
                     }
                 }
                 #if os(macOS)
@@ -57,7 +57,7 @@ struct MainSplitView: View {
             if let id = selectedSnippet, let snippet = list.snippets.first(where: { $0.id == id }) {
                 SnippetDetailView(snippet: snippet, list: list) { startEditing(snippet) }
             } else {
-                ContentUnavailableView("No Snippet Selected", systemImage: "curlybraces",
+                ContentUnavailableView("No Snippet Selected", symbol: .braces,
                                        description: Text("Pick a snippet, or press ⌘N to create one."))
             }
         }

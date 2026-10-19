@@ -2,16 +2,16 @@ import SwiftUI
 
 /// The coloured rounded-square glyph used by iOS Settings rows.
 public struct SettingsIcon: View {
-    let systemName: String
+    let symbol: AppSymbol
     let color: Color
 
-    public init(_ systemName: String, color: Color) {
-        self.systemName = systemName
+    public init(_ symbol: AppSymbol, color: Color) {
+        self.symbol = symbol
         self.color = color
     }
 
     public var body: some View {
-        Image(systemName: systemName)
+        Icon(symbol, size: 17)
             .font(.system(size: 15, weight: .semibold))
             .foregroundStyle(.white)
             .frame(width: 29, height: 29)
@@ -23,13 +23,13 @@ public struct SettingsIcon: View {
 /// Icon, title and an optional trailing value — one Settings row.
 struct SettingsLabel: View {
     let title: String
-    let systemName: String
+    let symbol: AppSymbol
     let color: Color
     var value: String?
 
     var body: some View {
         HStack(spacing: 12) {
-            SettingsIcon(systemName, color: color)
+            SettingsIcon(symbol, color: color)
             Text(title)
             Spacer(minLength: 8)
             if let value {

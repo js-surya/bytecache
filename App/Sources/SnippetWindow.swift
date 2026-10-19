@@ -18,7 +18,7 @@ struct SnippetWindow: View {
                         editor = SnippetEditorModel(existing: snippet, session: services.session, detector: services.detector)
                     }
                 } else if let failed {
-                    ContentUnavailableView("Couldn't Open Snippet", systemImage: "exclamationmark.triangle", description: Text(failed))
+                    ContentUnavailableView("Couldn't Open Snippet", symbol: .warning, description: Text(failed))
                 } else {
                     ProgressView()
                 }

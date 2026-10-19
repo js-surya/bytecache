@@ -19,8 +19,8 @@ public struct SnippetRow: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
-                if snippet.isPinned { Image(systemName: "pin.fill").foregroundStyle(.orange).imageScale(.small) }
-                if snippet.isFavorite { Image(systemName: "star.fill").foregroundStyle(.yellow).imageScale(.small) }
+                if snippet.isPinned { Icon(.pinFill, size: 13).foregroundStyle(.orange).imageScale(.small) }
+                if snippet.isFavorite { Icon(.starFill, size: 13).foregroundStyle(.yellow).imageScale(.small) }
                 Text(snippet.title.isEmpty ? "Untitled snippet" : snippet.title)
                     .font(.headline)
                     .lineLimit(1)

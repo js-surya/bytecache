@@ -17,14 +17,14 @@ public struct LoginView: View {
         Form {
             Section {
                 VStack(spacing: 8) {
-                    Image(systemName: model.method == .apiKey ? "key.fill" : "person.fill")
+                    Icon(model.method == .apiKey ? .key : .person, size: 28)
                         .font(.system(size: 28, weight: .semibold))
                         .foregroundStyle(.white)
                         .frame(width: 64, height: 64)
                         .background(Color.accentColor.gradient, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                         .contentTransition(.symbolEffect(.replace))
                     Text("Sign In").font(.title.bold())
-                    Label(host, systemImage: "server.rack")
+                    Label(host, symbol: .server)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
@@ -77,12 +77,12 @@ public struct LoginView: View {
                                 model.apiKey = text.trimmingCharacters(in: .whitespacesAndNewlines)
                             }
                         } label: {
-                            Image(systemName: "doc.on.clipboard")
+                            Icon(.clipboard)
                         }
                         .accessibilityLabel("Paste API key")
 
                         Button { showKey.toggle() } label: {
-                            Image(systemName: showKey ? "eye.slash" : "eye")
+                            Icon(showKey ? .eyeOff : .eye)
                         }
                         .accessibilityLabel(showKey ? "Hide API key" : "Show API key")
                     }

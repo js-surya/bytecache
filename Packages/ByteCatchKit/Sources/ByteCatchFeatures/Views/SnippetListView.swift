@@ -20,23 +20,23 @@ public struct SnippetListView: View {
                     #if os(iOS)
                     .swipeActions(edge: .leading) {
                         Button { Task { await model.togglePin(snippet) } } label: {
-                            Label(snippet.isPinned ? "Unpin" : "Pin", systemImage: snippet.isPinned ? "pin.slash" : "pin")
+                            Label(snippet.isPinned ? "Unpin" : "Pin", symbol: snippet.isPinned ? .pinOff : .pin)
                         }.tint(.orange)
                         Button { Task { await model.toggleFavorite(snippet) } } label: {
-                            Label(snippet.isFavorite ? "Unfavorite" : "Favorite", systemImage: snippet.isFavorite ? "star.slash" : "star")
+                            Label(snippet.isFavorite ? "Unfavorite" : "Favorite", symbol: snippet.isFavorite ? .starOff : .star)
                         }.tint(.yellow)
                     }
                     .swipeActions(edge: .trailing) {
                         if model.selection == .recycleBin {
                             Button(role: .destructive) { Task { await model.deletePermanently(snippet) } } label: {
-                                Label("Delete Forever", systemImage: "trash.slash")
+                                Label("Delete Forever", symbol: .trashForever)
                             }
                             Button { Task { await model.restore(snippet) } } label: {
-                                Label("Restore", systemImage: "arrow.uturn.backward")
+                                Label("Restore", symbol: .restore)
                             }.tint(.green)
                         } else {
                             Button(role: .destructive) { Task { await model.recycle(snippet) } } label: {
-                                Label("Recycle", systemImage: "trash")
+                                Label("Recycle", symbol: .trash)
                             }
                         }
                     }
@@ -46,7 +46,7 @@ public struct SnippetListView: View {
         .overlay {
             if model.snippets.isEmpty && !model.isLoading {
                 if model.searchText.isEmpty {
-                    ContentUnavailableView("No Snippets", systemImage: "tray", description: Text("Nothing here yet."))
+                    ContentUnavailableView("No Snippets", symbol: .tray, description: Text("Nothing here yet."))
                 } else {
                     ContentUnavailableView.search(text: model.searchText)
                 }
@@ -54,7 +54,7 @@ public struct SnippetListView: View {
         }
         .safeAreaInset(edge: .top) {
             if model.isOffline {
-                Label("Offline — showing saved snippets", systemImage: "wifi.slash")
+                Label("Offline — showing saved snippets", symbol: .offline)
                     .font(.footnote)
                     .frame(maxWidth: .infinity)
                     .padding(6)
@@ -77,7 +77,7 @@ public struct SnippetListView: View {
                     }
                     Toggle("Search Code Too", isOn: $model.searchCode)
                 } label: {
-                    Label("Sort and Search Options", systemImage: "arrow.up.arrow.down")
+                    Label("Sort and Search Options", symbol: .sort)
                 }
             }
         }
@@ -109,23 +109,23 @@ public struct SnippetActions: View {
 
     public var body: some View {
         if model.selection == .recycleBin {
-            Button { Task { await model.restore(snippet) } } label: { Label("Restore", systemImage: "arrow.uturn.backward") }
+            Button { Task { await model.restore(snippet) } } label: { Label("Restore", symbol: .restore) }
             Button(role: .destructive) { Task { await model.deletePermanently(snippet) } } label: {
-                Label("Delete Forever", systemImage: "trash.slash")
+                Label("Delete Forever", symbol: .trashForever)
             }
         } else {
-            Button { Pasteboard.copy(allCode) } label: { Label("Copy Code", systemImage: "doc.on.doc") }
-            ShareLink(item: allCode) { Label("Share", systemImage: "square.and.arrow.up") }
+            Button { Pasteboard.copy(allCode) } label: { Label("Copy Code", symbol: .copy) }
+            ShareLink(item: allCode) { Label("Share", symbol: .share) }
             Divider()
             Button { Task { await model.togglePin(snippet) } } label: {
-                Label(snippet.isPinned ? "Unpin" : "Pin", systemImage: snippet.isPinned ? "pin.slash" : "pin")
+                Label(snippet.isPinned ? "Unpin" : "Pin", symbol: snippet.isPinned ? .pinOff : .pin)
             }
             Button { Task { await model.toggleFavorite(snippet) } } label: {
-                Label(snippet.isFavorite ? "Unfavorite" : "Favorite", systemImage: snippet.isFavorite ? "star.slash" : "star")
+                Label(snippet.isFavorite ? "Unfavorite" : "Favorite", symbol: snippet.isFavorite ? .starOff : .star)
             }
             Divider()
             Button(role: .destructive) { Task { await model.recycle(snippet) } } label: {
-                Label("Move to Recycle Bin", systemImage: "trash")
+                Label("Move to Recycle Bin", symbol: .trash)
             }
         }
     }

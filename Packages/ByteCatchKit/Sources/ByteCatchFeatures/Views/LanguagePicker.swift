@@ -28,7 +28,7 @@ public struct LanguagePicker: View {
                     ForEach(Self.sortedIDs, id: \.self) { id in
                         Button { onPick(id) } label: {
                             if id == selection {
-                                Label(LanguageName.display(id), systemImage: "checkmark")
+                                Label(LanguageName.display(id), symbol: .check)
                             } else {
                                 Text(LanguageName.display(id))
                             }
@@ -37,7 +37,7 @@ public struct LanguagePicker: View {
                 } label: {
                     HStack(spacing: 4) {
                         Text(LanguageName.display(selection))
-                        Image(systemName: "chevron.up.chevron.down").font(.caption2.weight(.semibold))
+                        Icon(.chevronsUpDown).font(.caption2.weight(.semibold))
                     }
                 }
                 .fixedSize()

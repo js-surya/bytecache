@@ -26,7 +26,7 @@ public struct CategoryField: View {
                             Button {
                                 categories.removeAll { $0 == category }
                             } label: {
-                                Label(category, systemImage: "xmark.circle.fill").labelStyle(.titleAndIcon)
+                                Label(category, symbol: .closeCircle).labelStyle(.titleAndIcon)
                             }
                             .buttonStyle(.bordered)
                             .controlSize(.small)

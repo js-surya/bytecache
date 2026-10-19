@@ -40,7 +40,7 @@ private struct PrivacyCover: View {
     var body: some View {
         ZStack {
             Rectangle().fill(.background)
-            Image(systemName: "curlybraces.square.fill").font(.system(size: 64)).foregroundStyle(.tint)
+            Icon(.appMark, size: 64).font(.system(size: 64)).foregroundStyle(.tint)
         }
         .ignoresSafeArea()
     }
@@ -51,7 +51,7 @@ struct LockScreenView: View {
 
     var body: some View {
         VStack(spacing: 18) {
-            Image(systemName: "lock.fill")
+            Icon(.lock, size: 34)
                 .font(.system(size: 34, weight: .semibold))
                 .foregroundStyle(.white)
                 .frame(width: 76, height: 76)
@@ -60,7 +60,7 @@ struct LockScreenView: View {
             Button {
                 Task { await lock.unlock() }
             } label: {
-                Label("Unlock with \(lock.biometry.name)", systemImage: lock.biometry.systemImage)
+                Label("Unlock with \(lock.biometry.name)", symbol: lock.biometry.symbol)
                     .font(.headline)
                     .padding(.horizontal, 8)
             }

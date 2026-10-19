@@ -40,7 +40,7 @@ public struct FragmentCard: View {
                         copied = false
                     }
                 } label: {
-                    Label(copied ? "Copied" : "Copy", systemImage: copied ? "checkmark" : "doc.on.doc")
+                    Label(copied ? "Copied" : "Copy", symbol: copied ? .check : .copy)
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)

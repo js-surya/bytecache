@@ -21,13 +21,13 @@ public struct SidebarView: View {
         List(selection: $selection) {
             Section("Library") {
                 ForEach([SidebarItem.all, .pinned, .favorites, .recycleBin], id: \.self) { item in
-                    Label(item.title, systemImage: item.systemImage).tag(item)
+                    Label(item.title, symbol: item.symbol).tag(item)
                 }
             }
             if !model.languages.isEmpty {
                 Section("Languages") {
                     ForEach(model.languages, id: \.self) { id in
-                        Label(LanguageName.display(id), systemImage: SidebarItem.language(id).systemImage)
+                        Label(LanguageName.display(id), symbol: SidebarItem.language(id).symbol)
                             .tag(SidebarItem.language(id))
                     }
                 }
@@ -35,7 +35,7 @@ public struct SidebarView: View {
             if !model.categories.isEmpty {
                 Section("Categories") {
                     ForEach(model.categories, id: \.self) { name in
-                        Label(name, systemImage: "tag").tag(SidebarItem.category(name))
+                        Label(name, symbol: .tag).tag(SidebarItem.category(name))
                     }
                 }
             }
@@ -60,7 +60,7 @@ public struct SidebarView: View {
         #if os(iOS)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button { showingSettings = true } label: { Label("Settings", systemImage: "gear") }
+                Button { showingSettings = true } label: { Label("Settings", symbol: .settings) }
             }
         }
         .sheet(isPresented: $showingSettings) {

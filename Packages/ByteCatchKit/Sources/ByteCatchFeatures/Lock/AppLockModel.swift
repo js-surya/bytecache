@@ -15,12 +15,12 @@ public enum BiometryKind: Sendable {
         }
     }
 
-    public var systemImage: String {
+    public var symbol: AppSymbol {
         switch self {
-        case .faceID: "faceid"
-        case .touchID: "touchid"
-        case .opticID: "opticid"
-        case .none: "lock.fill"
+        case .faceID: .faceID
+        case .touchID: .touchID
+        case .opticID: .opticID
+        case .none: .lock
         }
     }
 }

@@ -23,6 +23,12 @@ public enum AppAppearance: String, CaseIterable, Identifiable, Codable, Sendable
     }
 }
 
+public enum IconStyle: String, CaseIterable, Identifiable, Codable, Sendable {
+    case sfSymbols, lucide
+    public var id: String { rawValue }
+    public var title: String { self == .sfSymbols ? "SF Symbols" : "Lucide" }
+}
+
 public enum AccentChoice: String, CaseIterable, Identifiable, Codable, Sendable {
     case blue, purple, pink, red, orange, yellow, green, teal, indigo, graphite
     public var id: String { rawValue }
@@ -52,6 +58,7 @@ public final class AppSettings {
     public var appearance: AppAppearance { didSet { defaults.set(appearance.rawValue, forKey: Key.appearance) } }
     public var accent: AccentChoice { didSet { defaults.set(accent.rawValue, forKey: Key.accent) } }
     public var codeThemeID: String { didSet { defaults.set(codeThemeID, forKey: Key.codeThemeID) } }
+    public var iconStyle: IconStyle { didSet { defaults.set(iconStyle.rawValue, forKey: Key.iconStyle) } }
     public var showLineNumbers: Bool { didSet { defaults.set(showLineNumbers, forKey: Key.lineNumbers) } }
     /// Device-only switches (never synced themselves).
     public var iCloudSyncEnabled: Bool { didSet { defaults.set(iCloudSyncEnabled, forKey: Key.iCloudSync) } }
@@ -72,7 +79,7 @@ public final class AppSettings {
     @ObservationIgnored private let defaults: UserDefaults
 
     private enum Key {
-        static let appearance = "appearance", accent = "accent", codeThemeID = "codeThemeID"
+        static let appearance = "appearance", accent = "accent", codeThemeID = "codeThemeID", iconStyle = "iconStyle"
         static let fontSize = "codeFontSize", lineNumbers = "showLineNumbers"
         static let iCloudSync = "iCloudSyncEnabled", handoff = "handoffEnabled", suggestions = "suggestionsEnabled"
     }
@@ -81,6 +88,7 @@ public final class AppSettings {
         self.defaults = defaults
         appearance = defaults.string(forKey: Key.appearance).flatMap(AppAppearance.init) ?? .system
         accent = defaults.string(forKey: Key.accent).flatMap(AccentChoice.init) ?? .blue
+        iconStyle = defaults.string(forKey: Key.iconStyle).flatMap(IconStyle.init) ?? .sfSymbols
         let storedTheme = defaults.string(forKey: Key.codeThemeID) ?? CodeTheme.defaultID
         codeThemeID = CodeTheme.named(storedTheme) == nil ? CodeTheme.defaultID : storedTheme
         let size = defaults.object(forKey: Key.fontSize) as? Double ?? 14
@@ -99,7 +107,7 @@ public final class AppSettings {
     /// The preferences shared through iCloud.
     public var synced: SyncedSettings {
         SyncedSettings(appearance: appearance, accent: accent, codeThemeID: codeThemeID,
-                       codeFontSize: codeFontSize, showLineNumbers: showLineNumbers)
+                       codeFontSize: codeFontSize, showLineNumbers: showLineNumbers, iconStyle: iconStyle)
     }
 
     public func apply(_ remote: SyncedSettings) {
@@ -108,6 +116,7 @@ public final class AppSettings {
         if codeThemeID != remote.codeThemeID, CodeTheme.named(remote.codeThemeID) != nil { codeThemeID = remote.codeThemeID }
         if codeFontSize != remote.codeFontSize { codeFontSize = remote.codeFontSize }
         if showLineNumbers != remote.showLineNumbers { showLineNumbers = remote.showLineNumbers }
+        if let style = remote.iconStyle, iconStyle != style { iconStyle = style }
     }
 }
 
@@ -115,6 +124,7 @@ extension View {
     /// Applies the user's appearance and accent colour.
     public func appSettingsStyle(_ settings: AppSettings) -> some View {
         environment(settings)
+            .environment(\.iconStyle, settings.iconStyle)
             .preferredColorScheme(settings.appearance.colorScheme)
             .tint(settings.accent.color)
     }
@@ -126,12 +136,16 @@ public struct SyncedSettings: Codable, Equatable, Sendable {
     public var codeThemeID: String
     public var codeFontSize: Double
     public var showLineNumbers: Bool
+    /// Optional: absent in settings synced by earlier versions.
+    public var iconStyle: IconStyle?
 
-    public init(appearance: AppAppearance, accent: AccentChoice, codeThemeID: String, codeFontSize: Double, showLineNumbers: Bool) {
+    public init(appearance: AppAppearance, accent: AccentChoice, codeThemeID: String, codeFontSize: Double,
+                showLineNumbers: Bool, iconStyle: IconStyle? = nil) {
         self.appearance = appearance
         self.accent = accent
         self.codeThemeID = codeThemeID
         self.codeFontSize = codeFontSize
         self.showLineNumbers = showLineNumbers
+        self.iconStyle = iconStyle
     }
 }

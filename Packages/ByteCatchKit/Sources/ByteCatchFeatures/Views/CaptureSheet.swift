@@ -17,8 +17,8 @@ public struct CaptureSheet: View {
         Form {
             if model.signedOut {
                 Section {
-                    Label(CaptureModel.signInMessage, systemImage: "person.crop.circle.badge.exclamationmark")
-                    Button { Pasteboard.copy(model.text) } label: { Label("Copy Code", systemImage: "doc.on.doc") }
+                    Label(CaptureModel.signInMessage, symbol: .signedOut)
+                    Button { Pasteboard.copy(model.text) } label: { Label("Copy Code", symbol: .copy) }
                 }
             }
             Section("Code") {
@@ -50,7 +50,7 @@ public struct CaptureSheet: View {
                             if model.isSuggesting {
                                 ProgressView().controlSize(.small)
                             } else {
-                                Label("Suggest", systemImage: "sparkles")
+                                Label("Suggest", symbol: .sparkles)
                             }
                         }
                         .font(.caption)

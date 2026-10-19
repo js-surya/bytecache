@@ -20,7 +20,8 @@ let package = Package(
         // View models and SwiftUI views shared by the app and share extensions.
         .target(
             name: "ByteCatchFeatures",
-            dependencies: ["ByteCatchCore", "ByteCatchLanguage", "HighlightSwift"]
+            dependencies: ["ByteCatchCore", "ByteCatchLanguage", "HighlightSwift"],
+            resources: [.process("Resources")]
         ),
         // Test helpers only; not a product.
         .target(name: "ByteCatchTestSupport", dependencies: ["ByteCatchCore"]),

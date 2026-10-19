@@ -18,14 +18,14 @@ public enum SidebarItem: Hashable, Sendable {
         }
     }
 
-    public var systemImage: String {
+    public var symbol: AppSymbol {
         switch self {
-        case .all: "tray.full"
-        case .pinned: "pin"
-        case .favorites: "star"
-        case .recycleBin: "trash"
-        case .language: "chevron.left.forwardslash.chevron.right"
-        case .category: "tag"
+        case .all: .allSnippets
+        case .pinned: .pin
+        case .favorites: .star
+        case .recycleBin: .trash
+        case .language: .code
+        case .category: .tag
         }
     }
 }

@@ -29,7 +29,7 @@ struct ServersView: View {
                         Task { await session.switchTo(account.id) }
                     } label: {
                         HStack(spacing: 12) {
-                            SettingsIcon(account.apiKey != nil ? "key.fill" : "server.rack",
+                            SettingsIcon(account.apiKey != nil ? .key : .server,
                                          color: account.isSignedIn ? .green : .gray)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(account.displayName).foregroundStyle(.primary)
@@ -37,14 +37,14 @@ struct ServersView: View {
                             }
                             Spacer()
                             if account.id == session.activeAccountID {
-                                Image(systemName: "checkmark").foregroundStyle(.tint).fontWeight(.semibold)
+                                Icon(.check).foregroundStyle(.tint).fontWeight(.semibold)
                             }
                         }
                     }
                     .accessibilityAddTraits(account.id == session.activeAccountID ? .isSelected : [])
                     .contextMenu {
                         Button(role: .destructive) { Task { await session.removeAccount(account.id) } } label: {
-                            Label("Remove Server", systemImage: "trash")
+                            Label("Remove Server", symbol: .trash)
                         }
                     }
                 }
@@ -61,7 +61,7 @@ struct ServersView: View {
                     session.addServer()
                     dismiss()
                 } label: {
-                    Label("Add Server", systemImage: "plus.circle.fill")
+                    Label("Add Server", symbol: .plusCircle)
                 }
             }
         }
@@ -88,7 +88,7 @@ public struct ServerMenu: View {
                     Task { await session.switchTo(account.id) }
                 } label: {
                     if account.id == session.activeAccountID {
-                        Label(account.displayName, systemImage: "checkmark")
+                        Label(account.displayName, symbol: .check)
                     } else {
                         Text(account.displayName)
                     }
@@ -99,10 +99,10 @@ public struct ServerMenu: View {
                 SpotlightIndexer.removeAll()
                 session.addServer()
             } label: {
-                Label("Add Server…", systemImage: "plus")
+                Label("Add Server…", symbol: .plus)
             }
         } label: {
-            Label("Servers", systemImage: "server.rack")
+            Label("Servers", symbol: .server)
         }
     }
 }

@@ -56,19 +56,19 @@ public struct SnippetDetailView: View {
             ToolbarItemGroup {
                 if let list {
                     Button { Task { await list.togglePin(snippet) } } label: {
-                        Label(snippet.isPinned ? "Unpin" : "Pin", systemImage: snippet.isPinned ? "pin.fill" : "pin")
+                        Label(snippet.isPinned ? "Unpin" : "Pin", symbol: snippet.isPinned ? .pinFill : .pin)
                     }
                     Button { Task { await list.toggleFavorite(snippet) } } label: {
-                        Label(snippet.isFavorite ? "Unfavorite" : "Favorite", systemImage: snippet.isFavorite ? "star.fill" : "star")
+                        Label(snippet.isFavorite ? "Unfavorite" : "Favorite", symbol: snippet.isFavorite ? .starFill : .star)
                     }
                 }
                 ShareLink(item: allCode)
                 if showsOpenInWindow && supportsMultipleWindows {
                     Button { openWindow(value: snippet.id) } label: {
-                        Label("Open in New Window", systemImage: "macwindow.badge.plus")
+                        Label("Open in New Window", symbol: .newWindow)
                     }
                 }
-                Button(action: onEdit) { Label("Edit", systemImage: "pencil") }
+                Button(action: onEdit) { Label("Edit", symbol: .edit) }
             }
         }
     }

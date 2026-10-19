@@ -42,14 +42,14 @@ public struct ShareFlowView: View {
                     }
                 case .problem(let message):
                     ContentUnavailableView {
-                        Label("Nothing to Save", systemImage: "text.badge.xmark")
+                        Label("Nothing to Save", symbol: .noText)
                     } description: {
                         Text(message)
                     } actions: {
                         Button("Close", action: onFinish)
                     }
                 case .saved:
-                    ContentUnavailableView("Saved to ByteCatch", systemImage: "checkmark.circle.fill")
+                    ContentUnavailableView("Saved to ByteCatch", symbol: .checkCircle)
                         .foregroundStyle(.green)
                 }
             }

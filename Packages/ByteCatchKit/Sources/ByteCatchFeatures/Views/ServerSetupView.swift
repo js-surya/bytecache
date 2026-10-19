@@ -12,7 +12,7 @@ public struct ServerSetupView: View {
         Form {
             Section {
                 VStack(spacing: 8) {
-                    Image(systemName: "curlybraces.square.fill")
+                    Icon(.appMark, size: 48)
                         .font(.system(size: 48))
                         .foregroundStyle(.tint)
                     Text(AboutText.appName).font(.largeTitle.bold())

@@ -24,7 +24,7 @@ public struct EditorView: View {
                 if model.canSuggest {
                     Button { Task { await model.suggest() } } label: {
                         HStack {
-                            Label("Suggest Title & Tags", systemImage: "sparkles")
+                            Label("Suggest Title & Tags", symbol: .sparkles)
                             if model.isSuggesting { Spacer(); ProgressView().controlSize(.small) }
                         }
                     }
@@ -59,7 +59,7 @@ public struct EditorView: View {
                         Spacer()
                         if model.draft.fragments.count > 1 {
                             Button(role: .destructive) { model.removeFragment(at: IndexSet(integer: index)) } label: {
-                                Label("Remove File", systemImage: "minus.circle")
+                                Label("Remove File", symbol: .minusCircle)
                             }
                             .labelStyle(.iconOnly)
                         }
@@ -67,7 +67,7 @@ public struct EditorView: View {
                 }
             }
             Section {
-                Button { model.addFragment() } label: { Label("Add File", systemImage: "plus") }
+                Button { model.addFragment() } label: { Label("Add File", symbol: .plus) }
                 Toggle("Public", isOn: $model.draft.isPublic)
             } footer: {
                 if let error = model.error { Text(error).foregroundStyle(.red) }

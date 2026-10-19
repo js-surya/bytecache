@@ -54,7 +54,7 @@ public struct MarkdownView: View {
         case .bullet: Text("•").foregroundStyle(.secondary)
         case .number(let n): Text("\(n).").monospacedDigit().foregroundStyle(.secondary)
         case .task(let done):
-            Image(systemName: done ? "checkmark.square.fill" : "square").foregroundStyle(done ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+            Icon(done ? .checkboxChecked : .checkbox).foregroundStyle(done ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
         }
     }
 
