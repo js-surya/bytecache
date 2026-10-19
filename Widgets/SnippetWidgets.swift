@@ -1,5 +1,5 @@
 import AppIntents
-import ByteCatchCore
+import ByteCacheCore
 import SwiftUI
 import WidgetKit
 
@@ -43,9 +43,9 @@ struct SnippetWidgetView: View {
     var body: some View {
         switch entry.content {
         case .locked:
-            message("ByteCatch is Locked", systemImage: "lock.fill")
+            message("ByteCache is Locked", systemImage: "lock.fill")
         case .signedOut:
-            message("Open ByteCatch to sign in", systemImage: "curlybraces")
+            message("Open ByteCache to sign in", systemImage: "curlybraces")
         case .snippets(let snippets, _) where snippets.isEmpty:
             message(emptyMessage, systemImage: "tray")
         case .snippets(let snippets, _):
@@ -137,8 +137,8 @@ private var supportedFamilies: [WidgetFamily] {
 
 struct PinnedSnippetsWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "app.bytecatch.pinned", provider: SnippetProvider(pinnedOnly: true)) { entry in
-            SnippetWidgetView(entry: entry, title: "Pinned", emptyMessage: "Pin snippets in ByteCatch to see them here")
+        StaticConfiguration(kind: "app.bytecache.pinned", provider: SnippetProvider(pinnedOnly: true)) { entry in
+            SnippetWidgetView(entry: entry, title: "Pinned", emptyMessage: "Pin snippets in ByteCache to see them here")
                 .containerBackground(.fill.tertiary, for: .widget)
         }
         .configurationDisplayName("Pinned Snippets")
@@ -149,7 +149,7 @@ struct PinnedSnippetsWidget: Widget {
 
 struct RecentSnippetsWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "app.bytecatch.recent", provider: SnippetProvider(pinnedOnly: false)) { entry in
+        StaticConfiguration(kind: "app.bytecache.recent", provider: SnippetProvider(pinnedOnly: false)) { entry in
             SnippetWidgetView(entry: entry, title: "Recent", emptyMessage: "No snippets yet")
                 .containerBackground(.fill.tertiary, for: .widget)
         }
@@ -163,13 +163,13 @@ struct RecentSnippetsWidget: Widget {
 @available(iOS 18.0, *)
 struct SaveClipboardControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
-        StaticControlConfiguration(kind: "app.bytecatch.saveClipboard") {
+        StaticControlConfiguration(kind: "app.bytecache.saveClipboard") {
             ControlWidgetButton(action: SaveClipboardIntent()) {
                 Label("Save Clipboard", systemImage: "doc.on.clipboard")
             }
         }
         .displayName("Save Clipboard")
-        .description("Save what you copied to ByteCatch.")
+        .description("Save what you copied to ByteCache.")
     }
 }
 #endif
@@ -178,19 +178,19 @@ struct SaveClipboardControl: ControlWidget {
 @available(iOS 18.0, *)
 struct ScanCodeControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
-        StaticControlConfiguration(kind: "app.bytecatch.scanCode") {
+        StaticControlConfiguration(kind: "app.bytecache.scanCode") {
             ControlWidgetButton(action: ScanCodeIntent()) {
                 Label("Scan Code", systemImage: "camera.viewfinder")
             }
         }
         .displayName("Scan Code")
-        .description("Scan code from the camera into ByteCatch.")
+        .description("Scan code from the camera into ByteCache.")
     }
 }
 #endif
 
 @main
-struct ByteCatchWidgets: WidgetBundle {
+struct ByteCacheWidgets: WidgetBundle {
     var body: some Widget {
         PinnedSnippetsWidget()
         RecentSnippetsWidget()

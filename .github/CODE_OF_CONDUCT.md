@@ -1,6 +1,6 @@
 # Code of conduct
 
-ByteCatch follows the [Contributor Covenant, version 2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct/).
+ByteCache follows the [Contributor Covenant, version 2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct/).
 
 In short: be kind and respectful, assume good intent, welcome newcomers, and keep discussion about the
 work. Harassment, insults and personal attacks aren't tolerated in issues, pull requests or anywhere

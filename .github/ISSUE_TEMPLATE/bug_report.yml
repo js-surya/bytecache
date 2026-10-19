@@ -1,5 +1,5 @@
 name: Bug report
-description: Something in ByteCatch doesn't work as expected
+description: Something in ByteCache doesn't work as expected
 labels: ["bug"]
 body:
   - type: markdown
@@ -35,8 +35,8 @@ body:
     id: versions
     attributes:
       label: Versions
-      description: ByteCatch version (Settings → About), OS version and ByteStash server version
-      placeholder: ByteCatch 1.0 (1), iOS 26.1, ByteStash 1.6.0
+      description: ByteCache version (Settings → About), OS version and ByteStash server version
+      placeholder: ByteCache 1.0 (1), iOS 26.1, ByteStash 1.6.0
   - type: textarea
     id: logs
     attributes:

@@ -1,7 +1,7 @@
 #if os(iOS)
 import SwiftUI
-import ByteCatchCore
-import ByteCatchFeatures
+import ByteCacheCore
+import ByteCacheFeatures
 
 /// iPhone layout on iOS 26.1+: a Liquid Glass tab bar at the bottom with Search on the right.
 /// Scrolling down shrinks the bar to the current tab and the search button.

@@ -7,3 +7,5 @@ DerivedData/
 Config/Signing.xcconfig
 Tools/LanguageModelTrainer/.data/
 build/
+__pycache__/
+dist/

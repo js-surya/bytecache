@@ -1,6 +1,6 @@
 import AppKit
 
-// ByteCatch icon layers for Icon Composer, following Apple's app icon template:
+// ByteCache icon layers for Icon Composer, following Apple's app icon template:
 // 1024×1024 square canvas, no rounded corners (the system masks), background full-bleed,
 // foreground artwork as separate transparent layers kept inside the central safe area.
 let size = 1024

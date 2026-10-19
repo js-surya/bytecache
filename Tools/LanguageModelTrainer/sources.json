@@ -1,5 +1,5 @@
 {
-  "note": "Training sources for ByteCatch's language model. Only permissive licenses. `languages` limits which catalog ids are taken from each repo (by file extension). markdown/yaml are also taken from every repo.",
+  "note": "Training sources for ByteCache's language model. Only permissive licenses. `languages` limits which catalog ids are taken from each repo (by file extension). markdown/yaml are also taken from every repo.",
   "repos": [
     {"repo": "expressjs/express", "license": "MIT", "languages": ["javascript"]},
     {"repo": "axios/axios", "license": "MIT", "languages": ["javascript", "typescript"]},

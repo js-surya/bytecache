@@ -1,6 +1,6 @@
 import UIKit
 import SwiftUI
-import ByteCatchFeatures
+import ByteCacheFeatures
 
 /// Hosts the share flow inside the iOS share sheet.
 final class ShareViewController: UIViewController {

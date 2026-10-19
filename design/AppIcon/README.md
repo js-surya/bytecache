@@ -1,4 +1,4 @@
-# ByteCatch app icon (Icon Composer)
+# ByteCache app icon (Icon Composer)
 
 Layers drawn to Apple's App Icon Template (iOS/iPadOS/macOS/watchOS 27): 1024×1024 square canvas,
 no rounded corners (the system applies the mask and Liquid Glass), foreground inside the safe area.

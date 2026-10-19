@@ -1,8 +1,10 @@
 <p align="center">
-  <img src="docs/screenshots/icon.png" width="128" height="128" alt="ByteCatch app icon">
+  <img src="docs/screenshots/icon.png" width="128" height="128" alt="ByteCache app icon">
 </p>
 
-<h1 align="center">ByteCatch</h1>
+<h1 align="center">ByteCache</h1>
+
+<p align="center"><strong>Cache the bytes.</strong></p>
 
 <p align="center">
   A native iPhone, iPad and Mac client for <a href="https://github.com/jordan-dalby/ByteStash">ByteStash</a>, the self-hosted code snippet manager.<br>
@@ -26,12 +28,12 @@
   <img src="docs/screenshots/ipad.png" width="600" alt="iPad: snippet list and a highlighted snippet side by side">
 </p>
 
-> ByteCatch is an independent, unofficial app. It is not affiliated with the ByteStash project, talks only to ByteStash's HTTP API and contains no ByteStash code.
+> ByteCache is an independent, unofficial app. It is not affiliated with the ByteStash project, talks only to ByteStash's HTTP API and contains no ByteStash code.
 
 ## Features
 
 **Capture**
-- Share sheet from Safari or any app: select code → Share → ByteCatch
+- Share sheet from Safari or any app: select code → Share → ByteCache
 - Save what's on the clipboard from Control Center, the Lock Screen, the Action Button or Siri
 - Scan code with the camera or from a photo or screenshot, on the device
 - Saved while offline? It uploads by itself when you're back online
@@ -65,10 +67,10 @@
 You need Xcode 27 or later and [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`).
 
 ```sh
-git clone https://github.com/js-surya/bytecatch.git
-cd bytecatch
+git clone https://github.com/js-surya/bytecache.git
+cd bytecache
 cp Config/Signing.xcconfig.example Config/Signing.xcconfig   # put your Apple Team ID in it
-open ByteCatch.xcodeproj
+open ByteCache.xcodeproj
 ```
 
 To try it without your own server, tap **Try the demo server** on the first screen. It's public, so don't save real code there.
@@ -83,15 +85,15 @@ scripts/test.sh
 
 | Path | What's there |
 |---|---|
-| `Packages/ByteCatchKit` | All the logic, as a Swift package: `ByteCatchCore` (API, login, cache, offline queue), `ByteCatchLanguage` (language detection), `ByteCatchFeatures` (view models and shared SwiftUI views) |
+| `Packages/ByteCacheKit` | All the logic, as a Swift package: `ByteCacheCore` (API, login, cache, offline queue), `ByteCacheLanguage` (language detection), `ByteCacheFeatures` (view models and shared SwiftUI views) |
 | `App/` | The thin app target for iOS and macOS |
 | `ShareExtension-iOS/`, `ShareExtension-macOS/`, `Widgets/` | Extensions |
-| `Tools/LanguageModelTrainer` | Reproducible training of the language model ([data sources and licences](Packages/ByteCatchKit/Sources/ByteCatchLanguage/DATA.md)) |
+| `Tools/LanguageModelTrainer` | Reproducible training of the language model ([data sources and licences](Packages/ByteCacheKit/Sources/ByteCacheLanguage/DATA.md)) |
 | `docs/` | Design, plans, [privacy policy](docs/PRIVACY.md) and the [parity checklist](docs/PARITY_CHECKLIST.md) |
 
 ## Privacy
 
-ByteCatch collects no data: no analytics, tracking or ads, and no ByteCatch server. Your snippets only go to the ByteStash server you choose. Language detection, scanning and suggestions run on your device. Details are in the [privacy policy](docs/PRIVACY.md).
+ByteCache collects no data: no analytics, tracking or ads, and no ByteCache server. Your snippets only go to the ByteStash server you choose. Language detection, scanning and suggestions run on your device. Details are in the [privacy policy](docs/PRIVACY.md).
 
 ## Contributing
 
@@ -101,10 +103,10 @@ Bug reports and ideas are welcome. Please use the [issue forms](../../issues/new
 
 Built with ❤️ by [SyntaxError](https://github.com/js-surya) and Claude.
 
-Uses [HighlightSwift](https://github.com/appstefan/HighlightSwift) (MIT), [highlight.js](https://highlightjs.org) (BSD-3-Clause) and [Lucide](https://lucide.dev) icons (ISC). The colour palettes belong to their authors. The language model was trained on permissively licensed open-source code, and the test set contains short excerpts from it; [DATA.md](Packages/ByteCatchKit/Sources/ByteCatchLanguage/DATA.md) lists every source with its licence.
+Uses [HighlightSwift](https://github.com/appstefan/HighlightSwift) (MIT), [highlight.js](https://highlightjs.org) (BSD-3-Clause) and [Lucide](https://lucide.dev) icons (ISC). The colour palettes belong to their authors. The language model was trained on permissively licensed open-source code, and the test set contains short excerpts from it; [DATA.md](Packages/ByteCacheKit/Sources/ByteCacheLanguage/DATA.md) lists every source with its licence.
 
 ## Licence
 
-The code is under the [MIT License](LICENSE). The ByteCatch name and app icon are not covered by it: if you publish your own build, please use a different name and icon.
+The code is under the [MIT License](LICENSE). The ByteCache name and app icon are not covered by it: if you publish your own build, please use a different name and icon.
 
 Report security problems privately; see [SECURITY.md](.github/SECURITY.md). Everyone taking part follows the [code of conduct](.github/CODE_OF_CONDUCT.md).

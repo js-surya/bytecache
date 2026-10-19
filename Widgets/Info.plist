@@ -5,11 +5,11 @@
 	<key>BCAppGroupID</key>
 	<string>$(BC_APP_GROUP_ID)</string>
 	<key>BCKeychainGroup</key>
-	<string>$(AppIdentifierPrefix)app.bytecatch.shared</string>
+	<string>$(AppIdentifierPrefix)app.bytecache.shared</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>ByteCatch</string>
+	<string>ByteCache</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

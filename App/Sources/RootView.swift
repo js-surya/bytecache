@@ -1,6 +1,6 @@
 import SwiftUI
-import ByteCatchCore
-import ByteCatchFeatures
+import ByteCacheCore
+import ByteCacheFeatures
 
 /// Routes between server setup, login and the main split view.
 struct RootView: View {

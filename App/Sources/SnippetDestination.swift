@@ -1,6 +1,6 @@
 import SwiftUI
-import ByteCatchCore
-import ByteCatchFeatures
+import ByteCacheCore
+import ByteCacheFeatures
 
 /// Shows a snippet by id: the list's copy when it has one (so pin/favourite changes show live),
 /// otherwise the offline cache or a fetch — opening must not depend on which page the list loaded.

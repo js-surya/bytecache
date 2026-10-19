@@ -1,6 +1,6 @@
 import AppKit
 import SwiftUI
-import ByteCatchFeatures
+import ByteCacheFeatures
 
 /// Hosts the share flow in the macOS Share menu.
 final class ShareViewController: NSViewController {

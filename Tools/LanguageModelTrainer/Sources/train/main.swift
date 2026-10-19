@@ -1,7 +1,7 @@
 import CreateML
 import Foundation
 import NaturalLanguage
-import ByteCatchLanguage
+import ByteCacheLanguage
 
 // Usage: swift run --package-path Tools/LanguageModelTrainer train
 setvbuf(stdout, nil, _IOLBF, 0)
@@ -10,9 +10,9 @@ setvbuf(stdout, nil, _IOLBF, 0)
 
 let toolDir = URL(filePath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
 let repoRoot = toolDir.deletingLastPathComponent().deletingLastPathComponent()
-let languageDir = repoRoot.appending(path: "Packages/ByteCatchKit/Sources/ByteCatchLanguage")
-let modelURL = languageDir.appending(path: "Resources/ByteCatchLanguage.mlmodel")
-let heldoutURL = repoRoot.appending(path: "Packages/ByteCatchKit/Tests/ByteCatchLanguageTests/Fixtures/heldout.jsonl")
+let languageDir = repoRoot.appending(path: "Packages/ByteCacheKit/Sources/ByteCacheLanguage")
+let modelURL = languageDir.appending(path: "Resources/ByteCacheLanguage.mlmodel")
+let heldoutURL = repoRoot.appending(path: "Packages/ByteCacheKit/Tests/ByteCacheLanguageTests/Fixtures/heldout.jsonl")
 let dataMdURL = languageDir.appending(path: "DATA.md")
 
 let labels = Set(LanguageCatalog.ids).subtracting(ruleOnlyIds)
@@ -188,7 +188,7 @@ try heldout.map { String(decoding: try encoder.encode($0), as: UTF8.self) }.join
     .write(to: heldoutURL, atomically: true, encoding: .utf8)
 
 try classifier.write(to: modelURL, metadata: MLModelMetadata(
-    author: "ByteCatch", shortDescription: "Code language classifier over CodeTokenizer.features", version: "1"
+    author: "ByteCache", shortDescription: "Code language classifier over CodeTokenizer.features", version: "1"
 ))
 let size = (try FileManager.default.attributesOfItem(atPath: modelURL.path)[.size] as? Int) ?? 0
 print("model bytes:", size)

@@ -1,6 +1,6 @@
 import SwiftUI
-import ByteCatchCore
-import ByteCatchFeatures
+import ByteCacheCore
+import ByteCacheFeatures
 
 /// A snippet in its own window (iPad and Mac).
 struct SnippetWindow: View {

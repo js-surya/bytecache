@@ -3,8 +3,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-swift test --package-path Packages/ByteCatchKit
+swift test --package-path Packages/ByteCacheKit
 xcodegen generate --quiet
-xcodebuild -scheme ByteCatch -destination 'generic/platform=iOS Simulator' build -quiet
-xcodebuild -scheme ByteCatch -destination 'platform=macOS' build CODE_SIGNING_ALLOWED=NO -quiet
+xcodebuild -scheme ByteCache -destination 'generic/platform=iOS Simulator' build -quiet
+xcodebuild -scheme ByteCache -destination 'platform=macOS' build CODE_SIGNING_ALLOWED=NO -quiet
 echo "All green."

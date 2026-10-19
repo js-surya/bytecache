@@ -1,7 +1,7 @@
 import CoreSpotlight
 import SwiftUI
-import ByteCatchCore
-import ByteCatchFeatures
+import ByteCacheCore
+import ByteCacheFeatures
 
 /// Sidebar | list | detail. Collapses to a stack on iPhone.
 struct MainSplitView: View {

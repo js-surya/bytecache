@@ -7,8 +7,8 @@
 	<key>com.apple.security.network.client</key>
 	<true/>
 	<key>com.apple.security.application-groups</key>
-	<array><string>$(TeamIdentifierPrefix)app.bytecatch</string></array>
+	<array><string>$(TeamIdentifierPrefix)app.bytecache</string></array>
 	<key>keychain-access-groups</key>
-	<array><string>$(AppIdentifierPrefix)app.bytecatch.shared</string></array>
+	<array><string>$(AppIdentifierPrefix)app.bytecache.shared</string></array>
 </dict>
 </plist>

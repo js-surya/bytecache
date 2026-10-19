@@ -1,6 +1,6 @@
 import AppIntents
-import ByteCatchCore
-import ByteCatchFeatures
+import ByteCacheCore
+import ByteCacheFeatures
 
 struct SnippetEntity: AppEntity {
     static let typeDisplayRepresentation: TypeDisplayRepresentation = "Snippet"

@@ -1,4 +1,4 @@
-import ByteCatchCore
+import ByteCacheCore
 import Observation
 
 /// Requests to show a snippet, from Spotlight or the Open Snippet intent.
@@ -6,7 +6,7 @@ import Observation
 final class AppNavigator {
     static let shared = AppNavigator()
     var pendingSnippetID: Int?
-    /// Set by the Save Clipboard control/shortcut and `bytecatch://capture/clipboard`.
+    /// Set by the Save Clipboard control/shortcut and `bytecache://capture/clipboard`.
     var pendingClipboardCapture = false
     var pendingScan = false
 

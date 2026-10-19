@@ -1,15 +1,15 @@
 import AppIntents
-import ByteCatchCore
-import ByteCatchFeatures
-import ByteCatchLanguage
+import ByteCacheCore
+import ByteCacheFeatures
+import ByteCacheLanguage
 
 struct IntentMessage: Error, CustomLocalizedStringResourceConvertible {
     let message: String
     var localizedStringResource: LocalizedStringResource { "\(message)" }
 }
 
-struct SaveToByteCatchIntent: AppIntent {
-    static let title: LocalizedStringResource = "Save to ByteCatch"
+struct SaveToByteCacheIntent: AppIntent {
+    static let title: LocalizedStringResource = "Save to ByteCache"
     static let description = IntentDescription("Saves text as a new snippet on your ByteStash server. The language is detected automatically.")
 
     @Parameter(title: "Code", inputOptions: String.IntentInputOptions(multiline: true))
@@ -22,7 +22,7 @@ struct SaveToByteCatchIntent: AppIntent {
     var language: String?
 
     static var parameterSummary: some ParameterSummary {
-        Summary("Save \(\.$text) to ByteCatch") {
+        Summary("Save \(\.$text) to ByteCache") {
             \.$snippetTitle
             \.$language
         }
@@ -69,10 +69,10 @@ struct OpenSnippetIntent: OpenIntent {
     }
 }
 
-struct ByteCatchShortcuts: AppShortcutsProvider {
+struct ByteCacheShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
-            intent: SaveToByteCatchIntent(),
+            intent: SaveToByteCacheIntent(),
             phrases: ["Save to \(.applicationName)", "Save code to \(.applicationName)"],
             shortTitle: "Save Snippet",
             systemImageName: "square.and.arrow.down"
