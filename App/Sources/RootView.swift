@@ -62,6 +62,12 @@ struct RootView: View {
                 await services.onboarding.connect()
                 await services.onboarding.login()
             }
+            // `-BCOpenSnippet <id>`: open a snippet once signed in (screenshots).
+            if let i = ProcessInfo.processInfo.arguments.firstIndex(of: "-BCOpenSnippet"),
+               ProcessInfo.processInfo.arguments.indices.contains(i + 1),
+               let id = Int(ProcessInfo.processInfo.arguments[i + 1]) {
+                AppNavigator.shared.pendingSnippetID = id
+            }
             // `BC_DEBUG_API_KEY` environment variable: pre-fill the API key field (simulator clipboard sync is unreliable).
             if let key = ProcessInfo.processInfo.environment["BC_DEBUG_API_KEY"], case .needsLogin = services.session.state {
                 services.onboarding.method = .apiKey

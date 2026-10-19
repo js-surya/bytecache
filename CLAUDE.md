@@ -16,7 +16,7 @@ Unofficial native ByteStash client for iPhone, iPad and Mac (SwiftUI, one codeba
 - Retrain: `Tools/LanguageModelTrainer/fetch-sources.sh` then `swift run -c release --package-path Tools/LanguageModelTrainer train` (~15 min). Any change to `CodeTokenizer.features` needs a retrain. Acceptance tests: `LanguageEvalTests`, `RegressionTests`.
 
 ## Debug launch arguments
-- `-BCDemoLogin` signs in to the demo server; `-BCSelectFirst` selects the first snippet; `-BCShowSettings` opens Settings once; `-BCNewSnippet` opens the editor; `-BCTab search|library|pinned|favorites` opens an iPhone tab; env `BC_DEBUG_API_KEY` pre-fills the API key field (Debug builds only).
+- `-BCDemoLogin` signs in to the demo server; `-BCSelectFirst` selects the first snippet; `-BCShowSettings` opens Settings once; `-BCNewSnippet` opens the editor; `-BCTab search|library|pinned|favorites` opens an iPhone tab; `-BCOpenSnippet <id>` opens a snippet; env `BC_DEBUG_API_KEY` pre-fills the API key field (Debug builds only).
 - After each build, install it on the main iPhone simulator (iPhone 18 Pro) without debug flags; use the spare iPhone 17e for screenshots.
 
 ## Commands

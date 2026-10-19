@@ -177,9 +177,7 @@ struct PhoneTabsView: View {
                 }
             }
             .navigationDestination(item: selection) { id in
-                if let snippet = model.snippets.first(where: { $0.id == id }) {
-                    SnippetDetailView(snippet: snippet, list: model) { onEdit(snippet) }
-                }
+                SnippetDestination(id: id, list: model, services: services, onEdit: onEdit)
             }
     }
 }

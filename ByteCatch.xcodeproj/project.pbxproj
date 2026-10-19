@@ -12,6 +12,7 @@
 		0CAA7FA2814CEC7B588965F4 /* AppNavigator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6AF48382EF4B267429237E7 /* AppNavigator.swift */; };
 		26A542E9740AEC06728A967E /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12855A995C6E19339685CED3 /* ShareViewController.swift */; };
 		50D5E0443B187DAF7D3713C5 /* ByteCatchFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = B26A3093597AB739C2DF0511 /* ByteCatchFeatures */; };
+		5597FE20EBC04C8A5626BD6D /* SnippetDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8920685D3957AB0F48B4AACA /* SnippetDestination.swift */; };
 		5F75781056007E14A3E95F00 /* ByteCatchFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = E78D4BEF3C7ED8F59F9D494A /* ByteCatchFeatures */; };
 		696440C9A886F0CF287B735B /* Widgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = EFED486867B64D093C5ED041 /* Widgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		7682168EE4B9626F45CCBB34 /* ByteCatchCore in Frameworks */ = {isa = PBXBuildFile; productRef = 7CEDA390447B6039AE590DD4 /* ByteCatchCore */; };
@@ -100,6 +101,7 @@
 		61BC3B1A0E40FC429B39F979 /* ByteCatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ByteCatchApp.swift; sourceTree = "<group>"; };
 		66D838413DCB2050F3742666 /* SnippetIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetIntents.swift; sourceTree = "<group>"; };
 		807D3002C3AD054938EB719C /* ByteCatchKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ByteCatchKit; path = Packages/ByteCatchKit; sourceTree = SOURCE_ROOT; };
+		8920685D3957AB0F48B4AACA /* SnippetDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetDestination.swift; sourceTree = "<group>"; };
 		8A63EA4DB76956252DEAFC1E /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
 		91115E2D302E39CFA672F325 /* MainSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainSplitView.swift; sourceTree = "<group>"; };
 		9ADF007066E88A5F977BDCD3 /* PhoneTabsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneTabsView.swift; sourceTree = "<group>"; };
@@ -245,6 +247,7 @@
 				91115E2D302E39CFA672F325 /* MainSplitView.swift */,
 				9ADF007066E88A5F977BDCD3 /* PhoneTabsView.swift */,
 				578F0BBD49A6125840F8204E /* RootView.swift */,
+				8920685D3957AB0F48B4AACA /* SnippetDestination.swift */,
 				02BAA92960ADC054C238B0AA /* SnippetWindow.swift */,
 				B2CED7555CBE476EEB00FD8E /* Intents */,
 			);
@@ -454,6 +457,7 @@
 				DF1F192ACF61472B0193B5F9 /* MainSplitView.swift in Sources */,
 				0287DB27B23BC5A45311F18D /* PhoneTabsView.swift in Sources */,
 				9EE1FB947F289D8DFA267B5A /* RootView.swift in Sources */,
+				5597FE20EBC04C8A5626BD6D /* SnippetDestination.swift in Sources */,
 				B4AD0729A2F3278FF81FD9A0 /* SnippetEntity.swift in Sources */,
 				83AFB29D0CC866D1C8464D89 /* SnippetIntents.swift in Sources */,
 				E5DC5AC650A6EE10C135D7B1 /* SnippetWindow.swift in Sources */,

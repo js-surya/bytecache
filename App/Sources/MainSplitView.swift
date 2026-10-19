@@ -10,6 +10,7 @@ struct MainSplitView: View {
     @State private var list: SnippetListModel
     @State private var sidebarSelection: SidebarItem? = .all
     @State private var selectedSnippet: Snippet.ID?
+    @State private var loadedSection: SidebarItem??
     @State private var editor: SnippetEditorModel?
     @State private var capture: CaptureModel?
     @State private var clipboard = ClipboardWatcher()
@@ -28,8 +29,14 @@ struct MainSplitView: View {
         layout
         .task(id: sidebarSelection) {
             list.selection = sidebarSelection ?? .all
-            selectedSnippet = nil
+            // Only a change of section clears the open snippet; the first load must not drop one
+            // opened from a widget, Spotlight or Handoff at launch.
+            if loadedSection != nil, loadedSection != sidebarSelection { selectedSnippet = nil }
+            loadedSection = sidebarSelection
             await list.refresh()
+            if let id = selectedSnippet, !list.snippets.contains(where: { $0.id == id }) {
+                _ = await list.reveal(id: id)
+            }
             #if DEBUG
             if ProcessInfo.processInfo.arguments.contains("-BCSelectFirst") { selectedSnippet = list.snippets.first?.id }
             if ProcessInfo.processInfo.arguments.contains("-BCNewSnippet"), editor == nil { startEditing(nil) }
@@ -74,8 +81,9 @@ struct MainSplitView: View {
         }
         .task(id: AppNavigator.shared.pendingSnippetID) {
             guard let id = AppNavigator.shared.pendingSnippetID else { return }
-            AppNavigator.shared.pendingSnippetID = nil
+            // Clear the request only afterwards: changing the task's id cancels the running fetch.
             if await list.reveal(id: id) { selectedSnippet = id }
+            AppNavigator.shared.pendingSnippetID = nil
         }
         .onChange(of: scenePhase) { if scenePhase == .active { clipboard.check() } }
         .focusedSceneValue(\.snippetCommands, commands)
@@ -158,8 +166,9 @@ struct MainSplitView: View {
                 .navigationSplitViewColumnWidth(min: 260, ideal: 320)
                 #endif
         } detail: {
-            if let id = selectedSnippet, let snippet = list.snippets.first(where: { $0.id == id }) {
-                SnippetDetailView(snippet: snippet, list: list) { startEditing(snippet) }
+            if let id = selectedSnippet {
+                SnippetDestination(id: id, list: list, services: services) { startEditing($0) }
+                    .id(id)
             } else {
                 ContentUnavailableView("No Snippet Selected", symbol: .braces,
                                        description: Text("Pick a snippet, or press ⌘N to create one."))
