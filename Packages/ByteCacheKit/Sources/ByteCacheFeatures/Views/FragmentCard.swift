@@ -90,7 +90,7 @@ public struct FragmentCard: View {
 
     private func copyButton(iconOnly: Bool) -> some View {
         Button {
-            Pasteboard.copy(fragment.code)
+            Pasteboard.copy(fragment.code, toast: false)
             onCopy()
             copied = true
             Task {

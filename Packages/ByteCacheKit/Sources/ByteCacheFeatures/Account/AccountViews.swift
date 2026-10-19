@@ -18,7 +18,7 @@ struct APIKeysView: View {
                             .font(.system(.callout, design: .monospaced))
                             .textSelection(.enabled)
                         Button {
-                            Pasteboard.copy(created.key)
+                            Pasteboard.copy(created.key, toast: false)
                             copied = true
                         } label: {
                             Label(copied ? "Copied" : "Copy Key", symbol: copied ? .check : .copy)

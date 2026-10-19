@@ -5,6 +5,10 @@ import ByteCacheFeatures
 struct ByteCacheApp: App {
     @State private var services = AppServices()
 
+    init() {
+        CopyToastWindow.install()
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView(services: services)

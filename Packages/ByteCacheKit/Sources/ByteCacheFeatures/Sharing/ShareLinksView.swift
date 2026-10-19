@@ -107,7 +107,7 @@ struct ShareLinksView: View {
     }
 
     private func copy(_ url: URL, id: String) {
-        Pasteboard.copy(url.absoluteString)
+        Pasteboard.copy(url.absoluteString, toast: false)
         copiedID = id
     }
 }
