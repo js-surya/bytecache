@@ -103,6 +103,14 @@ public struct SettingsView: View {
 
             Section {
                 NavigationLink {
+                    BackupView(model: BackupModel(session: session))
+                } label: {
+                    SettingsLabel(title: "Backup & Import", symbol: .download, color: .teal)
+                }
+            }
+
+            Section {
+                NavigationLink {
                     ServersView(session: session)
                 } label: {
                     SettingsLabel(title: "Servers", symbol: .server, color: .green,
