@@ -15,19 +15,18 @@ public struct SnippetListView: View {
     }
 
     public var body: some View {
-        List(selection: $selection) {
-            if model.pinnedSection.isEmpty {
-                ForEach(model.snippets) { row($0) }
+        Group {
+            if model.isSelecting {
+                List(selection: $model.selectedIDs) { listContent }
+                    #if os(iOS)
+                    .environment(\.editMode, .constant(.active))
+                    #endif
             } else {
-                Section {
-                    ForEach(model.pinnedSection) { row($0) }
-                } header: {
-                    Label("Pinned", symbol: .pinFill).foregroundStyle(.orange)
-                }
-                Section("Snippets") {
-                    ForEach(model.otherSection) { row($0) }
-                }
+                List(selection: $selection) { listContent }
             }
+        }
+        .safeAreaInset(edge: .bottom) {
+            if model.isSelecting { BulkActionBar(model: model) }
         }
         .overlay {
             if model.snippets.isEmpty && !model.isLoading {
@@ -52,6 +51,11 @@ public struct SnippetListView: View {
         .refreshable { await model.refresh() }
         .navigationTitle(model.selection.title)
         .toolbar {
+            if !model.isReadOnly && !model.snippets.isEmpty {
+                ToolbarItem {
+                    Button(model.isSelecting ? "Done" : "Select") { model.isSelecting.toggle() }
+                }
+            }
             ToolbarItem {
                 Menu {
                     Picker("Sort", selection: $model.sort) {
@@ -78,6 +82,23 @@ public struct SnippetListView: View {
         } message: {
             Text(model.error ?? "")
         }
+    }
+
+    @ViewBuilder
+    private var listContent: some View {
+            if model.pinnedSection.isEmpty {
+                ForEach(model.snippets) { row($0) }
+            } else {
+                Section {
+                    ForEach(model.pinnedSection) { row($0) }
+                } header: {
+                    Label("Pinned", symbol: .pinFill).foregroundStyle(.orange)
+                }
+                Section("Snippets") {
+                    ForEach(model.otherSection) { row($0) }
+                }
+            }
+        
     }
 
     private func row(_ snippet: Snippet) -> some View {
@@ -189,6 +210,74 @@ private struct OptionalSearch: ViewModifier {
                 .modifier(SearchFocus(request: model.searchFocusRequest))
         } else {
             content
+        }
+    }
+}
+
+/// Actions for the selected snippets, shown at the bottom in select mode.
+struct BulkActionBar: View {
+    let model: SnippetListModel
+    @State private var categoryPrompt: CategoryPrompt?
+    @State private var categoryName = ""
+
+    private enum CategoryPrompt: Identifiable { case add, remove; var id: Self { self } }
+
+    var body: some View {
+        VStack(spacing: 8) {
+            HStack {
+                Text(model.selectedIDs.isEmpty ? "Select snippets" : "\(model.selectedIDs.count) selected")
+                    .font(.subheadline.weight(.semibold))
+                Spacer()
+                Button(model.selectedIDs.count == model.snippets.count ? "Deselect All" : "Select All") {
+                    model.selectedIDs = model.selectedIDs.count == model.snippets.count ? [] : Set(model.snippets.map(\.id))
+                }
+                .font(.subheadline)
+                if model.isBulkWorking { ProgressView().controlSize(.small) }
+            }
+            HStack(spacing: 18) {
+                if model.selection == .recycleBin {
+                    Button { Task { await model.bulkRestore() } } label: { Label("Restore", symbol: .restore) }
+                    Button(role: .destructive) { Task { await model.bulkDeleteForever() } } label: {
+                        Label("Delete Forever", symbol: .trashForever)
+                    }
+                } else {
+                    Menu {
+                        Button { Task { await model.bulkSetPinned(true) } } label: { Label("Pin", symbol: .pin) }
+                        Button { Task { await model.bulkSetPinned(false) } } label: { Label("Unpin", symbol: .pinOff) }
+                    } label: { Label("Pin", symbol: .pin) }
+                    Menu {
+                        Button { Task { await model.bulkSetFavorite(true) } } label: { Label("Favorite", symbol: .star) }
+                        Button { Task { await model.bulkSetFavorite(false) } } label: { Label("Unfavorite", symbol: .starOff) }
+                    } label: { Label("Favorite", symbol: .star) }
+                    Menu {
+                        Button { categoryPrompt = .add } label: { Label("Add Category…", symbol: .tag) }
+                        Button { categoryPrompt = .remove } label: { Label("Remove Category…", symbol: .minusCircle) }
+                    } label: { Label("Category", symbol: .tag) }
+                    Spacer()
+                    Button(role: .destructive) { Task { await model.bulkRecycle() } } label: {
+                        Label("Recycle", symbol: .trash)
+                    }
+                }
+            }
+            .labelStyle(.iconOnly)
+            .font(.title3)
+            .disabled(model.selectedIDs.isEmpty || model.isBulkWorking)
+        }
+        .padding(12)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .padding(.horizontal)
+        .padding(.bottom, 6)
+        .alert(categoryPrompt == .remove ? "Remove Category" : "Add Category",
+               isPresented: Binding(get: { categoryPrompt != nil }, set: { if !$0 { categoryPrompt = nil } })) {
+            TextField("Category", text: $categoryName)
+            Button("Cancel", role: .cancel) { categoryName = "" }
+            Button(categoryPrompt == .remove ? "Remove" : "Add") {
+                let name = categoryName, remove = categoryPrompt == .remove
+                categoryName = ""
+                Task { remove ? await model.bulkRemoveCategory(name) : await model.bulkAddCategory(name) }
+            }
+        } message: {
+            Text("For the \(model.selectedIDs.count) selected snippets.")
         }
     }
 }

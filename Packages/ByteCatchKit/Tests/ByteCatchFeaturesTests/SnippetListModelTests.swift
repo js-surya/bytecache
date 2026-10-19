@@ -236,3 +236,58 @@ final class PublicSnippetsTests: XCTestCase {
         XCTAssertEqual(snippet.username, "alice")
     }
 }
+
+@MainActor
+final class BulkActionTests: XCTestCase {
+    private func bodies(_ transport: StubTransport) -> [[String: Any]] {
+        transport.requests.compactMap { $0.httpBody.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] } }
+    }
+
+    func testBulkPinOnlyChangesThoseThatNeedIt() async {
+        let page = TestJSON.page([TestJSON.snippet(1, pinned: true), TestJSON.snippet(2), TestJSON.snippet(3)])
+        let (session, transport) = await TestSession.signedIn([.json(page), .json("{}")])
+        let model = SnippetListModel(session: session, cache: nil)
+        await model.refresh()
+        model.isSelecting = true
+        model.selectedIDs = [1, 2, 3]
+        let before = transport.requests.count
+        await model.bulkSetPinned(true)
+        XCTAssertEqual(transport.requests.count - before, 2, "1 was already pinned")
+        XCTAssertTrue(model.snippets.allSatisfy(\.isPinned))
+        XCTAssertFalse(model.isSelecting)
+        XCTAssertTrue(model.selectedIDs.isEmpty)
+    }
+
+    func testAddAndRemoveCategorySaveWholeSnippets() async throws {
+        let page = TestJSON.page([TestJSON.snippet(1, code: "a", categories: ["web"]), TestJSON.snippet(2, code: "b")])
+        let (session, transport) = await TestSession.signedIn([.json(page), .json(TestJSON.snippet(1, categories: ["web", "ops"])),
+                                                               .json(TestJSON.snippet(2, categories: ["ops"]))])
+        let model = SnippetListModel(session: session, cache: nil)
+        await model.refresh()
+        model.selectedIDs = [1, 2]
+        await model.bulkAddCategory(" Ops ")
+        let puts = transport.requests.filter { $0.httpMethod == "PUT" }
+        XCTAssertEqual(puts.count, 2)
+        let sent = bodies(transport).suffix(2)
+        XCTAssertEqual(sent.first?["categories"] as? [String], ["web", "ops"])
+        XCTAssertEqual((sent.first?["fragments"] as? [[String: Any]])?.first?["code"] as? String, "a")
+        XCTAssertEqual(sent.last?["categories"] as? [String], ["ops"])
+
+        let (session2, transport2) = await TestSession.signedIn([.json(page), .json(TestJSON.snippet(1))])
+        let model2 = SnippetListModel(session: session2, cache: nil)
+        await model2.refresh()
+        model2.selectedIDs = [1, 2]
+        await model2.bulkRemoveCategory("web")
+        XCTAssertEqual(transport2.requests.filter { $0.httpMethod == "PUT" }.count, 1, "only snippets that have it")
+    }
+
+    func testBulkRecycleRemovesRows() async {
+        let page = TestJSON.page([TestJSON.snippet(1), TestJSON.snippet(2), TestJSON.snippet(3)])
+        let (session, _) = await TestSession.signedIn([.json(page), .json("{}")])
+        let model = SnippetListModel(session: session, cache: nil)
+        await model.refresh()
+        model.selectedIDs = [1, 3]
+        await model.bulkRecycle()
+        XCTAssertEqual(model.snippets.map(\.id), [2])
+    }
+}

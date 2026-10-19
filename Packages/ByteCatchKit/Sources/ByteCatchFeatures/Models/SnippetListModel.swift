@@ -14,6 +14,11 @@ public final class SnippetListModel {
     public private(set) var isOffline = false
     public private(set) var isLoading = false
     public var error: String?
+    /// Select mode for bulk actions.
+    public var isSelecting = false { didSet { if !isSelecting { selectedIDs = [] } } }
+    public var selectedIDs: Set<Int> = []
+    public private(set) var isBulkWorking = false
+
     /// Bumped by the Find command; the list view focuses its search field when it changes.
     public var searchFocusRequest = 0
 
@@ -40,6 +45,70 @@ public final class SnippetListModel {
 
     private func fetch(_ q: SnippetQuery, _ client: APIClient) async throws(APIError) -> SnippetPage {
         selection == .publicSnippets ? try await client.publicSnippets(q) : try await client.snippets(q)
+    }
+
+    // MARK: Bulk actions
+
+    private var selectedSnippets: [Snippet] { snippets.filter { selectedIDs.contains($0.id) } }
+
+    private func bulk(_ work: () async -> Void) async {
+        isBulkWorking = true
+        await work()
+        isBulkWorking = false
+        isSelecting = false
+    }
+
+    public func bulkSetPinned(_ value: Bool) async {
+        await bulk { for s in selectedSnippets where s.isPinned != value { await togglePin(s) } }
+    }
+
+    public func bulkSetFavorite(_ value: Bool) async {
+        await bulk { for s in selectedSnippets where s.isFavorite != value { await toggleFavorite(s) } }
+    }
+
+    public func bulkRecycle() async {
+        await bulk { for s in selectedSnippets { await recycle(s) } }
+    }
+
+    public func bulkRestore() async {
+        await bulk { for s in selectedSnippets { await restore(s) } }
+    }
+
+    public func bulkDeleteForever() async {
+        await bulk { for s in selectedSnippets { await deletePermanently(s) } }
+    }
+
+    public func bulkAddCategory(_ raw: String) async {
+        let name = raw.trimmingCharacters(in: .whitespaces).lowercased()
+        guard !name.isEmpty else { return }
+        await bulk {
+            for s in selectedSnippets where !s.categories.map({ $0.lowercased() }).contains(name) {
+                await saveCategories(s, s.categories + [name])
+            }
+        }
+    }
+
+    public func bulkRemoveCategory(_ raw: String) async {
+        let name = raw.trimmingCharacters(in: .whitespaces).lowercased()
+        await bulk {
+            for s in selectedSnippets where s.categories.map({ $0.lowercased() }).contains(name) {
+                await saveCategories(s, s.categories.filter { $0.lowercased() != name })
+            }
+        }
+    }
+
+    /// Category changes save the whole snippet (PUT replaces everything).
+    private func saveCategories(_ snippet: Snippet, _ categories: [String]) async {
+        guard let client = session.client else { return }
+        var draft = SnippetDraft(from: snippet)
+        draft.categories = categories
+        do {
+            let saved = try await client.update(id: snippet.id, draft)
+            if let i = snippets.firstIndex(where: { $0.id == snippet.id }) { snippets[i] = saved }
+            cache?.upsert(saved, server: client.server)
+        } catch {
+            handle(error, offlineQuery: nil, server: client.server)
+        }
     }
 
     /// Makes a snippet public or private. Sends the whole snippet (PUT replaces everything).
