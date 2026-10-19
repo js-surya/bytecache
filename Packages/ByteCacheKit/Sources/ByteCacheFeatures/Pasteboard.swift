@@ -14,12 +14,15 @@ public enum Pasteboard {
         #endif
     }
 
-    public static func copy(_ text: String) {
+    /// Copies and gives feedback (`CopyFeedback`); `toast: false` where the button shows its own "Copied".
+    @MainActor
+    public static func copy(_ text: String, toast: Bool = true) {
         #if canImport(UIKit)
         UIPasteboard.general.string = text
         #else
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(text, forType: .string)
         #endif
+        CopyFeedback.copied(toast: toast)
     }
 }

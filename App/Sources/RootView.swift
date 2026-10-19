@@ -94,6 +94,15 @@ struct RootView: View {
                 try? await services.session.connect(server)
                 try? await services.session.loginWithAPIKey(key)
             }
+            // `-BCCopyToast`: show the "Copied" toast every 3 s (screenshots).
+            if ProcessInfo.processInfo.arguments.contains("-BCCopyToast") {
+                Task {
+                    while true {
+                        try? await Task.sleep(for: .seconds(3))
+                        CopyFeedback.copied()
+                    }
+                }
+            }
             // `-BCOpenSnippet <id>`: open a snippet once signed in (screenshots).
             if let i = ProcessInfo.processInfo.arguments.firstIndex(of: "-BCOpenSnippet"),
                ProcessInfo.processInfo.arguments.indices.contains(i + 1),
