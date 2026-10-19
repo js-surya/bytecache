@@ -295,3 +295,28 @@ final class BulkActionTests: XCTestCase {
         XCTAssertEqual(model.snippets.map(\.id), [2])
     }
 }
+
+/// CP-28: Suggest Title for untitled snippets.
+@MainActor
+final class SuggestTitleTests: XCTestCase {
+    func testUntitledSnippetsNeedATitle() throws {
+        let decode = { (title: String) in try JSONDecoder.byteStash.decode(Snippet.self, from: Data(TestJSON.snippet(1, title: title).utf8)) }
+        XCTAssertTrue(try decode("").needsTitle)
+        XCTAssertTrue(try decode(" Untitled Snippet ").needsTitle)
+        XCTAssertFalse(try decode("CSV Reader").needsTitle)
+    }
+
+    func testRenameSendsFullSnippetWithNewTitle() async throws {
+        let page = TestJSON.page([TestJSON.snippet(3, title: "", code: "echo hi", categories: ["ops"])])
+        let (session, transport) = await TestSession.signedIn([.json(page), .json(TestJSON.snippet(3, title: "Say Hi", code: "echo hi", categories: ["ops"]))])
+        let model = SnippetListModel(session: session, cache: nil)
+        await model.refresh()
+        await model.rename(model.snippets[0], to: "  Say Hi ")
+        XCTAssertEqual(transport.last.httpMethod, "PUT")
+        let body = try XCTUnwrap(JSONSerialization.jsonObject(with: XCTUnwrap(transport.last.httpBody)) as? [String: Any])
+        XCTAssertEqual(body["title"] as? String, "Say Hi")
+        XCTAssertEqual(body["categories"] as? [String], ["ops"])
+        XCTAssertEqual((body["fragments"] as? [[String: Any]])?.first?["code"] as? String, "echo hi")
+        XCTAssertEqual(model.snippets[0].title, "Say Hi")
+    }
+}
