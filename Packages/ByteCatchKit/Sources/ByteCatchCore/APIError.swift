@@ -15,4 +15,6 @@ public enum APIError: Error, Equatable, Sendable {
     case decoding(String)
     /// The address answered, but not like a ByteStash server (for example an HTML page).
     case notByteStash
+    /// Another saved server already uses that address.
+    case duplicateServer
 }

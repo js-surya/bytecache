@@ -12,6 +12,7 @@ public enum ErrorText {
         case .offline: "You're offline. Check your connection and try again."
         case .decoding: "The server sent a response ByteCatch didn't understand."
         case .notByteStash: "That address doesn't look like a ByteStash server."
+        case .duplicateServer: "Another saved server already uses that address."
         }
     }
 }

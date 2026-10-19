@@ -4,6 +4,11 @@ import SwiftUI
 extension Credentials {
     /// Host (and sub-path) for lists.
     public var displayName: String {
+        name ?? address
+    }
+
+    /// Host (and sub-path), ignoring any custom name.
+    public var address: String {
         let host = server.base.host() ?? server.base.absoluteString
         let path = server.base.path
         return path.isEmpty || path == "/" ? host : host + path
@@ -16,9 +21,10 @@ extension Credentials {
     }
 }
 
-/// Saved servers: switch, add, remove.
+/// Saved servers: switch, edit, add, remove.
 struct ServersView: View {
     let session: SessionManager
+    @State private var editing: Credentials?
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -39,10 +45,18 @@ struct ServersView: View {
                             if account.id == session.activeAccountID {
                                 Icon(.check).foregroundStyle(.tint).fontWeight(.semibold)
                             }
+                            Button { editing = account } label: { Icon(.info) }
+                                .buttonStyle(.borderless)
+                                .accessibilityLabel("Edit \(account.displayName)")
                         }
                     }
                     .accessibilityAddTraits(account.id == session.activeAccountID ? .isSelected : [])
+                    .swipeActions(edge: .leading) {
+                        Button { editing = account } label: { Label("Edit", symbol: .edit) }
+                            .tint(.blue)
+                    }
                     .contextMenu {
+                        Button { editing = account } label: { Label("Edit Server…", symbol: .edit) }
                         Button(role: .destructive) { Task { await session.removeAccount(account.id) } } label: {
                             Label("Remove Server", symbol: .trash)
                         }
@@ -53,7 +67,7 @@ struct ServersView: View {
                     Task { for id in ids { await session.removeAccount(id) } }
                 }
             } footer: {
-                Text("Swipe or right-click a server to remove it. Removing a server forgets its login on this device; nothing is deleted on the server.")
+                Text("Tap ⓘ to rename a server or change its address. Swipe or right-click a server to remove it. Removing a server forgets its login on this device; nothing is deleted on the server.")
             }
             Section {
                 Button {
@@ -69,6 +83,12 @@ struct ServersView: View {
         .listStyle(.insetGrouped)
         #endif
         .navigationTitle("Servers")
+        .sheet(item: $editing) { account in
+            NavigationStack { ServerEditView(session: session, account: account) }
+                #if os(macOS)
+                .frame(minWidth: 420, minHeight: 380)
+                #endif
+        }
     }
 }
 

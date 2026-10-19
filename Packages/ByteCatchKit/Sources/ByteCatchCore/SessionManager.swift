@@ -152,6 +152,35 @@ public final class SessionManager {
         }
     }
 
+    /// Renames a saved server and/or moves it to a new address. `name` nil keeps the name; blank
+    /// removes it. A new address is checked first and keeps the login (same server, new address);
+    /// if the server rejects it there, the usual sign-in screen appears.
+    public func updateServer(_ id: UUID, name: String?, address: String) async throws(APIError) {
+        var list = store.loadAll()
+        guard let index = list.accounts.firstIndex(where: { $0.id == id }) else { return }
+        let server = try ServerURL(address)
+        guard !list.accounts.contains(where: { $0.id != id && $0.server == server }) else { throw .duplicateServer }
+        var updated = list.accounts[index]
+        let moved = server != updated.server
+        if moved {
+            lastConfig = try await APIClient(server: server, token: nil, transport: transport).authConfig()
+            updated.server = server
+        }
+        if let name {
+            let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+            updated.name = trimmed.isEmpty ? nil : trimmed
+        }
+        list.accounts[index] = updated
+        try? store.saveAll(list)
+        accounts = list.accounts
+        guard credentials?.id == id else { return }
+        if moved {
+            await activate(updated)
+        } else {
+            credentials = updated
+        }
+    }
+
     /// Applies the server list from iCloud. Keeps the current session unless its server was removed.
     public func applySyncedServers(_ payload: ServerListPayload) async {
         let current = store.loadAll()

@@ -9,9 +9,13 @@ public struct Credentials: Codable, Equatable, Identifiable, Sendable {
     public var username: String?
     /// Set when signed in with an API key instead of a password.
     public var apiKey: String?
+    /// Optional label chosen by the user, shown instead of the address.
+    public var name: String?
 
-    public init(id: UUID = UUID(), server: ServerURL, token: String? = nil, username: String? = nil, apiKey: String? = nil) {
+    public init(id: UUID = UUID(), server: ServerURL, token: String? = nil, username: String? = nil, apiKey: String? = nil,
+                name: String? = nil) {
         self.id = id
+        self.name = name
         self.server = server
         self.token = token
         self.username = username
@@ -34,7 +38,7 @@ public struct Credentials: Codable, Equatable, Identifiable, Sendable {
         return copy
     }
 
-    private enum CodingKeys: String, CodingKey { case id, server, token, username, apiKey }
+    private enum CodingKeys: String, CodingKey { case id, server, token, username, apiKey, name }
 
     public init(from decoder: any Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -43,7 +47,8 @@ public struct Credentials: Codable, Equatable, Identifiable, Sendable {
             server: try c.decode(ServerURL.self, forKey: .server),
             token: try c.decodeIfPresent(String.self, forKey: .token),
             username: try c.decodeIfPresent(String.self, forKey: .username),
-            apiKey: try c.decodeIfPresent(String.self, forKey: .apiKey)
+            apiKey: try c.decodeIfPresent(String.self, forKey: .apiKey),
+            name: try c.decodeIfPresent(String.self, forKey: .name)
         )
     }
 }
