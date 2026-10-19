@@ -62,6 +62,7 @@ struct MainSplitView: View {
             await list.refresh()
             #if DEBUG
             if ProcessInfo.processInfo.arguments.contains("-BCSelectFirst") { selectedSnippet = list.snippets.first?.id }
+            if ProcessInfo.processInfo.arguments.contains("-BCNewSnippet"), editor == nil { startEditing(nil) }
             #endif
         }
         .onAppear { clipboard.check() }

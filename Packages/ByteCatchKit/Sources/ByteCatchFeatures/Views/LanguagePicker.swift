@@ -1,7 +1,7 @@
 import ByteCatchLanguage
 import SwiftUI
 
-/// Detector suggestions as one-tap chips, plus the full catalog.
+/// "Language" row with a menu of every language, plus the detector's other guesses as one-tap chips.
 public struct LanguagePicker: View {
     let selection: String
     let suggestions: [LanguageGuess]
@@ -13,24 +13,45 @@ public struct LanguagePicker: View {
         self.onPick = onPick
     }
 
+    private static let sortedIDs = LanguageCatalog.ids.sorted { LanguageName.display($0) < LanguageName.display($1) }
+
+    private var alternatives: [LanguageGuess] {
+        Array(suggestions.filter { $0.id != selection }.prefix(3))
+    }
+
     public var body: some View {
-        HStack {
-            Menu {
-                ForEach(LanguageCatalog.ids.sorted { LanguageName.display($0) < LanguageName.display($1) }, id: \.self) { id in
-                    Button { onPick(id) } label: {
-                        if id == selection { Label(LanguageName.display(id), systemImage: "checkmark") } else { Text(LanguageName.display(id)) }
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Language")
+                Spacer()
+                Menu {
+                    ForEach(Self.sortedIDs, id: \.self) { id in
+                        Button { onPick(id) } label: {
+                            if id == selection {
+                                Label(LanguageName.display(id), systemImage: "checkmark")
+                            } else {
+                                Text(LanguageName.display(id))
+                            }
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(LanguageName.display(selection))
+                        Image(systemName: "chevron.up.chevron.down").font(.caption2.weight(.semibold))
                     }
                 }
-            } label: {
-                Label(LanguageName.display(selection), systemImage: "chevron.left.forwardslash.chevron.right")
+                .fixedSize()
+                .accessibilityLabel("Language, \(LanguageName.display(selection))")
             }
-            .fixedSize()
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack {
-                    ForEach(suggestions.filter { $0.id != selection }, id: \.id) { guess in
+            if !alternatives.isEmpty {
+                HStack(spacing: 6) {
+                    Text("Suggested").font(.caption).foregroundStyle(.secondary)
+                    ForEach(alternatives, id: \.id) { guess in
                         Button(LanguageName.display(guess.id)) { onPick(guess.id) }
+                            .font(.caption)
                             .buttonStyle(.bordered)
-                            .controlSize(.small)
+                            .buttonBorderShape(.capsule)
+                            .controlSize(.mini)
                     }
                 }
             }
