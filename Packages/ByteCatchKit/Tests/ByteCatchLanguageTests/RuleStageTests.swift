@@ -26,6 +26,7 @@ final class RuleStageTests: XCTestCase {
         XCTAssertEqual(hint("puts 1\n# vim: ft=ruby"), "ruby")
         XCTAssertEqual(hint("-- -*- mode: lua -*-\nprint(1)"), "lua")
         XCTAssertNil(hint(file: "notes.zzz"))
+        XCTAssertNil(hint(file: "gistfile1.txt"), ".txt says nothing about the language; let the code decide")
         XCTAssertNil(hint(url: "https://stackoverflow.com/questions/123/how-to"))
     }
 

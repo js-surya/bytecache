@@ -14,7 +14,9 @@ public struct HintStage: RuleStage {
         let base = (name as NSString).lastPathComponent
         if let id = LanguageCatalog.fileNames[base.lowercased()] { return id }
         let ext = (base as NSString).pathExtension
-        return ext.isEmpty ? nil : LanguageCatalog.id(forExtension: ext)
+        // ".txt" is a container, not a language (e.g. GitHub's "gistfile1.txt"); let the code decide.
+        guard !ext.isEmpty, !["txt", "text"].contains(ext.lowercased()) else { return nil }
+        return LanguageCatalog.id(forExtension: ext)
     }
 
     static func fromURL(_ url: URL) -> String? {
