@@ -110,6 +110,8 @@ public final class AppLockModel {
     }
 
     public func didLeaveApp() {
+        // Our own Face ID / passcode sheet makes the app inactive; that isn't leaving the app.
+        guard !authenticating else { return }
         if leftAt == nil { leftAt = now() }
     }
 

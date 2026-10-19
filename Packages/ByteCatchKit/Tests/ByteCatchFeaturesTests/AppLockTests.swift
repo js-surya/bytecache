@@ -7,8 +7,11 @@ final class FakeAuthenticator: Authenticating, @unchecked Sendable {
     var calls = 0
     var biometry: BiometryKind = .faceID
     var canAuthenticate: Bool { available }
+    /// Runs while the system prompt is up (the prompt makes the app inactive).
+    var duringPrompt: (@MainActor () -> Void)?
     func authenticate(reason: String) async -> Bool {
         calls += 1
+        await duringPrompt?()
         return result
     }
 }
@@ -107,5 +110,27 @@ final class AppLockTests: XCTestCase {
         let d = defaults()
         _ = await model(d).setEnabled(true)
         XCTAssertTrue(AppLockModel.isEnabled(in: d))
+    }
+
+    func testThePromptItselfDoesNotRelockTheApp() async {
+        let d = defaults()
+        _ = await model(d).setEnabled(true)
+        let lock = model(d)
+        lock.timeout = .immediately
+        lock.appDidLaunch()
+        auth.duringPrompt = { lock.didLeaveApp() }   // system sheet → app inactive
+        _ = await lock.unlock()
+        lock.didReturnToApp()                        // sheet gone → app active again
+        XCTAssertFalse(lock.isLocked, "unlocking must not immediately lock again")
+        XCTAssertEqual(auth.calls, 2, "one prompt to turn on, one to unlock")
+    }
+
+    func testRealAbsenceStillLocksAfterUnlock() async {
+        let lock = model()
+        _ = await lock.setEnabled(true)
+        lock.timeout = .immediately
+        lock.didLeaveApp()
+        lock.didReturnToApp()
+        XCTAssertTrue(lock.isLocked)
     }
 }
