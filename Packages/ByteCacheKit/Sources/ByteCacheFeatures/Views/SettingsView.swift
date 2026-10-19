@@ -437,6 +437,7 @@ struct PrivacyInfoView: View {
                 Label("Your login is kept in the Keychain; your password is never stored.", symbol: .key)
                 Label("Copied text is read only when you tap Paste.", symbol: .clipboard)
                 Label("Language detection runs on this device.", symbol: .cpu)
+                Label("Once a day ByteCache asks GitHub whether there's a newer version (turn off in About → Updates).", symbol: .download)
             } footer: {
                 Text(AboutText.privacy)
             }
@@ -446,12 +447,40 @@ struct PrivacyInfoView: View {
 }
 
 struct AboutView: View {
+    @Environment(AppSettings.self) private var settings
+    @Environment(UpdateModel.self) private var updates: UpdateModel?
+
     var body: some View {
+        @Bindable var settings = settings
         SettingsList {
             Section {
                 LabeledContent("Version", value: AboutText.version)
                 Text(AboutText.tagline)
                 Text("ByteCache is not affiliated with the ByteStash project.").foregroundStyle(.secondary)
+            }
+            if let updates {
+                Section {
+                    Toggle("Check for Updates", isOn: $settings.checkForUpdates)
+                    Button {
+                        Task { await updates.checkNow() }
+                    } label: {
+                        HStack {
+                            Text("Check Now")
+                            if updates.isChecking {
+                                Spacer()
+                                ProgressView().controlSize(.small)
+                            }
+                        }
+                    }
+                    .disabled(updates.isChecking)
+                    if let status = updates.status {
+                        Text(status).foregroundStyle(.secondary)
+                    }
+                } header: {
+                    Text("Updates")
+                } footer: {
+                    Text("ByteCache is installed from GitHub, so it can't update itself. Once a day it asks GitHub whether there's a newer release and tells you; nothing about you is sent.")
+                }
             }
             Section("Credits") {
                 Text(AboutText.credit)
