@@ -8,7 +8,10 @@ public final class SnippetListModel {
     public var selection: SidebarItem = .all
     public var searchText = ""
     public var searchCode = false
-    public var sort: SnippetSort = .newest
+    /// Remembered between launches when the model has somewhere to store it.
+    public var sort: SnippetSort = .newest {
+        didSet { sortDefaults?.set(sort.rawValue, forKey: Self.sortKey) }
+    }
 
     public private(set) var snippets: [Snippet] = []
     public private(set) var isOffline = false
@@ -31,13 +34,17 @@ public final class SnippetListModel {
     private let cache: SnippetCache?
     private let searchDelay: Duration
     private let usage: UsageTracker
+    private let sortDefaults: UserDefaults?
+    static let sortKey = "listSort"
 
     public init(session: SessionManager, cache: SnippetCache?, searchDelay: Duration = .milliseconds(300),
-                usage: UsageTracker = UsageTracker()) {
+                usage: UsageTracker = UsageTracker(), sortDefaults: UserDefaults? = nil) {
+        self.sortDefaults = sortDefaults
         self.session = session
         self.cache = cache
         self.searchDelay = searchDelay
         self.usage = usage
+        if let raw = sortDefaults?.string(forKey: Self.sortKey), let saved = SnippetSort(rawValue: raw) { sort = saved }
     }
 
     /// Public snippets belong to everyone: browse, copy and save only.
@@ -162,6 +169,10 @@ public final class SnippetListModel {
     }
 
     public func refresh() async {
+        // Another list (an iPhone tab, another window) may have changed the shared choice.
+        if let raw = sortDefaults?.string(forKey: Self.sortKey), let saved = SnippetSort(rawValue: raw), saved != sort {
+            sort = saved
+        }
         generation += 1
         let current = generation
         let q = query
@@ -175,7 +186,7 @@ public final class SnippetListModel {
         do {
             let page = try await fetch(q, client)
             guard current == generation else { return }
-            snippets = page.snippets
+            snippets = arranged(page.snippets)
             hasMore = page.hasMore
             isOffline = false
             error = nil
@@ -197,7 +208,7 @@ public final class SnippetListModel {
             let page = try await fetch(q, client)
             guard started == generation else { return }
             let known = Set(snippets.map(\.id))
-            snippets += page.snippets.filter { !known.contains($0.id) }
+            snippets = arranged(snippets + page.snippets.filter { !known.contains($0.id) })
             hasMore = page.hasMore
             cache?.store(page.snippets, server: client.server)
         } catch {
@@ -207,15 +218,13 @@ public final class SnippetListModel {
 
     // MARK: Row actions
 
-    /// Pinned snippets are shown first (as the server sorts them). Pinning moves a snippet to the
-    /// top; unpinning moves it just below the pinned ones.
+    /// Pinned snippets are shown first (as the server sorts them), so pinning moves a snippet.
     public func togglePin(_ snippet: Snippet) async {
         guard let client = session.client, let index = snippets.firstIndex(where: { $0.id == snippet.id }) else { return }
         let before = snippets
-        var updated = snippets.remove(at: index)
-        updated.isPinned.toggle()
-        let destination = updated.isPinned ? 0 : snippets.filter(\.isPinned).count
-        snippets.insert(updated, at: destination)
+        snippets[index].isPinned.toggle()
+        let updated = snippets[index]
+        snippets = arranged(snippets)
         do {
             try await client.setPinned(id: updated.id, updated.isPinned)
             cache?.upsert(updated, server: client.server)
@@ -260,6 +269,7 @@ public final class SnippetListModel {
         } else if selection == .all {
             snippets.insert(snippet, at: 0)
         }
+        snippets = arranged(snippets)
         if let server = session.client?.server { cache?.upsert(snippet, server: server) }
     }
 
@@ -275,6 +285,11 @@ public final class SnippetListModel {
     }
 
     // MARK: Private
+
+    /// Most Used keeps its own order (by copy count).
+    private func arranged(_ list: [Snippet]) -> [Snippet] {
+        selection == .mostUsed ? list : SnippetOrdering.arranged(list, by: sort)
+    }
 
     /// Most Used comes from this device's copy counts, not a server query.
     private func loadMostUsed(client: APIClient, generation current: Int) async {

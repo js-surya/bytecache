@@ -113,15 +113,19 @@ final class SnippetListModelTests: XCTestCase {
 final class PinnedOrderTests: XCTestCase {
     private func ids(_ model: SnippetListModel) -> [Int] { model.snippets.map(\.id) }
 
-    func testPinningMovesToTopAndUnpinningMovesBelowPinned() async {
-        let page = TestJSON.page([TestJSON.snippet(1, pinned: true), TestJSON.snippet(2), TestJSON.snippet(3)])
-        let (session, _) = await TestSession.signedIn([.json(page), .json("{}")])
+    /// Pinning moves a snippet into the pinned group at its sorted place (where a refresh would show it).
+    func testPinningJoinsPinnedGroupInSortOrder() async {
+        let page = TestJSON.page([TestJSON.snippet(1, title: "b", pinned: true), TestJSON.snippet(2, title: "c"),
+                                  TestJSON.snippet(3, title: "a")])
+        let (session, _) = await TestSession.signedIn([.json(page), .json("{}"), .json("{}")])
         let model = SnippetListModel(session: session, cache: nil)
+        model.sort = .alphaAsc
         await model.refresh()
-        await model.togglePin(model.snippets[2])
-        XCTAssertEqual(ids(model), [3, 1, 2], "newly pinned goes to the top")
+        XCTAssertEqual(ids(model), [1, 3, 2])
+        await model.togglePin(model.snippets[1])
+        XCTAssertEqual(ids(model), [3, 1, 2], "pinned 'a' sorts before pinned 'b'")
         await model.togglePin(model.snippets[0])
-        XCTAssertEqual(ids(model), [1, 3, 2], "unpinned goes below the pinned ones")
+        XCTAssertEqual(ids(model), [1, 3, 2], "unpinned 'a' goes below the pinned ones")
     }
 
     func testPinnedSplitForSections() async {

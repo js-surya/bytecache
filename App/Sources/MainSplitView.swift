@@ -22,7 +22,8 @@ struct MainSplitView: View {
     init(services: AppServices) {
         self.services = services
         _sidebar = State(initialValue: SidebarModel(session: services.session))
-        _list = State(initialValue: SnippetListModel(session: services.session, cache: services.cache))
+        _list = State(initialValue: SnippetListModel(session: services.session, cache: services.cache,
+                                         sortDefaults: AppEnvironment.sharedDefaults))
     }
 
     var body: some View {

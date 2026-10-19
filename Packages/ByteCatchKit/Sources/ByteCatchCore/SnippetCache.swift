@@ -79,9 +79,7 @@ public final class SnippetCache {
         }
         let descriptor = FetchDescriptor(predicate: predicate, sortBy: [SortDescriptor(\.updatedAt, order: .reverse)])
         let snippets = ((try? context.fetch(descriptor)) ?? []).compactMap(decode)
-        // Pinned first, like the server.
-        let ordered = sorted(snippets.filter { matches($0, query) }, by: query.sort)
-        return ordered.filter(\.isPinned) + ordered.filter { !$0.isPinned }
+        return SnippetOrdering.arranged(snippets.filter { matches($0, query) }, by: query.sort)
     }
 
     public func snippet(id: Int, server: ServerURL) -> Snippet? {
@@ -138,15 +136,6 @@ public final class SnippetCache {
             if !inText && !inCode { return false }
         }
         return true
-    }
-
-    private func sorted(_ snippets: [Snippet], by sort: SnippetSort) -> [Snippet] {
-        switch sort {
-        case .newest: snippets
-        case .oldest: snippets.reversed()
-        case .alphaAsc: snippets.sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
-        case .alphaDesc: snippets.sorted { $0.title.localizedStandardCompare($1.title) == .orderedDescending }
-        }
     }
 
     private func save() {
