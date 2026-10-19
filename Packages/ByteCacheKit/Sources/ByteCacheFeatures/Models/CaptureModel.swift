@@ -115,6 +115,7 @@ public final class CaptureModel {
             if error == .offline, let queue, (try? queue.enqueue(draft, server: client.server)) != nil {
                 didQueue = true
                 self.error = nil
+                AppLog.shared.record("capture", "offline; saved on the device to upload later")
             } else if error == .unauthorized {
                 onUnauthorized()
                 self.error = Self.signInMessage

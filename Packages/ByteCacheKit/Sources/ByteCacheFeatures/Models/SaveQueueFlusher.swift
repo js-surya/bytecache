@@ -50,6 +50,10 @@ public final class SaveQueueFlusher {
             }
         }
         if uploaded > 0 { uploadedGeneration += 1 }
+        let waiting = queue.items(for: client.server).count
+        if uploaded > 0 || waiting > 0 {
+            AppLog.shared.record("queue", "uploaded \(uploaded), \(waiting) still waiting")
+        }
         return uploaded
     }
 

@@ -173,6 +173,11 @@ public struct SettingsView: View {
 
             Section {
                 NavigationLink {
+                    ReportBugView(model: ReportBugModel(session: session))
+                } label: {
+                    SettingsLabel(title: "Report a Bug", symbol: .bug, color: .red)
+                }
+                NavigationLink {
                     AboutView()
                 } label: {
                     SettingsLabel(title: "About", symbol: .info, color: .gray, value: AboutText.version)
@@ -208,7 +213,7 @@ public struct SettingsView: View {
 }
 
 #if DEBUG
-/// Env `BC_SETTINGS_PAGE=about|haptics|servers` opens that page, for screenshots.
+/// Env `BC_SETTINGS_PAGE=about|haptics|servers|report` opens that page, for screenshots.
 private struct DebugSettingsPage: ViewModifier {
     let session: SessionManager
     @State private var page = ProcessInfo.processInfo.environment["BC_SETTINGS_PAGE"]
@@ -218,6 +223,7 @@ private struct DebugSettingsPage: ViewModifier {
             switch page {
             case "haptics": HapticsSettingsView()
             case "servers": ServersView(session: session)
+            case "report": ReportBugView(model: ReportBugModel(session: session))
             default: AboutView()
             }
         }

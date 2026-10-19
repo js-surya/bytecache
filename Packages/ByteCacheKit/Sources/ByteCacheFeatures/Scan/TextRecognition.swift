@@ -1,3 +1,4 @@
+import ByteCacheCore
 import CoreImage
 import Foundation
 import ImageIO
@@ -167,13 +168,16 @@ public final class ScanCodeModel {
                 .replacingOccurrences(of: "\\s+$", with: "", options: .regularExpression)
             guard !trimmed.isEmpty else {
                 error = "No text found in that image. Try a sharper, closer shot."
+                AppLog.shared.record("scan", "no text found")
                 Haptics.play(.error)
                 return nil
             }
             Haptics.play(.success)
+            AppLog.shared.record("scan", "read \(trimmed.split(separator: "\n").count) lines")
             return trimmed
         } catch {
             self.error = "ByteCache couldn't read that image."
+            AppLog.shared.record("scan", "failed: \(type(of: error))")
             Haptics.play(.error)
             return nil
         }

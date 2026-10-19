@@ -5,15 +5,18 @@ import Foundation
 /// accepts keys on `/api/snippets/...` only, which covers everything the app does once signed in).
 public struct APIClient: Sendable {
     public let server: ServerURL
+    private let log: AppLog
     public let token: String?
     public let apiKey: String?
     private let transport: any HTTPTransport
 
-    public init(server: ServerURL, token: String?, apiKey: String? = nil, transport: any HTTPTransport = URLSession.shared) {
+    public init(server: ServerURL, token: String?, apiKey: String? = nil, transport: any HTTPTransport = URLSession.shared,
+                log: AppLog = .shared) {
         self.server = server
         self.token = token
         self.apiKey = apiKey
         self.transport = transport
+        self.log = log
     }
 
     // MARK: Auth
@@ -206,15 +209,20 @@ extension APIClient {
 
         let data: Data
         let response: URLResponse
+        // Method and path only: no query (search text), body, server address or credentials.
+        let label = "\(method.rawValue) /\(path.drop { $0 == "/" })"
         do {
             (data, response) = try await transport.data(for: request)
         } catch let error as URLError {
+            log.record("api", "\(label) → offline (URLError \(error.code.rawValue))")
             throw Self.map(error)
         } catch {
+            log.record("api", "\(label) → failed")
             throw .offline
         }
 
         guard let http = response as? HTTPURLResponse else { throw .notByteStash }
+        log.record("api", "\(label) → \(http.statusCode)")
         switch http.statusCode {
         case 200..<300:
             let contentType = http.value(forHTTPHeaderField: "Content-Type")?.lowercased() ?? ""

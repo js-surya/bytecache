@@ -92,6 +92,7 @@ public final class SessionManager {
         current.username = nil
         current.apiKey = key
         persist(current)
+        AppLog.shared.record("session", "signed in with an API key")
         state = .signedIn(server: server, user: Self.apiKeyUser)
     }
 
@@ -110,6 +111,7 @@ public final class SessionManager {
     /// Call when any request returns 401; signs out cleanly and shows login.
     public func handleUnauthorized() {
         guard case .signedIn = state else { return }
+        AppLog.shared.record("session", "server rejected the login (401); showing sign-in")
         dropToLogin()
     }
 
@@ -249,6 +251,7 @@ public final class SessionManager {
 
     private func signIn(token: String, user: User) {
         guard var current = credentials else { return }
+        AppLog.shared.record("session", "signed in with a password")
         current.token = token
         current.apiKey = nil
         current.username = user.username
