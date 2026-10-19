@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 # Makes the repository public and turns on the protections a public repo should have.
-# Before running: if the ByteStash API key used during development is still active, revoke it.
-# GitHub keeps the diffs of merged pull requests #4 and #5, which contain it, and they become public too.
 set -euo pipefail
 R=js-surya/bytecache
 
@@ -16,8 +14,11 @@ gh api -X PUT "repos/$R/vulnerability-alerts" >/dev/null
 # SECURITY.md sends reporters here.
 gh api -X PUT "repos/$R/private-vulnerability-reporting" >/dev/null
 
-# Workflows from first-time outside contributors wait for approval (they could burn build minutes).
-gh api -X PUT "repos/$R/actions/permissions/fork-pr-contributor-approval" -f approval_policy=first_time_contributors >/dev/null
+# Workflows from outside contributors' pull requests wait for the owner's approval before running.
+gh api -X PUT "repos/$R/actions/permissions/fork-pr-contributor-approval" -f approval_policy=all_external_contributors >/dev/null
+
+# Actions were turned off while the repository was set up; turn them back on.
+gh api -X PUT "repos/$R/actions/permissions" -F enabled=true -f allowed_actions=all >/dev/null
 
 # main and develop: no force pushes or deletion, changes only through pull requests;
 # main also needs the build to pass. The owner can bypass in an emergency.
