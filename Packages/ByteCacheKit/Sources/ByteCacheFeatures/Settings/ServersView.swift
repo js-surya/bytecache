@@ -50,6 +50,7 @@ struct ServersView: View {
                                 .accessibilityLabel("Edit \(account.displayName)")
                         }
                     }
+                    .accessibilityAddTraits(account.id == session.activeAccountID ? .isSelected : [])
                     .tint(.primary)
                     .accessibilityAddTraits(account.id == session.activeAccountID ? .isSelected : [])
                     .swipeActions(edge: .leading) {

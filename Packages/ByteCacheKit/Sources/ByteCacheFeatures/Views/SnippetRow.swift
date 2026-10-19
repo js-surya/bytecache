@@ -42,7 +42,12 @@ public struct SnippetRow: View {
         return result
     }
 
+    @Environment(\.dynamicTypeSize) private var typeSize
+
     public var body: some View {
+        // At accessibility sizes the details stack instead of squeezing into one line.
+        let details = typeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4)) : AnyLayout(HStackLayout(spacing: 6))
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
                 if snippet.isPinned { Icon(.pinFill, size: 13).foregroundStyle(.orange).imageScale(.small) }
@@ -50,7 +55,7 @@ public struct SnippetRow: View {
                 if snippet.isPublic && !showOwner { Icon(.globe, size: 13).foregroundStyle(.blue).imageScale(.small) }
                 Text(highlighted(snippet.title.isEmpty ? "Untitled snippet" : snippet.title))
                     .font(.headline)
-                    .lineLimit(1)
+                    .lineLimit(typeSize.isAccessibilitySize ? 3 : 1)
             }
             if let matchingDescription {
                 Text(highlighted(matchingDescription))
@@ -64,7 +69,7 @@ public struct SnippetRow: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
-            HStack(spacing: 6) {
+            details {
                 if let language = firstFragment?.language {
                     HStack(spacing: 3) {
                         LanguageIconView(language, size: 11)
@@ -83,7 +88,7 @@ public struct SnippetRow: View {
                 ForEach(snippet.categories.prefix(3), id: \.self) { category in
                     Text("#\(category)").font(.caption2).foregroundStyle(.secondary)
                 }
-                Spacer(minLength: 0)
+                if !typeSize.isAccessibilitySize { Spacer(minLength: 0) }
                 if let date = snippet.updatedAt {
                     Text(date, format: .relative(presentation: .named))
                         .font(.caption2).foregroundStyle(.tertiary)
@@ -91,5 +96,16 @@ public struct SnippetRow: View {
             }
         }
         .padding(.vertical, 2)
+        .accessibilityElement(children: .combine)
+        .accessibilityValue(status)
+    }
+
+    /// The pin, star and globe markers, which are icons only.
+    private var status: String {
+        var parts: [String] = []
+        if snippet.isPinned { parts.append("Pinned") }
+        if snippet.isFavorite { parts.append("Favorite") }
+        if snippet.isPublic && !showOwner { parts.append("Public") }
+        return parts.joined(separator: ", ")
     }
 }
