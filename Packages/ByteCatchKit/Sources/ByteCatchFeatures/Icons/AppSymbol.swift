@@ -61,6 +61,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case search
     case mostUsed
     case globe
+    case link
     case sort
     case swap
     case faceID
@@ -131,6 +132,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .search: "magnifyingglass"
         case .mostUsed: "chart.bar"
         case .globe: "globe"
+        case .link: "link"
         case .sort: "arrow.up.arrow.down"
         case .swap: "arrow.left.arrow.right"
         case .faceID: "faceid"
@@ -203,6 +205,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .search: "search"
         case .mostUsed: "chart-column"
         case .globe: "globe"
+        case .link: "link"
         case .sort: "arrow-down-up"
         case .swap: "arrow-left-right"
         case .faceID: "scan-face"

@@ -27,6 +27,8 @@ enum ServerDate {
         sql.timeZone = TimeZone(identifier: "UTC")
         sql.dateFormat = "yyyy-MM-dd HH:mm:ss'Z'"
         if let date = sql.date(from: raw) { return date }
+        sql.dateFormat = "yyyy-MM-dd HH:mm:ss" // SQLite CURRENT_TIMESTAMP / datetime(): UTC without a marker
+        if let date = sql.date(from: raw) { return date }
 
         let iso = ISO8601DateFormatter()
         if let date = iso.date(from: raw) { return date }

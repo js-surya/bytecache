@@ -22,7 +22,7 @@ public final class SnippetListModel {
     @ObservationIgnored private var loadingMore = false
     @ObservationIgnored private var generation = 0
 
-    private let session: SessionManager
+    let session: SessionManager
     private let cache: SnippetCache?
     private let searchDelay: Duration
     private let usage: UsageTracker

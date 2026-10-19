@@ -61,6 +61,23 @@ public struct APIClient: Sendable {
         try await sendVoid(.post, "/api/auth/change-password", body: ["currentPassword": current, "newPassword": new])
     }
 
+    // MARK: Share links (password logins only)
+
+    /// Creates a share link; `expiresIn` is in seconds, nil for no expiry. Returns the link id.
+    public func createShareLink(snippetID: Int, requiresAuth: Bool, expiresIn: Int?) async throws(APIError) -> String {
+        let created: CreatedShare = try await send(.post, "/api/share",
+                                                   body: CreateShareBody(snippetId: snippetID, requiresAuth: requiresAuth, expiresIn: expiresIn))
+        return created.id
+    }
+
+    public func shareLinks(snippetID: Int) async throws(APIError) -> [ShareLink] {
+        try await send(.get, "/api/share/snippet/\(snippetID)")
+    }
+
+    public func revokeShareLink(id: String) async throws(APIError) {
+        try await sendVoid(.delete, "/api/share/\(id)")
+    }
+
     // MARK: Snippets
 
     public func snippets(_ query: SnippetQuery) async throws(APIError) -> SnippetPage {

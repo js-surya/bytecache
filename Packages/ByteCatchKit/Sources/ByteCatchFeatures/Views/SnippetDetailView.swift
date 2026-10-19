@@ -10,6 +10,7 @@ public struct SnippetDetailView: View {
     @State private var exporting = false
     @State private var exportFile: ExportFile?
     @State private var exportMessage: String?
+    @State private var sharingLinks = false
     @Environment(\.openWindow) private var openWindow
     let showsOpenInWindow: Bool
 
@@ -99,7 +100,15 @@ public struct SnippetDetailView: View {
                             .foregroundStyle(snippet.isFavorite ? AnyShapeStyle(.yellow) : AnyShapeStyle(.tint))
                     }
                 }
-                ShareLink(item: allCode)
+                SwiftUI.ShareLink(item: allCode)
+                if let list, !readOnly {
+                    Button { sharingLinks = true } label: { Label("Share Link", symbol: .link) }
+                        .sheet(isPresented: $sharingLinks) {
+                            NavigationStack {
+                                ShareLinksView(model: ShareLinksModel(session: list.session, snippetID: snippet.id), title: snippet.title)
+                            }
+                        }
+                }
                 let choices = SnippetExport.choices(for: snippet)
                 if choices.count > 1 {
                     Menu {

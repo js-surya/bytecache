@@ -141,7 +141,7 @@ public struct SnippetActions: View {
                 Pasteboard.copy(allCode)
                 model.recordCopy(snippet)
             } label: { Label("Copy Code", symbol: .copy) }
-            ShareLink(item: allCode) { Label("Share", symbol: .share) }
+            SwiftUI.ShareLink(item: allCode) { Label("Share", symbol: .share) }
             if !model.isReadOnly {
             Divider()
             Button { Task { await model.setPublic(snippet, !snippet.isPublic) } } label: {
