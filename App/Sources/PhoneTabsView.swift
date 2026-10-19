@@ -164,6 +164,8 @@ struct PhoneTabsView: View {
                     .accessibilityLabel("Dismiss")
             }
             .padding(.horizontal)
+            // A fixed-height bar like the tab bar, so it stops growing at the largest standard size.
+            .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         }
     }
 
