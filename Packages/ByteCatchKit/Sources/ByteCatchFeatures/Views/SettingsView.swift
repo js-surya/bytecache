@@ -1,6 +1,23 @@
 import ByteCatchCore
 import SwiftUI
 
+/// The groups on the Settings screen, in order.
+enum SettingsSection: CaseIterable {
+    case account, lookAndFeel, snippets, privacy, sync, data, about
+
+    var title: String {
+        switch self {
+        case .account: "Account"
+        case .lookAndFeel: "Look & Feel"
+        case .snippets: "Snippets"
+        case .privacy: "Privacy & Security"
+        case .sync: "Sync"
+        case .data: "Data"
+        case .about: "About"
+        }
+    }
+}
+
 /// Settings in the style of the iOS Settings app: grouped rows with coloured icons.
 public struct SettingsView: View {
     let session: SessionManager
@@ -13,8 +30,8 @@ public struct SettingsView: View {
 
     public var body: some View {
         List {
-            if case .signedIn(let server, let user) = session.state {
-                Section {
+            Section {
+                if case .signedIn(let server, let user) = session.state {
                     HStack(spacing: 14) {
                         Group {
                             if user.username == SessionManager.apiKeyUserName {
@@ -46,6 +63,14 @@ public struct SettingsView: View {
                         SettingsLabel(title: "Change Password", symbol: .changePassword, color: .gray)
                     }
                 }
+                NavigationLink {
+                    ServersView(session: session)
+                } label: {
+                    SettingsLabel(title: "Servers", symbol: .server, color: .green,
+                                  value: session.accounts.count > 1 ? "\(session.accounts.count)" : session.accounts.first?.name)
+                }
+            } header: {
+                Text(SettingsSection.account.title)
             }
 
             Section {
@@ -53,13 +78,7 @@ public struct SettingsView: View {
                     AppearanceSettingsView()
                 } label: {
                     SettingsLabel(title: "Appearance", symbol: .appearance, color: .blue,
-                                  value: settings.appearance.title + (settings.iconStyle == .lucide ? " · Lucide" : ""))
-                }
-                NavigationLink {
-                    SuggestionsSettingsView()
-                } label: {
-                    SettingsLabel(title: "Smart Suggestions", symbol: .sparkles, color: .pink,
-                                  value: settings.suggestionsEnabled && SnippetSuggesters.onDevice() != nil ? "On" : "Off")
+                                  value: settings.appearance.title)
                 }
                 NavigationLink {
                     CodeThemeSettingsView()
@@ -73,14 +92,26 @@ public struct SettingsView: View {
                     SettingsLabel(title: "Haptics", symbol: .haptics, color: .red,
                                   value: settings.hapticsEnabled ? settings.hapticStrength.title : "Off")
                 }
+            } header: {
+                Text(SettingsSection.lookAndFeel.title)
+            } footer: {
+                Text("Theme and accent colour, how code looks, and gentle taps on scans and changes.")
             }
 
             Section {
                 Toggle(isOn: Binding(get: { settings.searchInCode }, set: { settings.searchInCode = $0 })) {
                     SettingsLabel(title: "Search Inside Code", symbol: .search, color: .indigo)
                 }
+                NavigationLink {
+                    SuggestionsSettingsView()
+                } label: {
+                    SettingsLabel(title: "Smart Suggestions", symbol: .sparkles, color: .pink,
+                                  value: settings.suggestionsEnabled && SnippetSuggesters.onDevice() != nil ? "On" : "Off")
+                }
+            } header: {
+                Text(SettingsSection.snippets.title)
             } footer: {
-                Text("When on, searching also matches the code in your snippets, not just titles and descriptions.")
+                Text("Search Inside Code also matches the code itself, not just titles and descriptions. Smart Suggestions propose titles and tags on this device.")
             }
 
             Section {
@@ -90,6 +121,13 @@ public struct SettingsView: View {
                     SettingsLabel(title: "App Lock", symbol: lock.biometry.symbol, color: .green,
                                   value: lock.isEnabled ? lock.biometry.name : "Off")
                 }
+                NavigationLink {
+                    PrivacyInfoView()
+                } label: {
+                    SettingsLabel(title: "Privacy", symbol: .privacy, color: .blue)
+                }
+            } header: {
+                Text(SettingsSection.privacy.title)
             }
 
             Section {
@@ -105,6 +143,10 @@ public struct SettingsView: View {
                     SettingsLabel(title: "Handoff", symbol: .handoff, color: .blue,
                                   value: settings.handoffEnabled ? "On" : "Off")
                 }
+            } header: {
+                Text(SettingsSection.sync.title)
+            } footer: {
+                Text("iCloud Sync keeps settings and the server list the same on your devices. Handoff lets you continue a snippet on another device.")
             }
 
             Section {
@@ -113,15 +155,10 @@ public struct SettingsView: View {
                 } label: {
                     SettingsLabel(title: "Backup & Import", symbol: .download, color: .teal)
                 }
-            }
-
-            Section {
-                NavigationLink {
-                    ServersView(session: session)
-                } label: {
-                    SettingsLabel(title: "Servers", symbol: .server, color: .green,
-                                  value: session.accounts.count > 1 ? "\(session.accounts.count)" : session.accounts.first?.displayName)
-                }
+            } header: {
+                Text(SettingsSection.data.title)
+            } footer: {
+                Text("Export all snippets as files or a backup, or import from GitHub Gists, VS Code and files.")
             }
 
             if case .signedIn = session.state {
@@ -136,15 +173,12 @@ public struct SettingsView: View {
 
             Section {
                 NavigationLink {
-                    PrivacyInfoView()
-                } label: {
-                    SettingsLabel(title: "Privacy", symbol: .privacy, color: .blue)
-                }
-                NavigationLink {
                     AboutView()
                 } label: {
                     SettingsLabel(title: "About", symbol: .info, color: .gray, value: AboutText.version)
                 }
+            } header: {
+                Text(SettingsSection.about.title)
             } footer: {
                 Text("\(AboutText.appName) — \(AboutText.tagline)")
                     .frame(maxWidth: .infinity)

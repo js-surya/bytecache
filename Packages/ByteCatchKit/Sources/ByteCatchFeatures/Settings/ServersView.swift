@@ -50,6 +50,7 @@ struct ServersView: View {
                                 .accessibilityLabel("Edit \(account.displayName)")
                         }
                     }
+                    .tint(.primary)
                     .accessibilityAddTraits(account.id == session.activeAccountID ? .isSelected : [])
                     .swipeActions(edge: .leading) {
                         Button { editing = account } label: { Label("Edit", symbol: .edit) }
