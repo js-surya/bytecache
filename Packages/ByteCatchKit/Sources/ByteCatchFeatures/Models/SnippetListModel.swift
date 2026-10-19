@@ -35,6 +35,30 @@ public final class SnippetListModel {
         self.usage = usage
     }
 
+    /// Public snippets belong to everyone: browse, copy and save only.
+    public var isReadOnly: Bool { selection == .publicSnippets }
+
+    private func fetch(_ q: SnippetQuery, _ client: APIClient) async throws(APIError) -> SnippetPage {
+        selection == .publicSnippets ? try await client.publicSnippets(q) : try await client.snippets(q)
+    }
+
+    /// Makes a snippet public or private. Sends the whole snippet (PUT replaces everything).
+    public func setPublic(_ snippet: Snippet, _ isPublic: Bool) async {
+        guard let client = session.client, let index = snippets.firstIndex(where: { $0.id == snippet.id }) else { return }
+        let original = snippets[index]
+        var draft = SnippetDraft(from: original)
+        draft.isPublic = isPublic
+        snippets[index].isPublic = isPublic
+        do {
+            let saved = try await client.update(id: snippet.id, draft)
+            if let i = snippets.firstIndex(where: { $0.id == snippet.id }) { snippets[i] = saved }
+            cache?.upsert(saved, server: client.server)
+        } catch {
+            if let i = snippets.firstIndex(where: { $0.id == snippet.id }) { snippets[i] = original }
+            handle(error, offlineQuery: nil, server: client.server)
+        }
+    }
+
     /// Counts a copy towards Most Used.
     public func recordCopy(_ snippet: Snippet) {
         guard let server = session.client?.server else { return }
@@ -48,7 +72,7 @@ public final class SnippetListModel {
         q.searchCode = searchCode
         q.sort = sort
         switch selection {
-        case .all, .mostUsed: break
+        case .all, .mostUsed, .publicSnippets: break
         case .pinned: q.pinned = true
         case .favorites: q.favorites = true
         case .recycleBin: q.recycled = true
@@ -80,7 +104,7 @@ public final class SnippetListModel {
             return
         }
         do {
-            let page = try await client.snippets(q)
+            let page = try await fetch(q, client)
             guard current == generation else { return }
             snippets = page.snippets
             hasMore = page.hasMore
@@ -101,7 +125,7 @@ public final class SnippetListModel {
         var q = query
         q.offset = snippets.count
         do {
-            let page = try await client.snippets(q)
+            let page = try await fetch(q, client)
             guard started == generation else { return }
             let known = Set(snippets.map(\.id))
             snippets += page.snippets.filter { !known.contains($0.id) }

@@ -67,6 +67,11 @@ public struct APIClient: Sendable {
         try await send(.get, "/api/snippets", query: query.queryItems)
     }
 
+    /// Everyone's public snippets on this server (read-only).
+    public func publicSnippets(_ query: SnippetQuery) async throws(APIError) -> SnippetPage {
+        try await send(.get, "/api/public/snippets", query: query.queryItems)
+    }
+
     public func snippet(id: Int) async throws(APIError) -> Snippet {
         try await send(.get, "/api/snippets/\(id)")
     }

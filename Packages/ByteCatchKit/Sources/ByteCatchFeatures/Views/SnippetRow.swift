@@ -3,9 +3,11 @@ import SwiftUI
 
 public struct SnippetRow: View {
     let snippet: Snippet
+    var showOwner = false
 
-    public init(snippet: Snippet) {
+    public init(snippet: Snippet, showOwner: Bool = false) {
         self.snippet = snippet
+        self.showOwner = showOwner
     }
 
     private var firstFragment: Fragment? {
@@ -21,6 +23,7 @@ public struct SnippetRow: View {
             HStack(spacing: 6) {
                 if snippet.isPinned { Icon(.pinFill, size: 13).foregroundStyle(.orange).imageScale(.small) }
                 if snippet.isFavorite { Icon(.starFill, size: 13).foregroundStyle(.yellow).imageScale(.small) }
+                if snippet.isPublic && !showOwner { Icon(.globe, size: 13).foregroundStyle(.blue).imageScale(.small) }
                 Text(snippet.title.isEmpty ? "Untitled snippet" : snippet.title)
                     .font(.headline)
                     .lineLimit(1)
@@ -40,6 +43,9 @@ public struct SnippetRow: View {
                 }
                 if snippet.fragments.count > 1 {
                     Text("\(snippet.fragments.count) files").font(.caption2).foregroundStyle(.secondary)
+                }
+                if showOwner, let owner = snippet.username {
+                    Text("by \(owner)").font(.caption2).foregroundStyle(.secondary)
                 }
                 ForEach(snippet.categories.prefix(3), id: \.self) { category in
                     Text("#\(category)").font(.caption2).foregroundStyle(.secondary)

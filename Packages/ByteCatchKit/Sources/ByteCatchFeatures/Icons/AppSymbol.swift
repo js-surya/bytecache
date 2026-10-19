@@ -60,6 +60,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case scan
     case search
     case mostUsed
+    case globe
     case sort
     case swap
     case faceID
@@ -129,6 +130,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .scan: "camera.viewfinder"
         case .search: "magnifyingglass"
         case .mostUsed: "chart.bar"
+        case .globe: "globe"
         case .sort: "arrow.up.arrow.down"
         case .swap: "arrow.left.arrow.right"
         case .faceID: "faceid"
@@ -200,6 +202,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .scan: "scan-text"
         case .search: "search"
         case .mostUsed: "chart-column"
+        case .globe: "globe"
         case .sort: "arrow-down-up"
         case .swap: "arrow-left-right"
         case .faceID: "scan-face"

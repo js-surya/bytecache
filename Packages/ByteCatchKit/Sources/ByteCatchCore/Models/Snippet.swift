@@ -12,11 +12,13 @@ public struct Snippet: Codable, Identifiable, Hashable, Sendable {
     public var categories: [String]
     public var fragments: [Fragment]
     public var shareCount: Int
+    /// Owner, as sent with public snippets.
+    public var username: String?
 
     public init(
         id: Int, title: String, description: String, updatedAt: Date?, expiryDate: Date?,
         isPublic: Bool, isPinned: Bool, isFavorite: Bool, categories: [String],
-        fragments: [Fragment], shareCount: Int
+        fragments: [Fragment], shareCount: Int, username: String? = nil
     ) {
         self.id = id
         self.title = title
@@ -29,13 +31,14 @@ public struct Snippet: Codable, Identifiable, Hashable, Sendable {
         self.categories = categories
         self.fragments = fragments
         self.shareCount = shareCount
+        self.username = username
     }
 }
 
 extension Snippet {
     private enum CodingKeys: String, CodingKey {
         case id, title, description, updatedAt, expiryDate, isPublic, isPinned, isFavorite
-        case categories, fragments, shareCount
+        case categories, fragments, shareCount, username
     }
 
     /// Tolerant decoding: booleans may be `0/1` ints, and optional fields may be absent.
@@ -55,7 +58,8 @@ extension Snippet {
             isFavorite: try flag(.isFavorite),
             categories: try c.decodeIfPresent([String].self, forKey: .categories) ?? [],
             fragments: try c.decodeIfPresent([Fragment].self, forKey: .fragments) ?? [],
-            shareCount: try c.decodeIfPresent(Int.self, forKey: .shareCount) ?? 0
+            shareCount: try c.decodeIfPresent(Int.self, forKey: .shareCount) ?? 0,
+            username: try c.decodeIfPresent(String.self, forKey: .username)
         )
     }
 }

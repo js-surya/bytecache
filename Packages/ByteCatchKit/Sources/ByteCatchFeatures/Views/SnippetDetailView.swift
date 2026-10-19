@@ -20,6 +20,8 @@ public struct SnippetDetailView: View {
         self.onEdit = onEdit
     }
 
+    private var readOnly: Bool { list?.isReadOnly ?? false }
+
     private var wholeSnippet: ExportFile {
         ExportFile(wrapper: SnippetExport.fileWrapper(for: snippet), contentType: SnippetExport.contentType(for: snippet))
     }
@@ -39,11 +41,15 @@ public struct SnippetDetailView: View {
                     Text(snippet.title.isEmpty ? "Untitled snippet" : snippet.title)
                         .font(.title2.bold())
                         .textSelection(.enabled)
-                    if snippet.isPinned || snippet.isFavorite {
+                    if snippet.isPinned || snippet.isFavorite || snippet.isPublic {
                         HStack(spacing: 8) {
                             if snippet.isPinned { StatusChip(title: "Pinned", symbol: .pinFill, color: .orange) }
                             if snippet.isFavorite { StatusChip(title: "Favorite", symbol: .starFill, color: .yellow) }
+                            if snippet.isPublic { StatusChip(title: "Public", symbol: .globe, color: .blue) }
                         }
+                    }
+                    if readOnly, let owner = snippet.username {
+                        Text("Shared publicly by \(owner)").font(.subheadline).foregroundStyle(.secondary)
                     }
                     if !snippet.description.isEmpty {
                         Text(snippet.description).foregroundStyle(.secondary).textSelection(.enabled)
@@ -83,7 +89,7 @@ public struct SnippetDetailView: View {
         #endif
         .toolbar {
             ToolbarItemGroup {
-                if let list {
+                if let list, !readOnly {
                     Button { Task { await list.togglePin(snippet) } } label: {
                         Label(snippet.isPinned ? "Unpin" : "Pin", symbol: snippet.isPinned ? .pinFill : .pin)
                             .foregroundStyle(snippet.isPinned ? AnyShapeStyle(.orange) : AnyShapeStyle(.tint))
@@ -112,7 +118,9 @@ public struct SnippetDetailView: View {
                         Label("Open in New Window", symbol: .newWindow)
                     }
                 }
-                Button(action: onEdit) { Label("Edit", symbol: .edit) }
+                if !readOnly {
+                    Button(action: onEdit) { Label("Edit", symbol: .edit) }
+                }
             }
         }
     }

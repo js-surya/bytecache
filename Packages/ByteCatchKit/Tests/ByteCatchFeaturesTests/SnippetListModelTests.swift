@@ -200,3 +200,39 @@ final class MostUsedListTests: XCTestCase {
         XCTAssertEqual(SidebarItem.mostUsed.title, "Most Used")
     }
 }
+
+@MainActor
+final class PublicSnippetsTests: XCTestCase {
+    func testPublicSectionUsesPublicEndpointAndIsReadOnly() async {
+        let page = TestJSON.page([TestJSON.snippet(5, title: "Shared", isPublic: true)])
+        let (session, transport) = await TestSession.signedIn([.json(page)])
+        let model = SnippetListModel(session: session, cache: nil)
+        model.selection = .publicSnippets
+        await model.refresh()
+        XCTAssertEqual(transport.last.url?.path, "/api/public/snippets")
+        XCTAssertEqual(model.snippets.map(\.title), ["Shared"])
+        XCTAssertTrue(model.isReadOnly)
+        model.selection = .all
+        XCTAssertFalse(model.isReadOnly)
+    }
+
+    func testMakePublicSendsFullSnippet() async throws {
+        let page = TestJSON.page([TestJSON.snippet(3, code: "echo hi", categories: ["ops"])])
+        let (session, transport) = await TestSession.signedIn([.json(page), .json(TestJSON.snippet(3, isPublic: true, categories: ["ops"]))])
+        let model = SnippetListModel(session: session, cache: nil)
+        await model.refresh()
+        await model.setPublic(model.snippets[0], true)
+        XCTAssertEqual(transport.last.httpMethod, "PUT")
+        let body = try XCTUnwrap(JSONSerialization.jsonObject(with: XCTUnwrap(transport.last.httpBody)) as? [String: Any])
+        XCTAssertEqual(body["is_public"] as? Int, 1)
+        XCTAssertEqual(body["categories"] as? [String], ["ops"])
+        XCTAssertEqual((body["fragments"] as? [[String: Any]])?.first?["code"] as? String, "echo hi")
+        XCTAssertTrue(model.snippets[0].isPublic)
+    }
+
+    func testOwnerNameDecodes() throws {
+        let json = TestJSON.snippet(1).replacingOccurrences(of: #""share_count":0"#, with: #""share_count":0,"username":"alice""#)
+        let snippet = try JSONDecoder.byteStash.decode(Snippet.self, from: Data(json.utf8))
+        XCTAssertEqual(snippet.username, "alice")
+    }
+}

@@ -81,21 +81,25 @@ public struct SnippetListView: View {
     }
 
     private func row(_ snippet: Snippet) -> some View {
-        SnippetRow(snippet: snippet)
+        SnippetRow(snippet: snippet, showOwner: model.isReadOnly)
             .tag(snippet.id)
             .task { await model.loadMoreIfNeeded(current: snippet) }
             .contextMenu { SnippetActions(snippet: snippet, model: model) }
             #if os(iOS)
             .swipeActions(edge: .leading) {
+                if !model.isReadOnly {
                 Button { Task { await model.togglePin(snippet) } } label: {
                     Label(snippet.isPinned ? "Unpin" : "Pin", symbol: snippet.isPinned ? .pinOff : .pin)
                 }.tint(.orange)
                 Button { Task { await model.toggleFavorite(snippet) } } label: {
                     Label(snippet.isFavorite ? "Unfavorite" : "Favorite", symbol: snippet.isFavorite ? .starOff : .star)
                 }.tint(.yellow)
+                }
             }
             .swipeActions(edge: .trailing) {
-                if model.selection == .recycleBin {
+                if model.isReadOnly {
+                    EmptyView()
+                } else if model.selection == .recycleBin {
                     Button(role: .destructive) { Task { await model.deletePermanently(snippet) } } label: {
                         Label("Delete Forever", symbol: .trashForever)
                     }
@@ -138,7 +142,11 @@ public struct SnippetActions: View {
                 model.recordCopy(snippet)
             } label: { Label("Copy Code", symbol: .copy) }
             ShareLink(item: allCode) { Label("Share", symbol: .share) }
+            if !model.isReadOnly {
             Divider()
+            Button { Task { await model.setPublic(snippet, !snippet.isPublic) } } label: {
+                Label(snippet.isPublic ? "Make Private" : "Make Public", symbol: snippet.isPublic ? .lock : .globe)
+            }
             Button { Task { await model.togglePin(snippet) } } label: {
                 Label(snippet.isPinned ? "Unpin" : "Pin", symbol: snippet.isPinned ? .pinOff : .pin)
             }
@@ -148,6 +156,7 @@ public struct SnippetActions: View {
             Divider()
             Button(role: .destructive) { Task { await model.recycle(snippet) } } label: {
                 Label("Move to Recycle Bin", symbol: .trash)
+            }
             }
         }
     }
