@@ -11,6 +11,8 @@ public struct SnippetDetailView: View {
     @State private var exportFile: ExportFile?
     @State private var exportMessage: String?
     @State private var sharingLinks = false
+    @State private var explaining = false
+    @Environment(AppSettings.self) private var settings
     @Environment(\.openWindow) private var openWindow
     let showsOpenInWindow: Bool
 
@@ -99,6 +101,15 @@ public struct SnippetDetailView: View {
                         Label(snippet.isFavorite ? "Unfavorite" : "Favorite", symbol: snippet.isFavorite ? .starFill : .star)
                             .foregroundStyle(snippet.isFavorite ? AnyShapeStyle(.yellow) : AnyShapeStyle(.tint))
                     }
+                }
+                if settings.suggestionsEnabled, let explainer = SnippetSuggesters.explainer() {
+                    Button { explaining = true } label: { Label("Explain", symbol: .sparkles) }
+                        .sheet(isPresented: $explaining) {
+                            NavigationStack {
+                                ExplainSheet(model: ExplainModel(explainer: explainer),
+                                             snippet: (allCode, fragments.first?.language ?? "plaintext", snippet.title))
+                            }
+                        }
                 }
                 SwiftUI.ShareLink(item: allCode)
                 if let list, !readOnly {

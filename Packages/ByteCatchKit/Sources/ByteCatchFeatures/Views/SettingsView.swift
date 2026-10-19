@@ -434,7 +434,7 @@ struct SuggestionsSettingsView: View {
                     .disabled(!available)
             } footer: {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("When you save code, ByteCatch suggests a title, a one-line description and categories using Apple Intelligence on this device. Your code never leaves it. Suggestions only fill empty fields — what you type always wins.")
+                    Text("When you save code, ByteCatch suggests a title, a one-line description and categories, and the Explain button describes what a snippet does — all with Apple Intelligence on this device. Your code never leaves it. Suggestions only fill empty fields; what you type always wins.")
                     if !available {
                         Label("Needs Apple Intelligence (iOS 26 or macOS 26 on a supported device, turned on in Settings).",
                               symbol: .warning)
