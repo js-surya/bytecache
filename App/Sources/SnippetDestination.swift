@@ -18,7 +18,7 @@ struct SnippetDestination: View {
         } else if let failed {
             ContentUnavailableView("Couldn't Open Snippet", symbol: .warning, description: Text(failed))
         } else {
-            ProgressView()
+            LoadingMark()
                 .task(id: id) { await load() }
         }
     }

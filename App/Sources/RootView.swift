@@ -18,12 +18,23 @@ struct RootView: View {
 
     let services: AppServices
     @State private var restored = false
+
+    /// Debug: `-BCLoadingPreview` shows only the loading animation (screenshots).
+    private static var previewLoading: Bool {
+        #if DEBUG
+        ProcessInfo.processInfo.arguments.contains("-BCLoadingPreview")
+        #else
+        false
+        #endif
+    }
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         Group {
-            if !restored {
-                ProgressView()
+            if Self.previewLoading {
+                LoadingMark("Loading snippets…")
+            } else if !restored {
+                LoadingMark()
             } else {
                 switch services.session.state {
                 case .needsServer:
