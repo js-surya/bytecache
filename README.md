@@ -57,6 +57,10 @@
 - iCloud sync of settings and your server list (never logins or code)
 - Same features on iPhone, iPad and Mac (native macOS, not Catalyst)
 
+## Download
+
+Builds for iPhone, iPad and Mac are on the [Releases](../../releases) page. They're unsigned: on iPhone and iPad, sideload the `.ipa` with Sideloadly or AltStore; on Mac, unzip the app and right-click → Open the first time.
+
 ## Requirements
 
 - A [ByteStash](https://github.com/jordan-dalby/ByteStash) server (tested with v1.6), or the public demo to try it out

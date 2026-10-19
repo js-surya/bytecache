@@ -10,7 +10,7 @@ configFiles:
   Release: Config/Base.xcconfig
 settings:
   base:
-    MARKETING_VERSION: "1.0"
+    MARKETING_VERSION: "1.0.0"
     CURRENT_PROJECT_VERSION: "1"
     SWIFT_VERSION: "6.0"
     BC_APP_GROUP_ID: group.app.bytecache
@@ -42,6 +42,8 @@ targets:
       path: App/Info.plist
       properties:
         CFBundleDisplayName: ByteCache
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSApplicationCategoryType: public.app-category.developer-tools
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
@@ -81,6 +83,8 @@ targets:
       path: Widgets/Info.plist
       properties:
         CFBundleDisplayName: ByteCache
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
         BCAppGroupID: $(BC_APP_GROUP_ID)

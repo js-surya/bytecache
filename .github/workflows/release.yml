@@ -1,0 +1,91 @@
+name: Build and release
+
+# Pull requests into main: run the tests and build the iPhone/iPad and Mac apps (downloadable from the run).
+# Merges into main: if the version in project.yml has no release yet, publish one with the builds,
+# the source code and release notes. Change the version with scripts/set-version.sh X.Y.Z.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use the newest Xcode
+        run: |
+          ls -d /Applications/Xcode*.app
+          xcode=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          sudo xcode-select -s "$xcode"
+          xcodebuild -version
+          major=$(xcodebuild -version | sed -n -E 's/^Xcode ([0-9]+).*/\1/p')
+          if [ "$major" -lt 26 ]; then
+            echo "::error::ByteCache needs Xcode 26 or later; this runner has Xcode $major."
+            exit 1
+          fi
+
+      - name: Version
+        id: version
+        run: |
+          version=$(scripts/version.sh)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if git rev-parse -q --verify "refs/tags/v$version" >/dev/null; then
+            echo "new=false" >> "$GITHUB_OUTPUT"
+            echo "v$version is already released."
+          else
+            echo "new=true" >> "$GITHUB_OUTPUT"
+            echo "v$version is not released yet."
+          fi
+
+      - name: Tests
+        # Through xcodebuild (not swift test) so asset catalogs are compiled as in the app.
+        working-directory: Packages/ByteCacheKit
+        env:
+          TEST_RUNNER_CI: "true"   # xcodebuild hands TEST_RUNNER_* to the tests as CI=true
+        run: xcodebuild test -scheme ByteCacheKit-Package -destination 'platform=macOS' -quiet
+
+      - name: Build iPhone/iPad and Mac apps
+        run: scripts/package-release.sh "${{ github.run_number }}"
+
+      - name: Keep the builds with this run
+        uses: actions/upload-artifact@v4
+        with:
+          name: ByteCache-${{ steps.version.outputs.version }}-build${{ github.run_number }}
+          path: dist/*
+          retention-days: 14
+
+      - name: Publish the release
+        if: github.event_name == 'push' && steps.version.outputs.new == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          cat > notes.md <<NOTES
+          ## Install
+          | Device | File | How |
+          |---|---|---|
+          | iPhone and iPad | \`ByteCache-$VERSION-iOS.ipa\` | Unsigned: sideload with Sideloadly or AltStore (signs it with your Apple ID). |
+          | Mac | \`ByteCache-$VERSION-macOS.zip\` | Unzip, move to Applications, then right-click → Open the first time. |
+
+          Requires iOS / iPadOS 17 or macOS 14 or later, and a [ByteStash](https://github.com/jordan-dalby/ByteStash) server (or the public demo).
+          Check downloads against \`SHA256SUMS.txt\`.
+          NOTES
+          gh release create "v$VERSION" dist/* \
+            --target "$GITHUB_SHA" \
+            --title "ByteCache $VERSION" \
+            --notes-file notes.md \
+            --generate-notes

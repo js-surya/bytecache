@@ -114,6 +114,8 @@ final class OCREvalTests: XCTestCase {
     }
 
     func testLongScreenshotIsReadCompletely() async throws {
+        // Measures Apple's text recognizer, which differs between macOS versions; CI runs an older one.
+        try XCTSkipIf(ProcessInfo.processInfo.environment["CI"] == "true", "Vision results depend on the macOS version")
         let look = Look(name: "long screenshot (60 lines)", fontSize: 14, width: 900)
         let started = Date()
         let score = try await evaluate(Self.long, look)

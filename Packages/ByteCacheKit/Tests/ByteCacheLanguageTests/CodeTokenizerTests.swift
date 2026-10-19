@@ -43,7 +43,9 @@ final class CodeTokenizerTests: XCTestCase {
             .joined(separator: "\n")
         let start = Date()
         _ = CodeTokenizer.features(code)
-        XCTAssertLessThan(Date().timeIntervalSince(start), 0.02)
+        // GitHub's virtual Macs are several times slower than a real one.
+        let slack = ProcessInfo.processInfo.environment["CI"] == "true" ? 4.0 : 1.0
+        XCTAssertLessThan(Date().timeIntervalSince(start), 0.02 * slack)
     }
 
     func testPairFeaturesGeneraliseLongIdentifiers() {

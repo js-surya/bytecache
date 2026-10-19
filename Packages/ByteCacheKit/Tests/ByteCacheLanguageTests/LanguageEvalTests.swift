@@ -57,7 +57,9 @@ final class LanguageEvalTests: XCTestCase {
         for _ in 0..<runs { _ = detector.detect(DetectionInput(text: code)) }
         let average = Date().timeIntervalSince(start) / Double(runs)
         print(String(format: "200-line detection: %.1f ms", average * 1000))
-        XCTAssertLessThan(average, 0.030)
+        // GitHub's virtual Macs are several times slower than a real one.
+        let slack = ProcessInfo.processInfo.environment["CI"] == "true" ? 4.0 : 1.0
+        XCTAssertLessThan(average, 0.030 * slack)
     }
 
     func testModelIsAtMostFiveMegabytes() throws {

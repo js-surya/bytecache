@@ -1,6 +1,6 @@
 # ByteCache
 
-ByteCache ("Cache the bytes"; renamed from ByteCatch in CP-18 because of a name clash): unofficial native ByteStash client for iPhone, iPad and Mac (SwiftUI, one codebase, native macOS — not Catalyst).
+ByteCache ("Cache the bytes"; renamed from ByteCache in CP-18 because of a name clash): unofficial native ByteStash client for iPhone, iPad and Mac (SwiftUI, one codebase, native macOS — not Catalyst).
 
 - Design: `docs/superpowers/specs/2026-10-18-bytecache-design.md`
 - Plan (work task by task, TDD, commit per task): `docs/superpowers/plans/2026-10-18-bytecache.md`
@@ -18,6 +18,9 @@ ByteCache ("Cache the bytes"; renamed from ByteCatch in CP-18 because of a name 
 ## Debug launch arguments
 - `-BCDemoLogin` signs in to the demo server; `-BCSelectFirst` selects the first snippet; `-BCShowSettings` opens Settings once (env `BC_SETTINGS_PAGE=about|haptics|servers` then opens that page); `-BCNewSnippet` opens the editor; `-BCTab search|library|pinned|favorites` opens an iPhone tab; `-BCOpenSnippet <id>` opens a snippet; env `BC_DEBUG_API_KEY` pre-fills the API key field; env `BC_DEBUG_CODE` pre-fills the `-BCNewSnippet` editor; `-BCScanPreview` opens the camera screen over a black placeholder (simulator) (Debug builds only).
 - After each build, install it on the main iPhone simulator (iPhone 18 Pro) without debug flags; use the spare iPhone 17e for screenshots.
+
+## Releases
+- Merge into `main` publishes GitHub release `vX.Y.Z` when the version in `project.yml` is new (`.github/workflows/release.yml`). Before merging, ask the user for the version, then `scripts/set-version.sh X.Y.Z` on the branch. Local build of release files: `scripts/package-release.sh`.
 
 ## Commands
 - Package tests: `swift test --package-path Packages/ByteCacheKit`

@@ -67,6 +67,8 @@ final class ScanCodeModelTests: XCTestCase {
 
     #if canImport(AppKit)
     func testRealRecognitionOfRenderedCode() async throws {
+        // Measures Apple's text recognizer, which differs between macOS versions; CI runs an older one.
+        try XCTSkipIf(ProcessInfo.processInfo.environment["CI"] == "true", "Vision results depend on the macOS version")
         let code = "func add(a: Int) -> Int {\n    return a + 1\n}"
         let image = NSImage(size: NSSize(width: 900, height: 260), flipped: false) { rect in
             NSColor.white.setFill(); rect.fill()
