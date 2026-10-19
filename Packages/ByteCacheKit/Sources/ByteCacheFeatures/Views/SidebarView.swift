@@ -27,7 +27,7 @@ public struct SidebarView: View {
             if !model.languages.isEmpty {
                 Section("Languages") {
                     ForEach(model.languages, id: \.self) { id in
-                        Label(LanguageName.display(id), symbol: SidebarItem.language(id).symbol)
+                        Label { Text(LanguageName.display(id)) } icon: { LanguageIconView(id, size: 18) }
                             .tag(SidebarItem.language(id))
                     }
                 }

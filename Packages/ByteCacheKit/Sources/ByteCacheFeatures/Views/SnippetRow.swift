@@ -36,7 +36,10 @@ public struct SnippetRow: View {
             }
             HStack(spacing: 6) {
                 if let language = firstFragment?.language {
-                    Text(LanguageName.display(language))
+                    HStack(spacing: 3) {
+                        LanguageIconView(language, size: 11)
+                        Text(LanguageName.display(language))
+                    }
                         .font(.caption2.weight(.medium))
                         .padding(.horizontal, 6).padding(.vertical, 2)
                         .background(.tint.opacity(0.15), in: Capsule())

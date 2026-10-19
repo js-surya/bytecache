@@ -313,6 +313,32 @@ struct AppearanceSettingsView: View {
             } footer: {
                 Text("Changes the icons inside ByteCache. Widgets, Control Center and system menus keep Apple's SF Symbols.")
             }
+            Section {
+                ForEach(LanguageIconStyle.allCases) { style in
+                    Button { settings.languageIconStyle = style } label: {
+                        HStack(spacing: 14) {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(style.title).foregroundStyle(.primary)
+                                HStack(spacing: 14) {
+                                    ForEach(["python", "swift", "javascript", "rust", "dockerfile", "go", "sql"], id: \.self) { language in
+                                        LanguageIconView(language, size: 20, style: style)
+                                    }
+                                }
+                                .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            if settings.languageIconStyle == style {
+                                Icon(.check).foregroundStyle(.tint).fontWeight(.semibold)
+                            }
+                        }
+                    }
+                    .accessibilityAddTraits(settings.languageIconStyle == style ? .isSelected : [])
+                }
+            } header: {
+                Text("Language Icons")
+            } footer: {
+                Text("Shown next to languages in the sidebar, snippet lists, files and the language picker. Logos from Devicon; trademarks belong to their owners.")
+            }
             Section("Accent Color") {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 14) {
                     ForEach(AccentChoice.allCases) { choice in
@@ -477,6 +503,16 @@ struct AboutView: View {
                             .padding()
                     }
                     .navigationTitle("Lucide Licence")
+                }
+                NavigationLink("Devicon language logos — MIT License, © konpa and Devicon contributors. Logos are trademarks of their owners, used only to identify languages.") {
+                    ScrollView {
+                        Text(Bundle.module.url(forResource: "DEVICON-LICENSE", withExtension: "txt")
+                            .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "")
+                            .font(.footnote.monospaced())
+                            .textSelection(.enabled)
+                            .padding()
+                    }
+                    .navigationTitle("Devicon Licence")
                 }
                 Text("Dracula, Monokai, Nord, Gruvbox, Night Owl and Catppuccin colour palettes by their respective authors (MIT).")
                 Text("Language model trained on permissively licensed open-source code.").foregroundStyle(.secondary)

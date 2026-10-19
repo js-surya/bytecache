@@ -49,6 +49,11 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case assistant
     case refresh
     case infoCircle
+    case database
+    case terminal
+    case plainText
+    case configFile
+    case chip
     case lockOpen
     case changePassword
     case lock
@@ -125,6 +130,11 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .assistant: "brain.head.profile"
         case .refresh: "arrow.clockwise"
         case .infoCircle: "info.circle"
+        case .database: "cylinder.split.1x2"
+        case .terminal: "terminal"
+        case .plainText: "doc.plaintext"
+        case .configFile: "gearshape"
+        case .chip: "cpu"
         case .lockOpen: "lock.slash"
         case .changePassword: "lock.rotation"
         case .lock: "lock.fill"
@@ -203,6 +213,11 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .assistant: "bot"
         case .refresh: "refresh-cw"
         case .infoCircle: "info"
+        case .database: "database"
+        case .terminal: "square-terminal"
+        case .plainText: "file-text"
+        case .configFile: "cog"
+        case .chip: "cpu"
         case .lockOpen: "lock-open"
         case .changePassword: "rotate-ccw-key"
         case .lock: "lock"
