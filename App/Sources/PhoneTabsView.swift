@@ -19,7 +19,22 @@ struct PhoneTabsView: View {
     let onCapture: (String) -> Void
 
     @Binding var allSelection: Snippet.ID?
-    @State private var tab = PhoneTab.snippets
+    @State private var tab: PhoneTab = {
+        #if DEBUG
+        // `-BCTab search|library|pinned|favorites` opens on that tab (screenshots).
+        if let i = ProcessInfo.processInfo.arguments.firstIndex(of: "-BCTab"),
+           ProcessInfo.processInfo.arguments.indices.contains(i + 1) {
+            switch ProcessInfo.processInfo.arguments[i + 1] {
+            case "search": return .search
+            case "library": return .library
+            case "pinned": return .pinned
+            case "favorites": return .favorites
+            default: break
+            }
+        }
+        #endif
+        return .snippets
+    }()
     @State private var pinned: SnippetListModel
     @State private var favorites: SnippetListModel
     @State private var library: SnippetListModel
@@ -29,6 +44,8 @@ struct PhoneTabsView: View {
     @State private var librarySelection: Snippet.ID?
     @State private var searchSelection: Snippet.ID?
     @State private var libraryItem: SidebarItem?
+    @State private var showingSettings = false
+    @State private var searchPresented = false
     @Environment(\.iconStyle) private var iconStyle
 
     init(services: AppServices, all: SnippetListModel, sidebar: SidebarModel, clipboard: ClipboardWatcher,
@@ -83,12 +100,33 @@ struct PhoneTabsView: View {
 
             Tab(value: PhoneTab.search, role: .search) {
                 NavigationStack {
-                    list(search, selection: $searchSelection, searchable: true)
-                        .task { if search.snippets.isEmpty { await search.refresh() } }
+                    Group {
+                        if search.searchText.trimmingCharacters(in: .whitespaces).isEmpty {
+                            ContentUnavailableView("Search Snippets", symbol: .braces,
+                                                   description: Text("Find snippets by title or description. To search inside code too, turn on Search Code Too in the sort menu."))
+                        } else {
+                            list(search, selection: $searchSelection)
+                        }
+                    }
+                    .navigationTitle("Search")
+                    .toolbar { settingsButton }
                 }
+                // Only the Search tab searches; tapping the tab opens the field with the keyboard.
+                .searchable(text: $search.searchText, isPresented: $searchPresented,
+                            placement: .toolbar, prompt: "Search snippets")
+                .onChange(of: search.searchText) { search.searchTextChanged() }
             }
         }
+        .onChange(of: tab) { searchPresented = tab == .search }
+        .onAppear { if tab == .search { searchPresented = true } }
         .tabBarMinimizeBehavior(.onScrollDown)
+        .sheet(isPresented: $showingSettings) {
+            NavigationStack {
+                SettingsView(session: services.session)
+                    .toolbar { Button("Done") { showingSettings = false } }
+            }
+            .appSettingsStyle(services.settings)
+        }
         .tabViewBottomAccessory(isEnabled: clipboard.hasText) {
             HStack {
                 Icon(.clipboard)
@@ -121,9 +159,18 @@ struct PhoneTabsView: View {
         }
     }
 
-    private func list(_ model: SnippetListModel, selection: Binding<Snippet.ID?>, searchable: Bool = false) -> some View {
-        SnippetListView(model: model, selection: selection, showsSearchField: searchable)
+    /// Settings from every tab, top left — the usual iPhone spot for account and settings.
+    @ToolbarContentBuilder
+    private var settingsButton: some ToolbarContent {
+        ToolbarItem(placement: .topBarLeading) {
+            Button { showingSettings = true } label: { Label("Settings", symbol: .settings) }
+        }
+    }
+
+    private func list(_ model: SnippetListModel, selection: Binding<Snippet.ID?>) -> some View {
+        SnippetListView(model: model, selection: selection, showsSearchField: false)
             .toolbar {
+                settingsButton
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button(action: onScan) { Label("Scan Code", symbol: .scan) }
                     Button(action: onNew) { Label("New Snippet", symbol: .newSnippet) }
