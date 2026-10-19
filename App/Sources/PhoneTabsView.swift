@@ -103,7 +103,9 @@ struct PhoneTabsView: View {
                     Group {
                         if search.searchText.trimmingCharacters(in: .whitespaces).isEmpty {
                             ContentUnavailableView("Search Snippets", symbol: .braces,
-                                                   description: Text("Find snippets by title or description. To search inside code too, turn on Search Code Too in the sort menu."))
+                                                   description: Text(services.settings.searchInCode
+                                                        ? "Find snippets by title, description or code."
+                                                        : "Find snippets by title or description. To search inside code too, turn on Search Inside Code in Settings."))
                         } else {
                             list(search, selection: $searchSelection)
                         }
@@ -115,6 +117,10 @@ struct PhoneTabsView: View {
                 .searchable(text: $search.searchText, isPresented: $searchPresented,
                             placement: .toolbar, prompt: "Search snippets")
                 .onChange(of: search.searchText) { search.searchTextChanged() }
+                .onChange(of: services.settings.searchInCode, initial: true) {
+                    search.searchCode = services.settings.searchInCode
+                    if !search.searchText.isEmpty { Task { await search.refresh() } }
+                }
             }
         }
         .onChange(of: tab) { searchPresented = tab == .search }

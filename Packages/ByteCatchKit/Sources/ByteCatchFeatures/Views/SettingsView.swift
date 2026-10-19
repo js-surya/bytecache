@@ -70,6 +70,14 @@ public struct SettingsView: View {
             }
 
             Section {
+                Toggle(isOn: Binding(get: { settings.searchInCode }, set: { settings.searchInCode = $0 })) {
+                    SettingsLabel(title: "Search Inside Code", symbol: .search, color: .indigo)
+                }
+            } footer: {
+                Text("When on, searching also matches the code in your snippets, not just titles and descriptions.")
+            }
+
+            Section {
                 NavigationLink {
                     AppLockSettingsView(lock: lock)
                 } label: {

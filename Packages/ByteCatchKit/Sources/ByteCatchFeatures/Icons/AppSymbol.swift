@@ -57,6 +57,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case cpu
     case chevronsUpDown
     case scan
+    case search
     case sort
     case swap
     case faceID
@@ -123,6 +124,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .cpu: "cpu"
         case .chevronsUpDown: "chevron.up.chevron.down"
         case .scan: "camera.viewfinder"
+        case .search: "magnifyingglass"
         case .sort: "arrow.up.arrow.down"
         case .swap: "arrow.left.arrow.right"
         case .faceID: "faceid"
@@ -191,6 +193,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .cpu: "cpu"
         case .chevronsUpDown: "chevrons-up-down"
         case .scan: "scan-text"
+        case .search: "search"
         case .sort: "arrow-down-up"
         case .swap: "arrow-left-right"
         case .faceID: "scan-face"

@@ -5,6 +5,7 @@ public struct SnippetListView: View {
     @Bindable var model: SnippetListModel
     @Binding var selection: Snippet.ID?
     let showsSearchField: Bool
+    @Environment(AppSettings.self) private var settings
 
     /// `showsSearchField: false` when a Search tab owns searching (iPhone tab layout).
     public init(model: SnippetListModel, selection: Binding<Snippet.ID?>, showsSearchField: Bool = true) {
@@ -59,14 +60,17 @@ public struct SnippetListView: View {
                         Text("A–Z").tag(SnippetSort.alphaAsc)
                         Text("Z–A").tag(SnippetSort.alphaDesc)
                     }
-                    Toggle("Search Code Too", isOn: $model.searchCode)
                 } label: {
-                    Label("Sort and Search Options", symbol: .sort)
+                    Label("Sort", symbol: .sort)
                 }
             }
         }
         .onChange(of: model.sort) { Task { await model.refresh() } }
-        .onChange(of: model.searchCode) { if !model.searchText.isEmpty { Task { await model.refresh() } } }
+        .onChange(of: settings.searchInCode, initial: true) {
+            guard model.searchCode != settings.searchInCode else { return }
+            model.searchCode = settings.searchInCode
+            if !model.searchText.isEmpty { Task { await model.refresh() } }
+        }
         .alert("Something went wrong", isPresented: Binding(
             get: { model.error != nil }, set: { if !$0 { model.error = nil } }
         )) {

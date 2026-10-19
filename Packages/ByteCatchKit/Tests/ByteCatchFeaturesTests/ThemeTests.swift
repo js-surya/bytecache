@@ -113,3 +113,22 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(AppAppearance.dark.colorScheme, .dark)
     }
 }
+
+@MainActor
+final class SearchInCodeSettingTests: XCTestCase {
+    func testOffByDefaultPersistsAndSyncs() {
+        let name = "bytecatch.searchcode.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: name)!
+        addTeardownBlock { UserDefaults(suiteName: name)?.removePersistentDomain(forName: name) }
+        let settings = AppSettings(defaults: defaults)
+        XCTAssertFalse(settings.searchInCode)
+        settings.searchInCode = true
+        XCTAssertTrue(AppSettings(defaults: defaults).searchInCode)
+        XCTAssertEqual(settings.synced.searchInCode, true)
+
+        var remote = settings.synced
+        remote.searchInCode = false
+        settings.apply(remote)
+        XCTAssertFalse(settings.searchInCode)
+    }
+}

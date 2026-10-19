@@ -59,6 +59,8 @@ public final class AppSettings {
     public var accent: AccentChoice { didSet { defaults.set(accent.rawValue, forKey: Key.accent) } }
     public var codeThemeID: String { didSet { defaults.set(codeThemeID, forKey: Key.codeThemeID) } }
     public var iconStyle: IconStyle { didSet { defaults.set(iconStyle.rawValue, forKey: Key.iconStyle) } }
+    /// Search matches code as well as titles and descriptions.
+    public var searchInCode: Bool { didSet { defaults.set(searchInCode, forKey: Key.searchInCode) } }
     public var showLineNumbers: Bool { didSet { defaults.set(showLineNumbers, forKey: Key.lineNumbers) } }
     /// Device-only switches (never synced themselves).
     public var iCloudSyncEnabled: Bool { didSet { defaults.set(iCloudSyncEnabled, forKey: Key.iCloudSync) } }
@@ -79,7 +81,7 @@ public final class AppSettings {
     @ObservationIgnored private let defaults: UserDefaults
 
     private enum Key {
-        static let appearance = "appearance", accent = "accent", codeThemeID = "codeThemeID", iconStyle = "iconStyle"
+        static let appearance = "appearance", accent = "accent", codeThemeID = "codeThemeID", iconStyle = "iconStyle", searchInCode = "searchInCode"
         static let fontSize = "codeFontSize", lineNumbers = "showLineNumbers"
         static let iCloudSync = "iCloudSyncEnabled", handoff = "handoffEnabled", suggestions = "suggestionsEnabled"
     }
@@ -89,6 +91,7 @@ public final class AppSettings {
         appearance = defaults.string(forKey: Key.appearance).flatMap(AppAppearance.init) ?? .system
         accent = defaults.string(forKey: Key.accent).flatMap(AccentChoice.init) ?? .blue
         iconStyle = defaults.string(forKey: Key.iconStyle).flatMap(IconStyle.init) ?? .sfSymbols
+        searchInCode = defaults.bool(forKey: Key.searchInCode)
         let storedTheme = defaults.string(forKey: Key.codeThemeID) ?? CodeTheme.defaultID
         codeThemeID = CodeTheme.named(storedTheme) == nil ? CodeTheme.defaultID : storedTheme
         let size = defaults.object(forKey: Key.fontSize) as? Double ?? 14
@@ -107,7 +110,8 @@ public final class AppSettings {
     /// The preferences shared through iCloud.
     public var synced: SyncedSettings {
         SyncedSettings(appearance: appearance, accent: accent, codeThemeID: codeThemeID,
-                       codeFontSize: codeFontSize, showLineNumbers: showLineNumbers, iconStyle: iconStyle)
+                       codeFontSize: codeFontSize, showLineNumbers: showLineNumbers, iconStyle: iconStyle,
+                       searchInCode: searchInCode)
     }
 
     public func apply(_ remote: SyncedSettings) {
@@ -117,6 +121,7 @@ public final class AppSettings {
         if codeFontSize != remote.codeFontSize { codeFontSize = remote.codeFontSize }
         if showLineNumbers != remote.showLineNumbers { showLineNumbers = remote.showLineNumbers }
         if let style = remote.iconStyle, iconStyle != style { iconStyle = style }
+        if let code = remote.searchInCode, searchInCode != code { searchInCode = code }
     }
 }
 
@@ -138,14 +143,16 @@ public struct SyncedSettings: Codable, Equatable, Sendable {
     public var showLineNumbers: Bool
     /// Optional: absent in settings synced by earlier versions.
     public var iconStyle: IconStyle?
+    public var searchInCode: Bool?
 
     public init(appearance: AppAppearance, accent: AccentChoice, codeThemeID: String, codeFontSize: Double,
-                showLineNumbers: Bool, iconStyle: IconStyle? = nil) {
+                showLineNumbers: Bool, iconStyle: IconStyle? = nil, searchInCode: Bool? = nil) {
         self.appearance = appearance
         self.accent = accent
         self.codeThemeID = codeThemeID
         self.codeFontSize = codeFontSize
         self.showLineNumbers = showLineNumbers
         self.iconStyle = iconStyle
+        self.searchInCode = searchInCode
     }
 }
