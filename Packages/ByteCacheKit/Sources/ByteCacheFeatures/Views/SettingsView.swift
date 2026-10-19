@@ -185,7 +185,7 @@ public struct SettingsView: View {
                 NavigationLink {
                     AboutView()
                 } label: {
-                    SettingsLabel(title: "About", symbol: .info, color: .gray, value: AboutText.version)
+                    SettingsLabel(title: "About", symbol: .info, color: .gray, value: AboutText.displayVersion)
                 }
             } header: {
                 Text(SettingsSection.about.title)
@@ -215,7 +215,7 @@ public struct SettingsView: View {
 }
 
 #if DEBUG
-/// Env `BC_SETTINGS_PAGE=about|haptics|servers|report|mcp` opens that page, for screenshots.
+/// Env `BC_SETTINGS_PAGE=about|about-footer|haptics|servers|report|mcp` opens that page, for screenshots.
 private struct DebugSettingsPage: ViewModifier {
     let session: SessionManager
     @State private var page = ProcessInfo.processInfo.environment["BC_SETTINGS_PAGE"]
@@ -227,6 +227,15 @@ private struct DebugSettingsPage: ViewModifier {
             case "servers": ServersView(session: session)
             case "report": ReportBugView(model: ReportBugModel(session: session))
             case "mcp": MCPSettingsView(model: MCPSettingsModel(session: session))
+            case "about-footer":
+                SettingsList {
+                    Section {
+                        AboutFooter()
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets(top: 24, leading: 0, bottom: 24, trailing: 0))
+                    }
+                }
+                .navigationTitle("About")
             default: AboutView()
             }
         }
@@ -480,7 +489,7 @@ struct AboutView: View {
         @Bindable var settings = settings
         SettingsList {
             Section {
-                LabeledContent("Version", value: AboutText.version)
+                LabeledContent("Version", value: AboutText.displayVersion)
                 Text(AboutText.tagline)
                 Text("ByteCache is not affiliated with the ByteStash project.").foregroundStyle(.secondary)
             }
@@ -508,47 +517,88 @@ struct AboutView: View {
                     Text("ByteCache is installed from GitHub, so it can't update itself. Once a day it asks GitHub whether there's a newer release and tells you; nothing about you is sent.")
                 }
             }
-            Section("Credits") {
-                Text(AboutText.credit)
-                Link(destination: AboutText.developerGitHub) {
-                    HStack {
-                        Label("GitHub", symbol: .link)
-                        Spacer()
-                        Text("js-surya").foregroundStyle(.secondary)
+            Section {
+                Group {
+                    Text("HighlightSwift — MIT License, © 2023 Stefan Britton")
+                    Text("highlight.js — BSD 3-Clause License, © 2006 Ivan Sagalaev")
+                    NavigationLink("Lucide icons — ISC License, © Lucide Icons and Contributors (some icons © Cole Bemis, MIT)") {
+                        ScrollView {
+                            Text(Bundle.module.url(forResource: "LUCIDE-LICENSE", withExtension: "txt")
+                                .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "")
+                                .font(.footnote.monospaced())
+                                .textSelection(.enabled)
+                                .padding()
+                        }
+                        .navigationTitle("Lucide Licence")
                     }
+                    NavigationLink("Devicon language logos — MIT License, © konpa and Devicon contributors. Logos are trademarks of their owners, used only to identify languages.") {
+                        ScrollView {
+                            Text(Bundle.module.url(forResource: "DEVICON-LICENSE", withExtension: "txt")
+                                .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "")
+                                .font(.footnote.monospaced())
+                                .textSelection(.enabled)
+                                .padding()
+                        }
+                        .navigationTitle("Devicon Licence")
+                    }
+                    Text("Dracula, Monokai, Nord, Gruvbox, Night Owl and Catppuccin colour palettes by their respective authors (MIT).")
+                Text("The GitHub mark is a trademark of GitHub, Inc., used to link to GitHub.")
+                    Text("Language model trained on permissively licensed open-source code.").foregroundStyle(.secondary)
                 }
-                .accessibilityLabel("SyntaxError on GitHub, js-surya")
-                .accessibilityHint("Opens in your browser")
+                .font(.footnote)
+            } header: {
+                Text("Acknowledgements")
             }
-            Section("Acknowledgements") {
-                Text("HighlightSwift — MIT License, © 2023 Stefan Britton")
-                Text("highlight.js — BSD 3-Clause License, © 2006 Ivan Sagalaev")
-                NavigationLink("Lucide icons — ISC License, © Lucide Icons and Contributors (some icons © Cole Bemis, MIT)") {
-                    ScrollView {
-                        Text(Bundle.module.url(forResource: "LUCIDE-LICENSE", withExtension: "txt")
-                            .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "")
-                            .font(.footnote.monospaced())
-                            .textSelection(.enabled)
-                            .padding()
-                    }
-                    .navigationTitle("Lucide Licence")
-                }
-                NavigationLink("Devicon language logos — MIT License, © konpa and Devicon contributors. Logos are trademarks of their owners, used only to identify languages.") {
-                    ScrollView {
-                        Text(Bundle.module.url(forResource: "DEVICON-LICENSE", withExtension: "txt")
-                            .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "")
-                            .font(.footnote.monospaced())
-                            .textSelection(.enabled)
-                            .padding()
-                    }
-                    .navigationTitle("Devicon Licence")
-                }
-                Text("Dracula, Monokai, Nord, Gruvbox, Night Owl and Catppuccin colour palettes by their respective authors (MIT).")
-                Text("Language model trained on permissively licensed open-source code.").foregroundStyle(.secondary)
+            Section {
+                AboutFooter()
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 24, leading: 0, bottom: 24, trailing: 0))
             }
-            .font(.footnote)
         }
         .navigationTitle("About")
+    }
+}
+
+/// The sign-off at the bottom of About: app icon, name, tagline, credit and a link to the source code.
+private struct AboutFooter: View {
+    var body: some View {
+        VStack(spacing: 10) {
+            Image("about-app-icon", bundle: .module)
+                .resizable()
+                .frame(width: 64, height: 64)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
+                .accessibilityHidden(true)
+            VStack(spacing: 2) {
+                Text(AboutText.appName).font(.headline)
+                Text(AboutText.tagline).font(.subheadline).foregroundStyle(.secondary)
+            }
+            Text(AboutText.credit)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.top, 4)
+            Link(destination: AboutText.sourceCode) {
+                Label {
+                    Text("Source code")
+                } icon: {
+                    Image("brand-github", bundle: .module)
+                        .resizable()
+                        .renderingMode(.template)
+                        .frame(width: 16, height: 16)
+                }
+                .font(.subheadline.weight(.medium))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 7)
+                .background(.tint.opacity(0.12), in: Capsule())
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.tint)
+            .padding(.top, 2)
+            .accessibilityLabel("Source code on GitHub")
+            .accessibilityHint("Opens in your browser")
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 
