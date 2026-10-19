@@ -64,6 +64,11 @@ public struct SettingsView: View {
                     }
                 }
                 NavigationLink {
+                    MCPSettingsView(model: MCPSettingsModel(session: session))
+                } label: {
+                    SettingsLabel(title: "AI Assistants (MCP)", symbol: .assistant, color: .indigo)
+                }
+                NavigationLink {
                     ServersView(session: session)
                 } label: {
                     SettingsLabel(title: "Servers", symbol: .server, color: .green,
@@ -213,7 +218,7 @@ public struct SettingsView: View {
 }
 
 #if DEBUG
-/// Env `BC_SETTINGS_PAGE=about|haptics|servers|report` opens that page, for screenshots.
+/// Env `BC_SETTINGS_PAGE=about|haptics|servers|report|mcp` opens that page, for screenshots.
 private struct DebugSettingsPage: ViewModifier {
     let session: SessionManager
     @State private var page = ProcessInfo.processInfo.environment["BC_SETTINGS_PAGE"]
@@ -224,6 +229,7 @@ private struct DebugSettingsPage: ViewModifier {
             case "haptics": HapticsSettingsView()
             case "servers": ServersView(session: session)
             case "report": ReportBugView(model: ReportBugModel(session: session))
+            case "mcp": MCPSettingsView(model: MCPSettingsModel(session: session))
             default: AboutView()
             }
         }

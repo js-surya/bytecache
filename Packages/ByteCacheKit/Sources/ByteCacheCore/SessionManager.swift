@@ -39,6 +39,12 @@ public final class SessionManager {
     @ObservationIgnored private var lastConfig = AuthConfig()
     @ObservationIgnored private var accountToReturnTo: UUID?
 
+    /// An MCP client for the current server, using `apiKey` (the key assistants will use).
+    public func mcpClient(apiKey: String) -> MCPClient? {
+        guard let server = credentials?.server else { return nil }
+        return MCPClient(server: server, apiKey: apiKey, transport: transport)
+    }
+
     public init(store: any CredentialStore, transport: any HTTPTransport = URLSession.shared) {
         self.store = store
         self.transport = transport

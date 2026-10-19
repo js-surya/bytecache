@@ -62,6 +62,13 @@ struct RootView: View {
                 await services.onboarding.connect()
                 await services.onboarding.login()
             }
+            // `-BCKeyLogin` with env BC_DEBUG_SERVER and BC_DEBUG_API_KEY: sign in to that server with an API key.
+            let env = ProcessInfo.processInfo.environment
+            if ProcessInfo.processInfo.arguments.contains("-BCKeyLogin"), case .needsServer = services.session.state,
+               let server = env["BC_DEBUG_SERVER"], let key = env["BC_DEBUG_API_KEY"] {
+                try? await services.session.connect(server)
+                try? await services.session.loginWithAPIKey(key)
+            }
             // `-BCOpenSnippet <id>`: open a snippet once signed in (screenshots).
             if let i = ProcessInfo.processInfo.arguments.firstIndex(of: "-BCOpenSnippet"),
                ProcessInfo.processInfo.arguments.indices.contains(i + 1),
