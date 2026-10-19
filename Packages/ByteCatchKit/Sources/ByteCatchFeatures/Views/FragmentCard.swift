@@ -5,6 +5,9 @@ import SwiftUI
 public struct FragmentCard: View {
     let fragment: Fragment
     @State private var copied = false
+    @State private var showSource = false
+
+    private var isMarkdown: Bool { MarkdownDocument.isMarkdown(language: fragment.language) }
 
     public init(fragment: Fragment) {
         self.fragment = fragment
@@ -19,6 +22,16 @@ public struct FragmentCard: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Spacer()
+                if isMarkdown {
+                    Picker("View", selection: $showSource) {
+                        Text("Preview").tag(false)
+                        Text("Source").tag(true)
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .fixedSize()
+                    .controlSize(.small)
+                }
                 Button {
                     Pasteboard.copy(fragment.code)
                     copied = true
@@ -34,7 +47,11 @@ public struct FragmentCard: View {
             }
             .padding(10)
             Divider()
-            CodeView(code: fragment.code, language: fragment.language)
+            if isMarkdown && !showSource {
+                MarkdownView(fragment.code)
+            } else {
+                CodeView(code: fragment.code, language: fragment.language)
+            }
         }
         .background(.background.secondary)
         .clipShape(RoundedRectangle(cornerRadius: 10))
