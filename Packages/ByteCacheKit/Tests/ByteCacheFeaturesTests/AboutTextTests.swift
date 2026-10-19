@@ -13,4 +13,10 @@ final class AboutTextTests: XCTestCase {
         XCTAssertEqual(AboutText.credit, "Built with ❤️ by SyntaxError and Claude")
         XCTAssertEqual(AboutText.developerGitHub.absoluteString, "https://github.com/js-surya")
     }
+
+    /// CP-26: people see "1.1.0"; bug reports keep the build number ("1.1.0 (12)").
+    func testDisplayedVersionHasNoBuildNumber() {
+        XCTAssertFalse(AboutText.displayVersion.contains("("), AboutText.displayVersion)
+        XCTAssertTrue(AboutText.versionWithBuild.hasPrefix(AboutText.displayVersion + " ("), AboutText.versionWithBuild)
+    }
 }

@@ -185,7 +185,7 @@ public struct SettingsView: View {
                 NavigationLink {
                     AboutView()
                 } label: {
-                    SettingsLabel(title: "About", symbol: .info, color: .gray, value: AboutText.version)
+                    SettingsLabel(title: "About", symbol: .info, color: .gray, value: AboutText.displayVersion)
                 }
             } header: {
                 Text(SettingsSection.about.title)
@@ -480,7 +480,7 @@ struct AboutView: View {
         @Bindable var settings = settings
         SettingsList {
             Section {
-                LabeledContent("Version", value: AboutText.version)
+                LabeledContent("Version", value: AboutText.displayVersion)
                 Text(AboutText.tagline)
                 Text("ByteCache is not affiliated with the ByteStash project.").foregroundStyle(.secondary)
             }
@@ -508,6 +508,37 @@ struct AboutView: View {
                     Text("ByteCache is installed from GitHub, so it can't update itself. Once a day it asks GitHub whether there's a newer release and tells you; nothing about you is sent.")
                 }
             }
+            Section {
+                Group {
+                    Text("HighlightSwift — MIT License, © 2023 Stefan Britton")
+                    Text("highlight.js — BSD 3-Clause License, © 2006 Ivan Sagalaev")
+                    NavigationLink("Lucide icons — ISC License, © Lucide Icons and Contributors (some icons © Cole Bemis, MIT)") {
+                        ScrollView {
+                            Text(Bundle.module.url(forResource: "LUCIDE-LICENSE", withExtension: "txt")
+                                .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "")
+                                .font(.footnote.monospaced())
+                                .textSelection(.enabled)
+                                .padding()
+                        }
+                        .navigationTitle("Lucide Licence")
+                    }
+                    NavigationLink("Devicon language logos — MIT License, © konpa and Devicon contributors. Logos are trademarks of their owners, used only to identify languages.") {
+                        ScrollView {
+                            Text(Bundle.module.url(forResource: "DEVICON-LICENSE", withExtension: "txt")
+                                .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "")
+                                .font(.footnote.monospaced())
+                                .textSelection(.enabled)
+                                .padding()
+                        }
+                        .navigationTitle("Devicon Licence")
+                    }
+                    Text("Dracula, Monokai, Nord, Gruvbox, Night Owl and Catppuccin colour palettes by their respective authors (MIT).")
+                    Text("Language model trained on permissively licensed open-source code.").foregroundStyle(.secondary)
+                }
+                .font(.footnote)
+            } header: {
+                Text("Acknowledgements")
+            }
             Section("Credits") {
                 Text(AboutText.credit)
                 Link(destination: AboutText.developerGitHub) {
@@ -520,33 +551,6 @@ struct AboutView: View {
                 .accessibilityLabel("SyntaxError on GitHub, js-surya")
                 .accessibilityHint("Opens in your browser")
             }
-            Section("Acknowledgements") {
-                Text("HighlightSwift — MIT License, © 2023 Stefan Britton")
-                Text("highlight.js — BSD 3-Clause License, © 2006 Ivan Sagalaev")
-                NavigationLink("Lucide icons — ISC License, © Lucide Icons and Contributors (some icons © Cole Bemis, MIT)") {
-                    ScrollView {
-                        Text(Bundle.module.url(forResource: "LUCIDE-LICENSE", withExtension: "txt")
-                            .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "")
-                            .font(.footnote.monospaced())
-                            .textSelection(.enabled)
-                            .padding()
-                    }
-                    .navigationTitle("Lucide Licence")
-                }
-                NavigationLink("Devicon language logos — MIT License, © konpa and Devicon contributors. Logos are trademarks of their owners, used only to identify languages.") {
-                    ScrollView {
-                        Text(Bundle.module.url(forResource: "DEVICON-LICENSE", withExtension: "txt")
-                            .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "")
-                            .font(.footnote.monospaced())
-                            .textSelection(.enabled)
-                            .padding()
-                    }
-                    .navigationTitle("Devicon Licence")
-                }
-                Text("Dracula, Monokai, Nord, Gruvbox, Night Owl and Catppuccin colour palettes by their respective authors (MIT).")
-                Text("Language model trained on permissively licensed open-source code.").foregroundStyle(.secondary)
-            }
-            .font(.footnote)
         }
         .navigationTitle("About")
     }
