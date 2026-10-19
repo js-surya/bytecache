@@ -17,6 +17,11 @@ ByteCatch is an unofficial client for ByteStash, the self-hosted code snippet ma
 - **Widgets** show pinned and recent snippets from a small file stored only on your device (hidden while App Lock is on).
 - **iCloud sync** (optional, on by default; Settings → iCloud Sync): your display settings and the list of server addresses are stored in your private iCloud key-value storage so your other devices match. Logins, API keys, user names and snippets are never put in iCloud.
 - **Handoff** (optional, on by default; Settings → Handoff): while you view a snippet, your other devices on the same Apple Account are offered the server address and snippet number so they can open it.
+- **Share links** are created on your ByteStash server only when you ask; anyone with a link (or, if you chose so, any signed-in user of that server) can view that snippet until it expires or you revoke it.
+- **Importing a GitHub Gist** fetches it from `api.github.com` without signing in; nothing else is sent to GitHub.
+- **Offline saves:** snippets you save while offline are kept in a file on your device (shared with ByteCatch's extensions) until they upload to your server or you discard them.
+- **Most Used** counts how often you copy each snippet, on your device only.
+- **Backups** you export are files you choose where to put; ByteCatch keeps no copy.
 - **Spotlight:** titles and the first lines of recently viewed snippets are indexed on your device so Spotlight can find them. Signing out removes them from the index.
 
 Questions: open an issue in the ByteCatch repository.

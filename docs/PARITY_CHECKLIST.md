@@ -38,6 +38,17 @@ Tick each cell after trying it on that platform. "Auto" = covered by automated t
 | iCloud sync of settings + server list (needs signed build + iCloud); switch off works | ☐ | ☐ | ☐ |
 | Handoff: view snippet on one device → continue on another; web fallback; switch off works | ☐ | ☐ | ☐ |
 | Code theme (22 themes), font size, line numbers — viewer, editor, share sheet | ☐ | ☐ | ☐ |
+| **Batch 3** | | | |
+| Secret warning in capture + editor; Replace with {{SECRET}} | ☐ | ☐ | ☐ |
+| Most Used list (copies from list, detail, widget) | ☐ | ☐ | ☐ |
+| Public toggle; Public snippets browse (read-only, copy/save) | ☐ | ☐ | ☐ |
+| Share links: create (expiry, sign-in), copy, QR, revoke (password logins) | ☐ | ☐ | ☐ |
+| Bulk select: pin, favorite, add/remove category, recycle, restore, delete forever | ☐ | ☐ | ☐ |
+| Explain snippet (Apple Intelligence; hidden when unavailable) | ☐ | ☐ | ☐ |
+| Backup: export ZIP of files + JSON; import JSON | ☐ | ☐ | ☐ |
+| Import: GitHub Gist URL, VS Code snippets file, code files/folder → preview → create | ☐ | ☐ | ☐ |
+| Offline save queue: capture/share/Shortcut offline → "waiting to upload" row → uploads when online; Retry / Discard | ☐ | ☐ | ☐ |
+| Code editor: live colouring, line numbers, auto-indent, auto-close, bracket match, find & replace (key bar on iPhone/iPad, ⌘F on Mac) | ☐ | ☐ | ☐ |
 
 ## Review focus (from the plan)
 | Case | Expected | Auto | Manual |
