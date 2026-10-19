@@ -15,6 +15,7 @@
 		7682168EE4B9626F45CCBB34 /* ByteCatchCore in Frameworks */ = {isa = PBXBuildFile; productRef = 7CEDA390447B6039AE590DD4 /* ByteCatchCore */; };
 		83AFB29D0CC866D1C8464D89 /* SnippetIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D838413DCB2050F3742666 /* SnippetIntents.swift */; };
 		8C1655241A95849FE38DC887 /* ByteCatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61BC3B1A0E40FC429B39F979 /* ByteCatchApp.swift */; };
+		9A04859E3567227B766BC8CE /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = F73C32E507C2279ACFF6C1EA /* AppIcon.icon */; };
 		9EE1FB947F289D8DFA267B5A /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 578F0BBD49A6125840F8204E /* RootView.swift */; };
 		9F2D642D1829203210876D00 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2EB80AEB5977C7A9C16AC93B /* PrivacyInfo.xcprivacy */; };
 		AF5E2FE6012B017544A66057 /* ShareExtension-macOS.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 277B9E0F2A58366A616C1FFB /* ShareExtension-macOS.appex */; platformFilters = (macos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -86,6 +87,7 @@
 		E3530D541723AC7558952B22 /* ShareExtension-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ShareExtension-iOS.entitlements"; sourceTree = "<group>"; };
 		E54885824DAFA6C47F772DFE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		F312679A932EE894BE6213C6 /* ByteCatch.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ByteCatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F73C32E507C2279ACFF6C1EA /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -171,6 +173,7 @@
 		BF7E194B247FB81849CA2A73 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				F73C32E507C2279ACFF6C1EA /* AppIcon.icon */,
 				2E8E9F0E34A795A87F842D59 /* Assets.xcassets */,
 				5293C102C7001EC700362023 /* ByteCatch-iOS.entitlements */,
 				028C047DAB0DBADD80135A0F /* ByteCatch-macOS.entitlements */,
@@ -345,6 +348,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9A04859E3567227B766BC8CE /* AppIcon.icon in Resources */,
 				E78D6148C4233CC2E3543A7C /* Assets.xcassets in Resources */,
 				C9EFAE7F00096F5B80548555 /* PrivacyInfo.xcprivacy in Resources */,
 			);
