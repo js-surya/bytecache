@@ -4,10 +4,13 @@ import SwiftUI
 public struct SnippetListView: View {
     @Bindable var model: SnippetListModel
     @Binding var selection: Snippet.ID?
+    let showsSearchField: Bool
 
-    public init(model: SnippetListModel, selection: Binding<Snippet.ID?>) {
+    /// `showsSearchField: false` when a Search tab owns searching (iPhone tab layout).
+    public init(model: SnippetListModel, selection: Binding<Snippet.ID?>, showsSearchField: Bool = true) {
         self.model = model
         _selection = selection
+        self.showsSearchField = showsSearchField
     }
 
     public var body: some View {
@@ -61,8 +64,7 @@ public struct SnippetListView: View {
                     .background(.yellow.opacity(0.25))
             }
         }
-        .searchable(text: $model.searchText, prompt: "Search snippets")
-        .modifier(SearchFocus(request: model.searchFocusRequest))
+        .modifier(OptionalSearch(enabled: showsSearchField, model: model))
         .onChange(of: model.searchText) { model.searchTextChanged() }
         .refreshable { await model.refresh() }
         .navigationTitle(model.selection.title)
@@ -141,6 +143,21 @@ private struct SearchFocus: ViewModifier {
             content
                 .searchFocused($focused)
                 .onChange(of: request) { focused = true }
+        } else {
+            content
+        }
+    }
+}
+
+private struct OptionalSearch: ViewModifier {
+    let enabled: Bool
+    @Bindable var model: SnippetListModel
+
+    func body(content: Content) -> some View {
+        if enabled {
+            content
+                .searchable(text: $model.searchText, prompt: "Search snippets")
+                .modifier(SearchFocus(request: model.searchFocusRequest))
         } else {
             content
         }

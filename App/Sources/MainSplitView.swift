@@ -16,6 +16,7 @@ struct MainSplitView: View {
     @State private var clipboardEmpty = false
     @State private var scanning = false
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     init(services: AppServices) {
         self.services = services
@@ -24,43 +25,7 @@ struct MainSplitView: View {
     }
 
     var body: some View {
-        NavigationSplitView {
-            SidebarView(model: sidebar, selection: $sidebarSelection, session: services.session)
-                #if os(macOS)
-                .navigationSplitViewColumnWidth(min: 180, ideal: 220)
-                #endif
-        } content: {
-            SnippetListView(model: list, selection: $selectedSnippet)
-                .safeAreaInset(edge: .bottom) {
-                    if clipboard.hasText {
-                        ClipboardBanner(watcher: clipboard) { startCapture($0) }
-                    }
-                }
-                .dropDestination(for: String.self) { items, _ in
-                    let text = items.joined(separator: "\n")
-                    guard text.contains(where: { !$0.isWhitespace }) else { return false }
-                    startCapture(text)
-                    return true
-                }
-                .toolbar {
-                    ToolbarItem(placement: .primaryAction) {
-                        Button { scanning = true } label: { Label("Scan Code", symbol: .scan) }
-                    }
-                    ToolbarItem(placement: .primaryAction) {
-                        Button { startEditing(nil) } label: { Label("New Snippet", symbol: .newSnippet) }
-                    }
-                }
-                #if os(macOS)
-                .navigationSplitViewColumnWidth(min: 260, ideal: 320)
-                #endif
-        } detail: {
-            if let id = selectedSnippet, let snippet = list.snippets.first(where: { $0.id == id }) {
-                SnippetDetailView(snippet: snippet, list: list) { startEditing(snippet) }
-            } else {
-                ContentUnavailableView("No Snippet Selected", symbol: .braces,
-                                       description: Text("Pick a snippet, or press ⌘N to create one."))
-            }
-        }
+        layout
         .task(id: sidebarSelection) {
             list.selection = sidebarSelection ?? .all
             selectedSnippet = nil
@@ -143,6 +108,62 @@ struct MainSplitView: View {
             #if os(macOS)
             .frame(minWidth: 560, minHeight: 600)
             #endif
+        }
+    }
+
+    @ViewBuilder
+    private var layout: some View {
+        #if os(iOS)
+        if #available(iOS 26.1, *), horizontalSizeClass == .compact {
+            PhoneTabsView(services: services, all: list, sidebar: sidebar, clipboard: clipboard,
+                          allSelection: $selectedSnippet,
+                          onNew: { startEditing(nil) }, onScan: { scanning = true },
+                          onEdit: { startEditing($0) }, onCapture: { startCapture($0) })
+        } else {
+            splitView
+        }
+        #else
+        splitView
+        #endif
+    }
+
+    private var splitView: some View {
+        NavigationSplitView {
+            SidebarView(model: sidebar, selection: $sidebarSelection, session: services.session)
+                #if os(macOS)
+                .navigationSplitViewColumnWidth(min: 180, ideal: 220)
+                #endif
+        } content: {
+            SnippetListView(model: list, selection: $selectedSnippet)
+                .safeAreaInset(edge: .bottom) {
+                    if clipboard.hasText {
+                        ClipboardBanner(watcher: clipboard) { startCapture($0) }
+                    }
+                }
+                .dropDestination(for: String.self) { items, _ in
+                    let text = items.joined(separator: "\n")
+                    guard text.contains(where: { !$0.isWhitespace }) else { return false }
+                    startCapture(text)
+                    return true
+                }
+                .toolbar {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button { scanning = true } label: { Label("Scan Code", symbol: .scan) }
+                    }
+                    ToolbarItem(placement: .primaryAction) {
+                        Button { startEditing(nil) } label: { Label("New Snippet", symbol: .newSnippet) }
+                    }
+                }
+                #if os(macOS)
+                .navigationSplitViewColumnWidth(min: 260, ideal: 320)
+                #endif
+        } detail: {
+            if let id = selectedSnippet, let snippet = list.snippets.first(where: { $0.id == id }) {
+                SnippetDetailView(snippet: snippet, list: list) { startEditing(snippet) }
+            } else {
+                ContentUnavailableView("No Snippet Selected", symbol: .braces,
+                                       description: Text("Pick a snippet, or press ⌘N to create one."))
+            }
         }
     }
 

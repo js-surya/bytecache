@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0287DB27B23BC5A45311F18D /* PhoneTabsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ADF007066E88A5F977BDCD3 /* PhoneTabsView.swift */; };
 		08F79F18BB88ED924C22F95B /* ShareExtension-iOS.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 423BCC1F180466E6F27DDD06 /* ShareExtension-iOS.appex */; platformFilters = (ios, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		0CAA7FA2814CEC7B588965F4 /* AppNavigator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6AF48382EF4B267429237E7 /* AppNavigator.swift */; };
 		26A542E9740AEC06728A967E /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12855A995C6E19339685CED3 /* ShareViewController.swift */; };
@@ -101,6 +102,7 @@
 		807D3002C3AD054938EB719C /* ByteCatchKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ByteCatchKit; path = Packages/ByteCatchKit; sourceTree = SOURCE_ROOT; };
 		8A63EA4DB76956252DEAFC1E /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
 		91115E2D302E39CFA672F325 /* MainSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainSplitView.swift; sourceTree = "<group>"; };
+		9ADF007066E88A5F977BDCD3 /* PhoneTabsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneTabsView.swift; sourceTree = "<group>"; };
 		9DFD62A9CB8A800D5EA878D6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		A6AF48382EF4B267429237E7 /* AppNavigator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNavigator.swift; sourceTree = "<group>"; };
 		E3530D541723AC7558952B22 /* ShareExtension-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ShareExtension-iOS.entitlements"; sourceTree = "<group>"; };
@@ -241,6 +243,7 @@
 				A6AF48382EF4B267429237E7 /* AppNavigator.swift */,
 				61BC3B1A0E40FC429B39F979 /* ByteCatchApp.swift */,
 				91115E2D302E39CFA672F325 /* MainSplitView.swift */,
+				9ADF007066E88A5F977BDCD3 /* PhoneTabsView.swift */,
 				578F0BBD49A6125840F8204E /* RootView.swift */,
 				02BAA92960ADC054C238B0AA /* SnippetWindow.swift */,
 				B2CED7555CBE476EEB00FD8E /* Intents */,
@@ -449,6 +452,7 @@
 				8C1655241A95849FE38DC887 /* ByteCatchApp.swift in Sources */,
 				7E5BACC7FECE2EEF852219F4 /* CaptureIntents.swift in Sources */,
 				DF1F192ACF61472B0193B5F9 /* MainSplitView.swift in Sources */,
+				0287DB27B23BC5A45311F18D /* PhoneTabsView.swift in Sources */,
 				9EE1FB947F289D8DFA267B5A /* RootView.swift in Sources */,
 				B4AD0729A2F3278FF81FD9A0 /* SnippetEntity.swift in Sources */,
 				83AFB29D0CC866D1C8464D89 /* SnippetIntents.swift in Sources */,
