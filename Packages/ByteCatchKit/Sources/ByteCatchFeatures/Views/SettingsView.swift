@@ -54,10 +54,16 @@ public struct SettingsView: View {
 
             Section {
                 NavigationLink {
-                    SyncSettingsView()
+                    ICloudSyncSettingsView()
                 } label: {
-                    SettingsLabel(title: "iCloud & Handoff", systemName: "icloud.fill", color: .cyan,
-                                  value: settings.iCloudSyncEnabled || settings.handoffEnabled ? "On" : "Off")
+                    SettingsLabel(title: "iCloud Sync", systemName: "icloud.fill", color: .cyan,
+                                  value: settings.iCloudSyncEnabled ? "On" : "Off")
+                }
+                NavigationLink {
+                    HandoffSettingsView()
+                } label: {
+                    SettingsLabel(title: "Handoff", systemName: "macbook.and.iphone", color: .blue,
+                                  value: settings.handoffEnabled ? "On" : "Off")
                 }
             }
 
@@ -287,7 +293,7 @@ struct AboutView: View {
     }
 }
 
-struct SyncSettingsView: View {
+struct ICloudSyncSettingsView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(CloudSyncCoordinator.self) private var sync
 
@@ -295,33 +301,52 @@ struct SyncSettingsView: View {
         @Bindable var settings = settings
         List {
             Section {
-                Toggle(isOn: $settings.iCloudSyncEnabled) {
-                    SettingsLabel(title: "iCloud Sync", systemName: "icloud.fill", color: .cyan)
-                }
-                .onChange(of: settings.iCloudSyncEnabled) {
-                    if settings.iCloudSyncEnabled { Task { await sync.syncNow() } }
-                }
-            } footer: {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Keeps your appearance, code theme and server list the same on your iPhone, iPad and Mac. Logins and API keys stay on each device — sign in once on each one.")
-                    if !UbiquitousSyncStore.isAvailable {
-                        Label("This device isn't signed in to iCloud.", systemImage: "exclamationmark.icloud")
-                            .foregroundStyle(.orange)
+                Toggle("iCloud Sync", isOn: $settings.iCloudSyncEnabled)
+                    .onChange(of: settings.iCloudSyncEnabled) {
+                        if settings.iCloudSyncEnabled { Task { await sync.syncNow() } }
                     }
+            } footer: {
+                if !UbiquitousSyncStore.isAvailable {
+                    Label("This device isn't signed in to iCloud.", systemImage: "exclamationmark.icloud")
+                        .foregroundStyle(.orange)
                 }
             }
-
+            Section("Synced") {
+                Label("Appearance and accent colour", systemImage: "circle.lefthalf.filled")
+                Label("Code theme, font size, line numbers", systemImage: "chevron.left.forwardslash.chevron.right")
+                Label("Server list", systemImage: "server.rack")
+            }
             Section {
-                Toggle(isOn: $settings.handoffEnabled) {
-                    SettingsLabel(title: "Handoff", systemName: "macbook.and.iphone", color: .blue)
-                }
+                Label("Logins and API keys", systemImage: "key")
+                Label("Snippets (they live on your servers)", systemImage: "doc.text")
+            } header: {
+                Text("Stays on this device")
             } footer: {
-                Text("Pick up the snippet you're viewing on another device signed in to the same Apple Account. Devices without ByteCatch open it in the ByteStash web app.")
+                Text("Servers added on another device appear here signed out — sign in once on each device. Removing a server removes it from all your devices.")
             }
         }
         #if os(iOS)
         .listStyle(.insetGrouped)
         #endif
-        .navigationTitle("iCloud & Handoff")
+        .navigationTitle("iCloud Sync")
+    }
+}
+
+struct HandoffSettingsView: View {
+    @Environment(AppSettings.self) private var settings
+
+    var body: some View {
+        @Bindable var settings = settings
+        List {
+            Section {
+                Toggle("Handoff", isOn: $settings.handoffEnabled)
+            } footer: {
+                Text("Pick up the snippet you're viewing on your other iPhone, iPad or Mac. Your devices need the same Apple Account, with Bluetooth and Wi-Fi on. Devices without ByteCatch open the snippet in the ByteStash web app. Handoff also needs to be on in the system settings (General → AirPlay & Continuity on iPhone and iPad, General → AirDrop & Handoff on Mac).")
+            }
+        }
+        #if os(iOS)
+        .listStyle(.insetGrouped)
+        #endif
+        .navigationTitle("Handoff")
     }
 }
