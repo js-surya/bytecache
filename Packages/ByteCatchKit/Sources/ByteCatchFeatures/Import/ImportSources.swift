@@ -66,7 +66,7 @@ public enum GistImport {
                 code = String(decoding: try await get(raw, transport: transport), as: UTF8.self)
             }
             // GitHub's own language label first (its files are often named gistfile1.txt).
-            let reported = file.language.flatMap { LanguageCatalog.id(forAlias: $0.lowercased()) }
+            let reported = file.language.flatMap { LanguageCatalog.id(forAlias: $0.lowercased()) }.flatMap { $0 == "plaintext" ? nil : $0 }
             fragments.append(FragmentDraft(fileName: file.filename, code: code,
                                            language: reported ?? detectLanguage(code, fileName: file.filename, detector: detector)))
         }

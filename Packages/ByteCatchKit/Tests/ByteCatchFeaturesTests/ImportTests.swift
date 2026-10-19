@@ -30,6 +30,12 @@ final class GistImportTests: XCTestCase {
         XCTAssertEqual(candidates[0].fragments[0].language, "python")
     }
 
+    func testGitHubsGenericTextLabelIsIgnored() async throws {
+        let json = #"{"description":"t","files":{"gistfile1.txt":{"filename":"gistfile1.txt","language":"Text","content":"{\"a\": 1}","truncated":false}}}"#
+        let candidates = try await GistImport.fetch("aa5a315d61ae9438b18d", transport: StubTransport(body: json), detector: .rulesOnly)
+        XCTAssertEqual(candidates[0].fragments[0].language, "json", "detected from the code instead")
+    }
+
     func testMissingGist() async {
         do {
             _ = try await GistImport.fetch("aa5a315d61ae9438b18d", transport: StubTransport(status: 404, body: "{}"), detector: .rulesOnly)
