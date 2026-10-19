@@ -21,6 +21,9 @@ public struct CaptureSheet: View {
                     Button { Pasteboard.copy(model.text) } label: { Label("Copy Code", symbol: .copy) }
                 }
             }
+            if !SecretScanner.scan(model.text).isEmpty {
+                Section { SecretWarning(text: $model.text) }
+            }
             Section("Code") {
                 TextEditor(text: $model.text)
                     .codeEditorStyle()

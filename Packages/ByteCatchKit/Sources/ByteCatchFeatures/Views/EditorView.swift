@@ -45,6 +45,7 @@ public struct EditorView: View {
                         selection: model.draft.fragments[safe: index]?.language ?? "plaintext",
                         suggestions: model.suggestions[index] ?? []
                     ) { model.setLanguage($0, fragment: index) }
+                    SecretWarning(text: text(index, \.code))
                     TextEditor(text: text(index, \.code))
                         .codeEditorStyle()
                         .autocorrectionDisabled()
