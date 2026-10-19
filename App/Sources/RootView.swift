@@ -43,6 +43,19 @@ struct RootView: View {
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active, let link = PendingCapture.consume() { AppNavigator.shared.handle(link) }
+            if phase == .active { Task { await services.updates.appBecameActive() } }
+        }
+        .sheet(item: Bindable(services.updates).offered) { release in
+            UpdateSheet(release: release, kind: .update, current: services.updates.runningVersion) {
+                services.updates.skipOffered()
+            }
+            .appSettingsStyle(services.settings)
+        }
+        .background {
+            // A second sheet needs its own anchor view.
+            Color.clear.sheet(item: Bindable(services.updates).whatsNew) { release in
+                UpdateSheet(release: release, kind: .whatsNew).appSettingsStyle(services.settings)
+            }
         }
         .onChange(of: services.session.state) {
             if case .signedIn = services.session.state { return }
@@ -54,6 +67,7 @@ struct RootView: View {
         }
         .task {
             guard !restored else { return }
+            Task { await services.updates.appBecameActive() }
             await services.session.restore()
             #if DEBUG
             // `-BCDemoLogin` launch argument: sign in to the public demo (screenshots, quick checks).

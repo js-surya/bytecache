@@ -11,9 +11,17 @@ struct ByteCacheApp: App {
                 .appSettingsStyle(services.settings)
                 .environment(services.cloudSync)
                 .environment(services.lock)
+                .environment(services.updates)
                 .appLockCover(services.lock)
         }
-        .commands { SnippetCommandsMenu() }
+        .commands {
+            SnippetCommandsMenu()
+            #if os(macOS)
+            CommandGroup(after: .appInfo) {
+                Button("Check for Updates…") { Task { await services.updates.checkNow() } }
+            }
+            #endif
+        }
         WindowGroup("Snippet", for: Int.self) { $id in
             if let id {
                 SnippetWindow(id: id, services: services)
@@ -29,6 +37,7 @@ struct ByteCacheApp: App {
             .appSettingsStyle(services.settings)
                 .environment(services.cloudSync)
                 .environment(services.lock)
+                .environment(services.updates)
                 .appLockCover(services.lock)
             .frame(minWidth: 720, idealWidth: 780, minHeight: 520, idealHeight: 600)
         }
