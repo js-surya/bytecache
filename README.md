@@ -14,6 +14,7 @@
   <img alt="Swift" src="https://img.shields.io/badge/Swift-6-orange">
   <img alt="SwiftUI" src="https://img.shields.io/badge/UI-SwiftUI-informational">
   <img alt="Data collected" src="https://img.shields.io/badge/data%20collected-none-brightgreen">
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-lightgrey"></a>
 </p>
 
 <p align="center">
@@ -100,4 +101,10 @@ Bug reports and ideas are welcome. Please use the [issue forms](../../issues/new
 
 Built with ❤️ by [SyntaxError](https://github.com/js-surya) and Claude.
 
-Uses [HighlightSwift](https://github.com/appstefan/HighlightSwift) (MIT), [highlight.js](https://highlightjs.org) (BSD-3-Clause) and [Lucide](https://lucide.dev) icons (ISC). The colour palettes belong to their authors.
+Uses [HighlightSwift](https://github.com/appstefan/HighlightSwift) (MIT), [highlight.js](https://highlightjs.org) (BSD-3-Clause) and [Lucide](https://lucide.dev) icons (ISC). The colour palettes belong to their authors. The language model was trained on permissively licensed open-source code, and the test set contains short excerpts from it; [DATA.md](Packages/ByteCatchKit/Sources/ByteCatchLanguage/DATA.md) lists every source with its licence.
+
+## Licence
+
+The code is under the [MIT License](LICENSE). The ByteCatch name and app icon are not covered by it: if you publish your own build, please use a different name and icon.
+
+Report security problems privately; see [SECURITY.md](.github/SECURITY.md). Everyone taking part follows the [code of conduct](.github/CODE_OF_CONDUCT.md).
