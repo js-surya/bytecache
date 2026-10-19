@@ -35,6 +35,10 @@
 	</dict>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>ByteCatch connects to the ByteStash server you enter, which may be on your local network.</string>
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>app.bytecatch.ByteCatch.snippet</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -1,8 +1,21 @@
 import SwiftUI
+import ByteCatchCore
 import ByteCatchFeatures
 
 /// Routes between server setup, login and the main split view.
 struct RootView: View {
+    /// Snippet from another device: switch to its server (or offer to add it), then show it.
+    private func openHandoff(server: ServerURL, snippetID: Int) async {
+        let session = services.session
+        if let account = session.accounts.first(where: { $0.server == server }) {
+            if account.id != session.activeAccountID { await session.switchTo(account.id) }
+            AppNavigator.shared.pendingSnippetID = snippetID
+        } else {
+            session.addServer()
+            services.onboarding.serverText = server.base.absoluteString
+        }
+    }
+
     let services: AppServices
     @State private var restored = false
 
@@ -24,6 +37,10 @@ struct RootView: View {
             }
         }
         .animation(.default, value: services.session.state)
+        .onContinueUserActivity(SnippetActivity.type) { activity in
+            guard services.settings.handoffEnabled, let target = SnippetActivity.parse(activity.userInfo) else { return }
+            Task { await openHandoff(server: target.server, snippetID: target.snippetID) }
+        }
         .task {
             guard !restored else { return }
             await services.session.restore()
@@ -41,6 +58,7 @@ struct RootView: View {
             }
             #endif
             restored = true
+            await services.cloudSync.start()
         }
     }
 }

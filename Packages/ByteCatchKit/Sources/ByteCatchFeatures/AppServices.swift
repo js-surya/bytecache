@@ -11,16 +11,22 @@ public final class AppServices {
     /// Nil only if the on-disk store can't be opened; the app then works online-only.
     public let cache: SnippetCache?
     public let detector: LanguageDetector
+    public let settings: AppSettings
+    public let cloudSync: CloudSyncCoordinator
 
     public init(
         store: any CredentialStore = AppEnvironment.makeCredentialStore(),
         transport: any HTTPTransport = URLSession.shared,
         cache: SnippetCache? = try? SnippetCache(),
-        detector: LanguageDetector = LanguageDetector()
+        detector: LanguageDetector = LanguageDetector(),
+        settings: AppSettings = AppSettings(),
+        cloud: (any KeyValueSyncStore)? = nil
     ) {
         session = SessionManager(store: store, transport: transport)
         onboarding = OnboardingModel(session: session)
         self.cache = cache
         self.detector = detector
+        self.settings = settings
+        cloudSync = CloudSyncCoordinator(settings: settings, session: session, cloud: cloud ?? UbiquitousSyncStore())
     }
 }

@@ -19,6 +19,8 @@ public final class SessionManager {
     /// Every saved server, in the order they were added.
     public private(set) var accounts: [Credentials] = []
     public var activeAccountID: UUID? { credentials?.id }
+    /// Servers removed on this device since launch, for iCloud sync to spread.
+    public private(set) var removedAccountIDs: Set<UUID> = []
 
     /// True while adding a server when there is another one to go back to.
     public var canCancelAddServer: Bool {
@@ -133,6 +135,7 @@ public final class SessionManager {
     }
 
     public func removeAccount(_ id: UUID) async {
+        removedAccountIDs.insert(id)
         var list = store.loadAll()
         let wasActive = list.activeID == id || credentials?.id == id
         list.accounts.removeAll { $0.id == id }
@@ -149,12 +152,29 @@ public final class SessionManager {
         }
     }
 
+    /// Applies the server list from iCloud. Keeps the current session unless its server was removed.
+    public func applySyncedServers(_ payload: ServerListPayload) async {
+        let current = store.loadAll()
+        let merged = current.merging(payload)
+        guard merged != current else { return }
+        try? store.saveAll(merged)
+        accounts = merged.accounts
+        guard let active = credentials, !merged.accounts.contains(where: { $0.id == active.id }) else { return }
+        credentials = nil
+        if let next = merged.accounts.first {
+            await switchTo(next.id)
+        } else {
+            state = .needsServer
+        }
+    }
+
     // MARK: Private
 
     private static let apiKeyUser = User(id: 0, username: apiKeyUserName)
 
     private func removeActiveSynchronously(_ id: UUID) {
         guard credentials?.id == id else { return }
+        removedAccountIDs.insert(id)
         var list = store.loadAll()
         list.accounts.removeAll { $0.id == id }
         list.activeID = nil

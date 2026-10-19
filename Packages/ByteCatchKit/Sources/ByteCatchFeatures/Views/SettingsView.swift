@@ -54,6 +54,15 @@ public struct SettingsView: View {
 
             Section {
                 NavigationLink {
+                    SyncSettingsView()
+                } label: {
+                    SettingsLabel(title: "iCloud & Handoff", systemName: "icloud.fill", color: .cyan,
+                                  value: settings.iCloudSyncEnabled || settings.handoffEnabled ? "On" : "Off")
+                }
+            }
+
+            Section {
+                NavigationLink {
                     ServersView(session: session)
                 } label: {
                     SettingsLabel(title: "Servers", systemName: "server.rack", color: .green,
@@ -275,5 +284,44 @@ struct AboutView: View {
             .font(.footnote)
         }
         .navigationTitle("About")
+    }
+}
+
+struct SyncSettingsView: View {
+    @Environment(AppSettings.self) private var settings
+    @Environment(CloudSyncCoordinator.self) private var sync
+
+    var body: some View {
+        @Bindable var settings = settings
+        List {
+            Section {
+                Toggle(isOn: $settings.iCloudSyncEnabled) {
+                    SettingsLabel(title: "iCloud Sync", systemName: "icloud.fill", color: .cyan)
+                }
+                .onChange(of: settings.iCloudSyncEnabled) {
+                    if settings.iCloudSyncEnabled { Task { await sync.syncNow() } }
+                }
+            } footer: {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Keeps your appearance, code theme and server list the same on your iPhone, iPad and Mac. Logins and API keys stay on each device — sign in once on each one.")
+                    if !UbiquitousSyncStore.isAvailable {
+                        Label("This device isn't signed in to iCloud.", systemImage: "exclamationmark.icloud")
+                            .foregroundStyle(.orange)
+                    }
+                }
+            }
+
+            Section {
+                Toggle(isOn: $settings.handoffEnabled) {
+                    SettingsLabel(title: "Handoff", systemName: "macbook.and.iphone", color: .blue)
+                }
+            } footer: {
+                Text("Pick up the snippet you're viewing on another device signed in to the same Apple Account. Devices without ByteCatch open it in the ByteStash web app.")
+            }
+        }
+        #if os(iOS)
+        .listStyle(.insetGrouped)
+        #endif
+        .navigationTitle("iCloud & Handoff")
     }
 }

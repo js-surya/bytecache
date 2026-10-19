@@ -27,6 +27,8 @@ Tick each cell after trying it on that platform. "Auto" = covered by automated t
 | Spotlight finds a viewed snippet; tapping opens it | ☐ | ☐ | ☐ |
 | Settings (iOS Settings style, icon rows) | ☐ (sheet) | ☐ (sheet) | ☐ (Settings window) |
 | Appearance: Automatic / Light / Dark, accent colour | ☐ | ☐ | ☐ |
+| iCloud sync of settings + server list (needs signed build + iCloud); switch off works | ☐ | ☐ | ☐ |
+| Handoff: view snippet on one device → continue on another; web fallback; switch off works | ☐ | ☐ | ☐ |
 | Code theme (22 themes), font size, line numbers — viewer, editor, share sheet | ☐ | ☐ | ☐ |
 
 ## Review focus (from the plan)

@@ -65,6 +65,13 @@ struct MainSplitView: View {
             if ProcessInfo.processInfo.arguments.contains("-BCNewSnippet"), editor == nil { startEditing(nil) }
             #endif
         }
+        .userActivity(SnippetActivity.type, isActive: services.settings.handoffEnabled && selected != nil) { activity in
+            guard let snippet = selected, let server = services.session.client?.server else { return }
+            activity.title = snippet.title
+            activity.userInfo = SnippetActivity.userInfo(server: server, snippetID: snippet.id)
+            activity.webpageURL = SnippetActivity.webURL(server: server, snippetID: snippet.id)
+            activity.isEligibleForHandoff = true
+        }
         .onAppear { clipboard.check() }
         .onChange(of: list.snippets) {
             if let server = services.session.client?.server { SpotlightIndexer.index(list.snippets, server: server) }

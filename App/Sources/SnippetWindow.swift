@@ -25,6 +25,13 @@ struct SnippetWindow: View {
             }
         }
         .task { await load() }
+        .userActivity(SnippetActivity.type, isActive: services.settings.handoffEnabled && snippet != nil) { activity in
+            guard let snippet, let server = services.session.client?.server else { return }
+            activity.title = snippet.title
+            activity.userInfo = SnippetActivity.userInfo(server: server, snippetID: snippet.id)
+            activity.webpageURL = SnippetActivity.webURL(server: server, snippetID: snippet.id)
+            activity.isEligibleForHandoff = true
+        }
         .sheet(item: $editor) { model in
             NavigationStack {
                 EditorView(model: model, knownCategories: []) { saved in
