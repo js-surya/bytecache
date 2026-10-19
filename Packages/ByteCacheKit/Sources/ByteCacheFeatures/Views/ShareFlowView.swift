@@ -28,7 +28,7 @@ public struct ShareFlowView: View {
             Group {
                 switch phase {
                 case .loading:
-                    ProgressView()
+                    LoadingMark()
                 case .ready(let model):
                     CaptureSheet(model: model, onQueued: {
                         phase = .queued

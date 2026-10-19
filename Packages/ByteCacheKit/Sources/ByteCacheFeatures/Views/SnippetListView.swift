@@ -30,7 +30,9 @@ public struct SnippetListView: View {
             if model.isSelecting { BulkActionBar(model: model) }
         }
         .overlay {
-            if model.snippets.isEmpty && !model.isLoading {
+            if model.snippets.isEmpty && model.isLoading {
+                LoadingMark()
+            } else if model.snippets.isEmpty && !model.isLoading {
                 if model.searchText.isEmpty {
                     ContentUnavailableView("No Snippets", symbol: .tray, description: Text("Nothing here yet."))
                 } else {
