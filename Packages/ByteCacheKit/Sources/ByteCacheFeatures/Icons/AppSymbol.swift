@@ -28,6 +28,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case allSnippets
     case textSmaller
     case textLarger
+    case wrapLines
     case noText
     case tag
     case star
@@ -109,6 +110,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .allSnippets: "tray.full"
         case .textSmaller: "textformat.size.smaller"
         case .textLarger: "textformat.size.larger"
+        case .wrapLines: "arrow.turn.down.left"
         case .noText: "text.badge.xmark"
         case .tag: "tag"
         case .star: "star"
@@ -192,6 +194,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .allSnippets: "library"
         case .textSmaller: "a-arrow-down"
         case .textLarger: "a-arrow-up"
+        case .wrapLines: "wrap-text"
         case .noText: "file-x"
         case .tag: "tag"
         case .star: "star"

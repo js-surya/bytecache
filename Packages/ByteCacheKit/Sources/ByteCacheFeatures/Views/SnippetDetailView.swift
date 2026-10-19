@@ -102,6 +102,11 @@ public struct SnippetDetailView: View {
                             .foregroundStyle(snippet.isFavorite ? AnyShapeStyle(.yellow) : AnyShapeStyle(.tint))
                     }
                 }
+                Toggle(isOn: Bindable(settings).wrapLines) {
+                    Label("Wrap Long Lines", symbol: .wrapLines)
+                }
+                .toggleStyle(.button)
+                .help("Wrap Long Lines")
                 if settings.suggestionsEnabled, let explainer = SnippetSuggesters.explainer() {
                     Button { explaining = true } label: { Label("Explain", symbol: .sparkles) }
                         .sheet(isPresented: $explaining) {

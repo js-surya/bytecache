@@ -435,6 +435,7 @@ struct CodeThemeSettingsView: View {
                 }
                 LabeledContent("Font Size", value: "\(Int(settings.codeFontSize)) pt")
                 Toggle("Line Numbers", isOn: $settings.showLineNumbers)
+                Toggle("Wrap Long Lines", isOn: $settings.wrapLines)
             }
 
             themeSection("Follows Appearance", .adaptive)

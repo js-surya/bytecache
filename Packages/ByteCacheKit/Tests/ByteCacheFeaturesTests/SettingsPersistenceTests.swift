@@ -13,6 +13,7 @@ final class SettingsPersistenceTests: XCTestCase {
         first.iconStyle = .lucide
         first.searchInCode = true
         first.showLineNumbers = false
+        first.wrapLines = true
         first.codeFontSize = 18
         first.iCloudSyncEnabled = false
         first.handoffEnabled = false
@@ -27,6 +28,7 @@ final class SettingsPersistenceTests: XCTestCase {
         XCTAssertEqual(second.iconStyle, .lucide)
         XCTAssertTrue(second.searchInCode)
         XCTAssertFalse(second.showLineNumbers)
+        XCTAssertTrue(second.wrapLines)
         XCTAssertEqual(second.codeFontSize, 18)
         XCTAssertFalse(second.iCloudSyncEnabled)
         XCTAssertFalse(second.handoffEnabled)
