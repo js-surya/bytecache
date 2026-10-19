@@ -13,6 +13,7 @@ struct MainSplitView: View {
     @State private var editor: SnippetEditorModel?
     @State private var capture: CaptureModel?
     @State private var clipboard = ClipboardWatcher()
+    @State private var clipboardEmpty = false
     @Environment(\.scenePhase) private var scenePhase
 
     init(services: AppServices) {
@@ -75,6 +76,21 @@ struct MainSplitView: View {
         .onAppear { clipboard.check() }
         .onChange(of: list.snippets) {
             if let server = services.session.client?.server { SpotlightIndexer.index(list.snippets, server: server) }
+            Task { await services.widgets.refresh() }
+        }
+        .task(id: AppNavigator.shared.pendingClipboardCapture) {
+            guard AppNavigator.shared.pendingClipboardCapture else { return }
+            AppNavigator.shared.pendingClipboardCapture = false
+            if let text = Pasteboard.string(), text.contains(where: { !$0.isWhitespace }) {
+                startCapture(text)
+            } else {
+                clipboardEmpty = true
+            }
+        }
+        .alert("Nothing to Save", isPresented: $clipboardEmpty) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Copy some code first, then try again.")
         }
         .onContinueUserActivity(CSSearchableItemActionType) { activity in
             if let id = (activity.userInfo?[CSSearchableItemActivityIdentifier] as? String).flatMap(Int.init) {

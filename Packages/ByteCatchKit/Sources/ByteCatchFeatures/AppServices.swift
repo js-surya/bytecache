@@ -14,6 +14,7 @@ public final class AppServices {
     public let settings: AppSettings
     public let cloudSync: CloudSyncCoordinator
     public let lock: AppLockModel
+    public let widgets: WidgetSnapshotWriter
 
     public init(
         store: any CredentialStore = AppEnvironment.makeCredentialStore(),
@@ -30,6 +31,7 @@ public final class AppServices {
         self.detector = detector
         self.settings = settings
         self.lock = lock
+        widgets = WidgetSnapshotWriter(session: session)
         lock.appDidLaunch()
         cloudSync = CloudSyncCoordinator(settings: settings, session: session, cloud: cloud ?? UbiquitousSyncStore())
     }

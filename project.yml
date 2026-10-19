@@ -25,6 +25,7 @@ targets:
     sources:
       - App/Sources
       - App/Resources
+      - Shared
     dependencies:
       - package: ByteCatchKit
         product: ByteCatchCore
@@ -32,6 +33,7 @@ targets:
         product: ByteCatchLanguage
       - package: ByteCatchKit
         product: ByteCatchFeatures
+      - target: Widgets
       - target: ShareExtension-iOS
         destinationFilters: [iOS]
       - target: ShareExtension-macOS
@@ -47,6 +49,9 @@ targets:
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: true
         NSUserActivityTypes: [app.bytecatch.ByteCatch.snippet]
+        CFBundleURLTypes:
+          - CFBundleURLName: app.bytecatch.ByteCatch
+            CFBundleURLSchemes: [bytecatch]
         NSFaceIDUsageDescription: ByteCatch uses Face ID to keep your snippets private when App Lock is on.
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: true
@@ -64,6 +69,29 @@ targets:
         CODE_SIGN_ENTITLEMENTS[sdk=macosx*]: App/Resources/ByteCatch-macOS.entitlements
         ENABLE_HARDENED_RUNTIME[sdk=macosx*]: YES
         SUPPORTS_MACCATALYST: NO
+  Widgets:
+    type: app-extension
+    supportedDestinations: [iOS, macOS]
+    sources: [Widgets, Shared]
+    dependencies:
+      - package: ByteCatchKit
+        product: ByteCatchCore
+    info:
+      path: Widgets/Info.plist
+      properties:
+        CFBundleDisplayName: ByteCatch
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+        BCAppGroupID: $(BC_APP_GROUP_ID)
+        BCKeychainGroup: $(AppIdentifierPrefix)app.bytecatch.shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.bytecatch.ByteCatch.Widgets
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: NO
+        CODE_SIGN_ENTITLEMENTS: Widgets/Widgets-iOS.entitlements
+        CODE_SIGN_ENTITLEMENTS[sdk=macosx*]: Widgets/Widgets-macOS.entitlements
+        ENABLE_HARDENED_RUNTIME[sdk=macosx*]: YES
   ShareExtension-iOS:
     type: app-extension
     platform: iOS

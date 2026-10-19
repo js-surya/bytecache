@@ -12,9 +12,14 @@
 		26A542E9740AEC06728A967E /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12855A995C6E19339685CED3 /* ShareViewController.swift */; };
 		50D5E0443B187DAF7D3713C5 /* ByteCatchFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = B26A3093597AB739C2DF0511 /* ByteCatchFeatures */; };
 		5F75781056007E14A3E95F00 /* ByteCatchFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = E78D4BEF3C7ED8F59F9D494A /* ByteCatchFeatures */; };
+		696440C9A886F0CF287B735B /* Widgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = EFED486867B64D093C5ED041 /* Widgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		7682168EE4B9626F45CCBB34 /* ByteCatchCore in Frameworks */ = {isa = PBXBuildFile; productRef = 7CEDA390447B6039AE590DD4 /* ByteCatchCore */; };
+		7E5BACC7FECE2EEF852219F4 /* CaptureIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1CBCDEE950791568445A99 /* CaptureIntents.swift */; };
 		83AFB29D0CC866D1C8464D89 /* SnippetIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D838413DCB2050F3742666 /* SnippetIntents.swift */; };
+		857FE46E65A9EBD5C084B695 /* ByteCatchCore in Frameworks */ = {isa = PBXBuildFile; productRef = 7FB646527AE56CB2263F360B /* ByteCatchCore */; };
 		8C1655241A95849FE38DC887 /* ByteCatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61BC3B1A0E40FC429B39F979 /* ByteCatchApp.swift */; };
+		8DC7B210124F2F1020935722 /* CopySnippetIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20C4D6FDE5C13298171FFD2E /* CopySnippetIntent.swift */; };
+		96C0219289ADE317F1FEF06F /* SnippetWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E9C9F708C427952E39F17C9 /* SnippetWidgets.swift */; };
 		9A04859E3567227B766BC8CE /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = F73C32E507C2279ACFF6C1EA /* AppIcon.icon */; };
 		9EE1FB947F289D8DFA267B5A /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 578F0BBD49A6125840F8204E /* RootView.swift */; };
 		9F2D642D1829203210876D00 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2EB80AEB5977C7A9C16AC93B /* PrivacyInfo.xcprivacy */; };
@@ -28,6 +33,7 @@
 		E78D6148C4233CC2E3543A7C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2E8E9F0E34A795A87F842D59 /* Assets.xcassets */; };
 		E7DF150A599F0901D4FE2FBB /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1AC72476E280B018B57269D8 /* PrivacyInfo.xcprivacy */; };
 		F73F71235039A2BE996A08F0 /* ByteCatchFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = B726A517EE2B62586C531C3A /* ByteCatchFeatures */; };
+		FFAA317E741F07A06B2AE3DC /* CaptureIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1CBCDEE950791568445A99 /* CaptureIntents.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,6 +51,13 @@
 			remoteGlobalIDString = 6C3003DF52B2825B6A948071;
 			remoteInfo = "ShareExtension-macOS";
 		};
+		F708E9684963C2C5864FE4C7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E24D4893B343EBF118A771A6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4C8AAE6F036885CFD190FB6D;
+			remoteInfo = Widgets;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -54,6 +67,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
+				696440C9A886F0CF287B735B /* Widgets.appex in Embed Foundation Extensions */,
 				08F79F18BB88ED924C22F95B /* ShareExtension-iOS.appex in Embed Foundation Extensions */,
 				AF5E2FE6012B017544A66057 /* ShareExtension-macOS.appex in Embed Foundation Extensions */,
 			);
@@ -70,13 +84,18 @@
 		12855A995C6E19339685CED3 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		15ED647692FF51FEFF0FA1C8 /* ShareExtension-macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ShareExtension-macOS.entitlements"; sourceTree = "<group>"; };
 		1AC72476E280B018B57269D8 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		20C4D6FDE5C13298171FFD2E /* CopySnippetIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopySnippetIntent.swift; sourceTree = "<group>"; };
 		277B9E0F2A58366A616C1FFB /* ShareExtension-macOS.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "ShareExtension-macOS.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E8E9F0E34A795A87F842D59 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2EB80AEB5977C7A9C16AC93B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		3555B251FD38D1897095963D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		3E9C9F708C427952E39F17C9 /* SnippetWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetWidgets.swift; sourceTree = "<group>"; };
+		3F3BCD2BE2574DE6FBF5BB2D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		423BCC1F180466E6F27DDD06 /* ShareExtension-iOS.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = "ShareExtension-iOS.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5293C102C7001EC700362023 /* ByteCatch-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ByteCatch-iOS.entitlements"; sourceTree = "<group>"; };
 		578F0BBD49A6125840F8204E /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		5AD82636FBAD78F735ED4B9C /* Widgets-macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Widgets-macOS.entitlements"; sourceTree = "<group>"; };
+		5B1CBCDEE950791568445A99 /* CaptureIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureIntents.swift; sourceTree = "<group>"; };
 		61BC3B1A0E40FC429B39F979 /* ByteCatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ByteCatchApp.swift; sourceTree = "<group>"; };
 		66D838413DCB2050F3742666 /* SnippetIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetIntents.swift; sourceTree = "<group>"; };
 		807D3002C3AD054938EB719C /* ByteCatchKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ByteCatchKit; path = Packages/ByteCatchKit; sourceTree = SOURCE_ROOT; };
@@ -86,8 +105,10 @@
 		A6AF48382EF4B267429237E7 /* AppNavigator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNavigator.swift; sourceTree = "<group>"; };
 		E3530D541723AC7558952B22 /* ShareExtension-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ShareExtension-iOS.entitlements"; sourceTree = "<group>"; };
 		E54885824DAFA6C47F772DFE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		EFED486867B64D093C5ED041 /* Widgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = Widgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		F312679A932EE894BE6213C6 /* ByteCatch.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ByteCatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F73C32E507C2279ACFF6C1EA /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
+		FD39F1A931233463FC592595 /* Widgets-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Widgets-iOS.entitlements"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -117,6 +138,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D71A2921B4A769D4280C56EB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				857FE46E65A9EBD5C084B695 /* ByteCatchCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -126,6 +155,7 @@
 				F312679A932EE894BE6213C6 /* ByteCatch.app */,
 				423BCC1F180466E6F27DDD06 /* ShareExtension-iOS.appex */,
 				277B9E0F2A58366A616C1FFB /* ShareExtension-macOS.appex */,
+				EFED486867B64D093C5ED041 /* Widgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -144,10 +174,24 @@
 				C3338BDF865A25EC791AEE80 /* App */,
 				F262E385429ECCAA671643B3 /* Config */,
 				3F89393C0E95BA57BEE9A5AC /* Packages */,
+				D5050966A4DB7295A676D2DE /* Shared */,
 				B73C11B10F2A06923FC2BA31 /* ShareExtension-iOS */,
 				E1D7190179B0DFF453F5E6F9 /* ShareExtension-macOS */,
+				87C64B800691F526D813CB50 /* Widgets */,
 				2EA2A0EF1F4BC48C6D00B603 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		87C64B800691F526D813CB50 /* Widgets */ = {
+			isa = PBXGroup;
+			children = (
+				20C4D6FDE5C13298171FFD2E /* CopySnippetIntent.swift */,
+				3F3BCD2BE2574DE6FBF5BB2D /* Info.plist */,
+				3E9C9F708C427952E39F17C9 /* SnippetWidgets.swift */,
+				FD39F1A931233463FC592595 /* Widgets-iOS.entitlements */,
+				5AD82636FBAD78F735ED4B9C /* Widgets-macOS.entitlements */,
+			);
+			path = Widgets;
 			sourceTree = "<group>";
 		};
 		B2CED7555CBE476EEB00FD8E /* Intents */ = {
@@ -204,6 +248,14 @@
 			path = Sources;
 			sourceTree = "<group>";
 		};
+		D5050966A4DB7295A676D2DE /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				5B1CBCDEE950791568445A99 /* CaptureIntents.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
 		E1D7190179B0DFF453F5E6F9 /* ShareExtension-macOS */ = {
 			isa = PBXGroup;
 			children = (
@@ -238,6 +290,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				E7045DBDD1C5D25A6B0F58B5 /* PBXTargetDependency */,
 				E8776526A76BA5640072C3B5 /* PBXTargetDependency */,
 				FEA15154F23C2F4E3CFC9290 /* PBXTargetDependency */,
 			);
@@ -250,6 +303,25 @@
 			productName = ByteCatch;
 			productReference = F312679A932EE894BE6213C6 /* ByteCatch.app */;
 			productType = "com.apple.product-type.application";
+		};
+		4C8AAE6F036885CFD190FB6D /* Widgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4F533AA7E363E958DD20E69C /* Build configuration list for PBXNativeTarget "Widgets" */;
+			buildPhases = (
+				E78AA538EEB1873CEC942D76 /* Sources */,
+				D71A2921B4A769D4280C56EB /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Widgets;
+			packageProductDependencies = (
+				7FB646527AE56CB2263F360B /* ByteCatchCore */,
+			);
+			productName = Widgets;
+			productReference = EFED486867B64D093C5ED041 /* Widgets.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 		6C3003DF52B2825B6A948071 /* ShareExtension-macOS */ = {
 			isa = PBXNativeTarget;
@@ -303,6 +375,9 @@
 					496BEE032E11D34BF63C2AE7 = {
 						ProvisioningStyle = Automatic;
 					};
+					4C8AAE6F036885CFD190FB6D = {
+						ProvisioningStyle = Automatic;
+					};
 					6C3003DF52B2825B6A948071 = {
 						ProvisioningStyle = Automatic;
 					};
@@ -329,6 +404,7 @@
 			projectRoot = "";
 			targets = (
 				496BEE032E11D34BF63C2AE7 /* ByteCatch */,
+				4C8AAE6F036885CFD190FB6D /* Widgets */,
 				ADE255E5D44A9728540D84ED /* ShareExtension-iOS */,
 				6C3003DF52B2825B6A948071 /* ShareExtension-macOS */,
 			);
@@ -371,6 +447,7 @@
 			files = (
 				0CAA7FA2814CEC7B588965F4 /* AppNavigator.swift in Sources */,
 				8C1655241A95849FE38DC887 /* ByteCatchApp.swift in Sources */,
+				7E5BACC7FECE2EEF852219F4 /* CaptureIntents.swift in Sources */,
 				DF1F192ACF61472B0193B5F9 /* MainSplitView.swift in Sources */,
 				9EE1FB947F289D8DFA267B5A /* RootView.swift in Sources */,
 				B4AD0729A2F3278FF81FD9A0 /* SnippetEntity.swift in Sources */,
@@ -387,6 +464,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E78AA538EEB1873CEC942D76 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FFAA317E741F07A06B2AE3DC /* CaptureIntents.swift in Sources */,
+				8DC7B210124F2F1020935722 /* CopySnippetIntent.swift in Sources */,
+				96C0219289ADE317F1FEF06F /* SnippetWidgets.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		EA9839EEE72CF5612F26F09C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -398,6 +485,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		E7045DBDD1C5D25A6B0F58B5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4C8AAE6F036885CFD190FB6D /* Widgets */;
+			targetProxy = F708E9684963C2C5864FE4C7 /* PBXContainerItemProxy */;
+		};
 		E8776526A76BA5640072C3B5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			platformFilters = (
@@ -432,6 +524,28 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.bytecatch.ByteCatch;
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		0B02E7373D7B38A1DD3EA5E9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "Widgets/Widgets-iOS.entitlements";
+				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "Widgets/Widgets-macOS.entitlements";
+				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
+				INFOPLIST_FILE = Widgets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.bytecatch.ByteCatch.Widgets;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
@@ -522,6 +636,28 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		829DE9F8D9778D318F254E6D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "Widgets/Widgets-iOS.entitlements";
+				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "Widgets/Widgets-macOS.entitlements";
+				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
+				INFOPLIST_FILE = Widgets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.bytecatch.ByteCatch.Widgets;
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -681,6 +817,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
+		4F533AA7E363E958DD20E69C /* Build configuration list for PBXNativeTarget "Widgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				829DE9F8D9778D318F254E6D /* Debug */,
+				0B02E7373D7B38A1DD3EA5E9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		9CB48326395889997E33BA03 /* Build configuration list for PBXNativeTarget "ByteCatch" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -714,6 +859,10 @@
 			productName = ByteCatchLanguage;
 		};
 		7CEDA390447B6039AE590DD4 /* ByteCatchCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ByteCatchCore;
+		};
+		7FB646527AE56CB2263F360B /* ByteCatchCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ByteCatchCore;
 		};

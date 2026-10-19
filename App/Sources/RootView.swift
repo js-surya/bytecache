@@ -18,6 +18,7 @@ struct RootView: View {
 
     let services: AppServices
     @State private var restored = false
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         Group {
@@ -37,6 +38,16 @@ struct RootView: View {
             }
         }
         .animation(.default, value: services.session.state)
+        .onOpenURL { url in
+            if let link = DeepLink(url: url) { AppNavigator.shared.handle(link) }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active, let link = PendingCapture.consume() { AppNavigator.shared.handle(link) }
+        }
+        .onChange(of: services.session.state) {
+            if case .signedIn = services.session.state { return }
+            Task { await services.widgets.refresh() }
+        }
         .onContinueUserActivity(SnippetActivity.type) { activity in
             guard services.settings.handoffEnabled, let target = SnippetActivity.parse(activity.userInfo) else { return }
             Task { await openHandoff(server: target.server, snippetID: target.snippetID) }
@@ -58,6 +69,7 @@ struct RootView: View {
             }
             #endif
             restored = true
+            if let link = PendingCapture.consume() { AppNavigator.shared.handle(link) }
             await services.cloudSync.start()
         }
     }

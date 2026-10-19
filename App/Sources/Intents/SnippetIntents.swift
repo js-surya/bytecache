@@ -78,6 +78,12 @@ struct ByteCatchShortcuts: AppShortcutsProvider {
             systemImageName: "square.and.arrow.down"
         )
         AppShortcut(
+            intent: SaveClipboardIntent(),
+            phrases: ["Save clipboard to \(.applicationName)", "Catch copied code with \(.applicationName)"],
+            shortTitle: "Save Clipboard",
+            systemImageName: "doc.on.clipboard"
+        )
+        AppShortcut(
             intent: SearchSnippetsIntent(),
             phrases: ["Search \(.applicationName)", "Find a snippet in \(.applicationName)"],
             shortTitle: "Search Snippets",

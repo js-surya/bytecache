@@ -1,0 +1,32 @@
+import AppIntents
+import ByteCatchCore
+#if canImport(UIKit)
+import UIKit
+#else
+import AppKit
+#endif
+
+/// The widget's Copy button: copies a snippet's code without opening the app.
+struct CopySnippetIntent: AppIntent {
+    static let title: LocalizedStringResource = "Copy Snippet"
+    static var isDiscoverable: Bool { false }
+
+    @Parameter(title: "Snippet")
+    var snippetID: Int
+
+    init() {}
+    init(snippetID: Int) { self.snippetID = snippetID }
+
+    func perform() async throws -> some IntentResult {
+        guard !AppEnvironment.isAppLockEnabled, let code = WidgetSnapshotStore().read()?.snippet(id: snippetID)?.code else {
+            return .result()
+        }
+        #if canImport(UIKit)
+        UIPasteboard.general.string = code
+        #else
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(code, forType: .string)
+        #endif
+        return .result()
+    }
+}

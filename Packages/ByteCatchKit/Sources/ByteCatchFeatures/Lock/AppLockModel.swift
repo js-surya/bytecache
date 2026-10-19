@@ -75,7 +75,7 @@ public enum LockTimeout: Int, CaseIterable, Identifiable, Sendable {
 /// The share extension and Shortcuts stay unlocked so capturing remains one step; widgets hide content.
 @MainActor @Observable
 public final class AppLockModel {
-    nonisolated static let enabledKey = "appLockEnabled", timeoutKey = "appLockTimeout"
+    nonisolated static let enabledKey = AppEnvironment.appLockEnabledKey, timeoutKey = "appLockTimeout"
 
     public private(set) var isEnabled: Bool
     public private(set) var isLocked = false
@@ -139,6 +139,7 @@ public final class AppLockModel {
         guard await authenticator.authenticate(reason: reason) else { return false }
         isEnabled = on
         defaults.set(on, forKey: Self.enabledKey)
+        WidgetSnapshotWriter.reloadAllWidgets()
         if !on { isLocked = false }
         return true
     }

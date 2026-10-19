@@ -27,3 +27,10 @@ extension AppEnvironment {
         )
     }
 }
+
+extension AppEnvironment {
+    public static let appLockEnabledKey = "appLockEnabled"
+
+    /// Whether App Lock is on (widgets hide snippet content when it is).
+    public static var isAppLockEnabled: Bool { sharedDefaults.bool(forKey: appLockEnabledKey) }
+}
