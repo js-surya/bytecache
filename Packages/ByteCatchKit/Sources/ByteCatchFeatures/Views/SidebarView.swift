@@ -20,7 +20,7 @@ public struct SidebarView: View {
     public var body: some View {
         List(selection: $selection) {
             Section("Library") {
-                ForEach([SidebarItem.all, .pinned, .favorites, .recycleBin], id: \.self) { item in
+                ForEach([SidebarItem.all, .pinned, .favorites, .mostUsed, .recycleBin], id: \.self) { item in
                     Label(item.title, symbol: item.symbol).tag(item)
                 }
             }

@@ -6,15 +6,17 @@ import UniformTypeIdentifiers
 public struct FragmentCard: View {
     let fragment: Fragment
     var snippetTitle = ""
+    var onCopy: () -> Void = {}
     @State private var copied = false
     @State private var exporting = false
     @State private var showSource = false
 
     private var isMarkdown: Bool { MarkdownDocument.isMarkdown(language: fragment.language) }
 
-    public init(fragment: Fragment, snippetTitle: String = "") {
+    public init(fragment: Fragment, snippetTitle: String = "", onCopy: @escaping () -> Void = {}) {
         self.fragment = fragment
         self.snippetTitle = snippetTitle
+        self.onCopy = onCopy
     }
 
     public var body: some View {
@@ -42,7 +44,10 @@ public struct FragmentCard: View {
         .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.separator))
         .draggable(fragment.code)
         .contextMenu {
-            Button { Pasteboard.copy(fragment.code) } label: { Label("Copy Code", symbol: .copy) }
+            Button {
+                Pasteboard.copy(fragment.code)
+                onCopy()
+            } label: { Label("Copy Code", symbol: .copy) }
             Button { exporting = true } label: { Label("Save File…", symbol: .download) }
         }
         .fileExporter(isPresented: $exporting,
@@ -83,6 +88,7 @@ public struct FragmentCard: View {
     private func copyButton(iconOnly: Bool) -> some View {
         Button {
             Pasteboard.copy(fragment.code)
+            onCopy()
             copied = true
             Task {
                 try? await Task.sleep(for: .seconds(1.5))

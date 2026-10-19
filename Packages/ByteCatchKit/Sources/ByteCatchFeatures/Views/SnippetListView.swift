@@ -133,7 +133,10 @@ public struct SnippetActions: View {
                 Label("Delete Forever", symbol: .trashForever)
             }
         } else {
-            Button { Pasteboard.copy(allCode) } label: { Label("Copy Code", symbol: .copy) }
+            Button {
+                Pasteboard.copy(allCode)
+                model.recordCopy(snippet)
+            } label: { Label("Copy Code", symbol: .copy) }
             ShareLink(item: allCode) { Label("Share", symbol: .share) }
             Divider()
             Button { Task { await model.togglePin(snippet) } } label: {

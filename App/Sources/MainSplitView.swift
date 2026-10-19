@@ -187,7 +187,10 @@ struct MainSplitView: View {
             refresh: { Task { await list.refresh(); await sidebar.load() } },
             focusSearch: { list.searchFocusRequest += 1 },
             edit: snippet.map { s in { startEditing(s) } },
-            copyCode: snippet.map { s in { Pasteboard.copy(s.fragments.sorted { $0.position < $1.position }.map(\.code).joined(separator: "\n\n")) } },
+            copyCode: snippet.map { s in {
+                Pasteboard.copy(s.fragments.sorted { $0.position < $1.position }.map(\.code).joined(separator: "\n\n"))
+                list.recordCopy(s)
+            } },
             recycle: snippet.flatMap { s in list.selection == .recycleBin ? nil : { Task { await list.recycle(s) } } }
         )
     }

@@ -3,7 +3,7 @@ import Foundation
 import Observation
 
 public enum SidebarItem: Hashable, Sendable {
-    case all, pinned, favorites, recycleBin
+    case all, pinned, favorites, mostUsed, recycleBin
     case language(String)
     case category(String)
 
@@ -12,6 +12,7 @@ public enum SidebarItem: Hashable, Sendable {
         case .all: "All Snippets"
         case .pinned: "Pinned"
         case .favorites: "Favorites"
+        case .mostUsed: "Most Used"
         case .recycleBin: "Recycle Bin"
         case .language(let id): id
         case .category(let name): name
@@ -23,6 +24,7 @@ public enum SidebarItem: Hashable, Sendable {
         case .all: .allSnippets
         case .pinned: .pin
         case .favorites: .star
+        case .mostUsed: .mostUsed
         case .recycleBin: .trash
         case .language: .code
         case .category: .tag

@@ -181,3 +181,22 @@ final class SidebarModelTests: XCTestCase {
         XCTAssertEqual(model.categories, ["api", "web"])
     }
 }
+
+@MainActor
+final class MostUsedListTests: XCTestCase {
+    func testMostUsedLoadsSnippetsInUsageOrder() async throws {
+        let name = "bytecatch.mu.\(UUID().uuidString)"
+        addTeardownBlock { UserDefaults(suiteName: name)?.removePersistentDomain(forName: name) }
+        let usage = UsageTracker(defaults: UserDefaults(suiteName: name)!)
+        usage.recordCopy(snippetID: 7, server: TestSession.server)
+        usage.recordCopy(snippetID: 9, server: TestSession.server)
+        usage.recordCopy(snippetID: 9, server: TestSession.server)
+        let (session, transport) = await TestSession.signedIn([.json(TestJSON.snippet(9, title: "Nine")), .json(TestJSON.snippet(7, title: "Seven"))])
+        let model = SnippetListModel(session: session, cache: nil, usage: usage)
+        model.selection = .mostUsed
+        await model.refresh()
+        XCTAssertEqual(model.snippets.map(\.title), ["Nine", "Seven"])
+        XCTAssertEqual(transport.requests.suffix(2).compactMap(\.url?.path), ["/api/snippets/9", "/api/snippets/7"])
+        XCTAssertEqual(SidebarItem.mostUsed.title, "Most Used")
+    }
+}

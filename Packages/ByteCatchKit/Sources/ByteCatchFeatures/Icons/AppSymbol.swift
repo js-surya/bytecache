@@ -59,6 +59,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case chevronsUpDown
     case scan
     case search
+    case mostUsed
     case sort
     case swap
     case faceID
@@ -127,6 +128,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .chevronsUpDown: "chevron.up.chevron.down"
         case .scan: "camera.viewfinder"
         case .search: "magnifyingglass"
+        case .mostUsed: "chart.bar"
         case .sort: "arrow.up.arrow.down"
         case .swap: "arrow.left.arrow.right"
         case .faceID: "faceid"
@@ -197,6 +199,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .chevronsUpDown: "chevrons-up-down"
         case .scan: "scan-text"
         case .search: "search"
+        case .mostUsed: "chart-column"
         case .sort: "arrow-down-up"
         case .swap: "arrow-left-right"
         case .faceID: "scan-face"

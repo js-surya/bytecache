@@ -60,7 +60,7 @@ public struct SnippetDetailView: View {
                     }
                 }
                 ForEach(fragments) { fragment in
-                    FragmentCard(fragment: fragment, snippetTitle: snippet.title)
+                    FragmentCard(fragment: fragment, snippetTitle: snippet.title) { list?.recordCopy(snippet) }
                 }
             }
             .padding()

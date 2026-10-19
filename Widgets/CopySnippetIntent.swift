@@ -21,6 +21,9 @@ struct CopySnippetIntent: AppIntent {
         guard !AppEnvironment.isAppLockEnabled, let code = WidgetSnapshotStore().read()?.snippet(id: snippetID)?.code else {
             return .result()
         }
+        if let server = AppEnvironment.makeCredentialStore().load()?.server {
+            UsageTracker().recordCopy(snippetID: snippetID, server: server)
+        }
         #if canImport(UIKit)
         UIPasteboard.general.string = code
         #else

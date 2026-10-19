@@ -25,11 +25,20 @@ public final class SnippetListModel {
     private let session: SessionManager
     private let cache: SnippetCache?
     private let searchDelay: Duration
+    private let usage: UsageTracker
 
-    public init(session: SessionManager, cache: SnippetCache?, searchDelay: Duration = .milliseconds(300)) {
+    public init(session: SessionManager, cache: SnippetCache?, searchDelay: Duration = .milliseconds(300),
+                usage: UsageTracker = UsageTracker()) {
         self.session = session
         self.cache = cache
         self.searchDelay = searchDelay
+        self.usage = usage
+    }
+
+    /// Counts a copy towards Most Used.
+    public func recordCopy(_ snippet: Snippet) {
+        guard let server = session.client?.server else { return }
+        usage.recordCopy(snippetID: snippet.id, server: server)
     }
 
     var query: SnippetQuery {
@@ -39,7 +48,7 @@ public final class SnippetListModel {
         q.searchCode = searchCode
         q.sort = sort
         switch selection {
-        case .all: break
+        case .all, .mostUsed: break
         case .pinned: q.pinned = true
         case .favorites: q.favorites = true
         case .recycleBin: q.recycled = true
@@ -66,6 +75,10 @@ public final class SnippetListModel {
         guard let client = session.client else { return }
         isLoading = true
         defer { if current == generation { isLoading = false } }
+        if selection == .mostUsed {
+            await loadMostUsed(client: client, generation: current)
+            return
+        }
         do {
             let page = try await client.snippets(q)
             guard current == generation else { return }
@@ -170,6 +183,25 @@ public final class SnippetListModel {
 
     // MARK: Private
 
+    /// Most Used comes from this device's copy counts, not a server query.
+    private func loadMostUsed(client: APIClient, generation current: Int) async {
+        var loaded: [Snippet] = []
+        for id in usage.mostUsed(server: client.server, limit: 30) {
+            if let snippet = try? await client.snippet(id: id) {
+                loaded.append(snippet)
+            } else if let cached = cache?.snippet(id: id, server: client.server) {
+                loaded.append(cached)
+            }
+        }
+        guard current == generation else { return }
+        let search = searchText.trimmingCharacters(in: .whitespaces)
+        snippets = search.isEmpty ? loaded : loaded.filter {
+            $0.title.localizedCaseInsensitiveContains(search) || $0.description.localizedCaseInsensitiveContains(search)
+        }
+        hasMore = false
+        error = nil
+    }
+
     private func mutate(
         _ snippet: Snippet, change: (inout Snippet) -> Void,
         send: (APIClient, Snippet) async throws(APIError) -> Void
@@ -197,6 +229,7 @@ public final class SnippetListModel {
             try await send(client)
             if uncache {
                 cache?.remove(id: snippet.id, server: client.server)
+                usage.forget(snippetID: snippet.id, server: client.server)
             } else if let fresh = try? await client.snippet(id: snippet.id) {
                 cache?.upsert(fresh, server: client.server)
             }
