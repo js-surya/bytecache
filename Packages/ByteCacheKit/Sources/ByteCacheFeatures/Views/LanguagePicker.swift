@@ -36,6 +36,7 @@ public struct LanguagePicker: View {
                     }
                 } label: {
                     HStack(spacing: 4) {
+                        LanguageIconView(selection, size: 16)
                         Text(LanguageName.display(selection))
                         Icon(.chevronsUpDown).font(.caption2.weight(.semibold))
                     }

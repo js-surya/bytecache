@@ -19,6 +19,7 @@ final class SettingsPersistenceTests: XCTestCase {
         first.suggestionsEnabled = false
         first.hapticsEnabled = false
         first.hapticStrength = .strong
+        first.languageIconStyle = .monochrome
         let second = AppSettings(defaults: defaults)
         XCTAssertEqual(second.appearance, .dark)
         XCTAssertEqual(second.accent, .orange)
@@ -32,6 +33,8 @@ final class SettingsPersistenceTests: XCTestCase {
         XCTAssertFalse(second.suggestionsEnabled)
         XCTAssertFalse(second.hapticsEnabled)
         XCTAssertEqual(second.hapticStrength, .strong)
+        XCTAssertEqual(second.languageIconStyle, .monochrome)
+        XCTAssertEqual(AppSettings(defaults: UserDefaults(suiteName: UUID().uuidString)!).languageIconStyle, .color, "colour by default")
     }
 
     func testSettingsSectionsHaveHeaders() {

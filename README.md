@@ -42,7 +42,7 @@
 **Find and use**
 - On-device language detection (rules plus a Core ML model, 94% top-1)
 - Search, filter by language or category, pinned, favourites, most used, recycle bin
-- Syntax highlighting in 22 editor themes (GitHub, Dracula, Monokai, Nord, …)
+- Syntax highlighting in 22 editor themes (GitHub, Dracula, Monokai, Nord, …) and an icon for each language
 - Copy any file in one tap, save it as a file with the right extension, or share a link with a QR code
 - Widgets, Spotlight, Shortcuts, Handoff, and a Markdown preview
 
@@ -107,7 +107,7 @@ Bug reports and ideas are welcome. Please use the [issue forms](../../issues/new
 
 Built with ❤️ by [SyntaxError](https://github.com/js-surya) and Claude.
 
-Uses [HighlightSwift](https://github.com/appstefan/HighlightSwift) (MIT), [highlight.js](https://highlightjs.org) (BSD-3-Clause) and [Lucide](https://lucide.dev) icons (ISC). The colour palettes belong to their authors. The language model was trained on permissively licensed open-source code, and the test set contains short excerpts from it; [DATA.md](Packages/ByteCacheKit/Sources/ByteCacheLanguage/DATA.md) lists every source with its licence.
+Uses [HighlightSwift](https://github.com/appstefan/HighlightSwift) (MIT), [highlight.js](https://highlightjs.org) (BSD-3-Clause), [Lucide](https://lucide.dev) icons (ISC) and [Devicon](https://devicon.dev) language logos (MIT; the logos are trademarks of their owners). The colour palettes belong to their authors. The language model was trained on permissively licensed open-source code, and the test set contains short excerpts from it; [DATA.md](Packages/ByteCacheKit/Sources/ByteCacheLanguage/DATA.md) lists every source with its licence.
 
 ## Licence
 

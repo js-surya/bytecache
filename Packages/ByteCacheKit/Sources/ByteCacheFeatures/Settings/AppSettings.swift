@@ -59,6 +59,10 @@ public final class AppSettings {
     public var accent: AccentChoice { didSet { defaults.set(accent.rawValue, forKey: Key.accent) } }
     public var codeThemeID: String { didSet { defaults.set(codeThemeID, forKey: Key.codeThemeID) } }
     public var iconStyle: IconStyle { didSet { defaults.set(iconStyle.rawValue, forKey: Key.iconStyle) } }
+    /// Language logos in their brand colours or tinted like the other icons.
+    public var languageIconStyle: LanguageIconStyle {
+        didSet { defaults.set(languageIconStyle.rawValue, forKey: Key.languageIconStyle) }
+    }
     /// Search matches code as well as titles and descriptions.
     public var searchInCode: Bool { didSet { defaults.set(searchInCode, forKey: Key.searchInCode) } }
     public var showLineNumbers: Bool { didSet { defaults.set(showLineNumbers, forKey: Key.lineNumbers) } }
@@ -95,6 +99,7 @@ public final class AppSettings {
 
     private enum Key {
         static let appearance = "appearance", accent = "accent", codeThemeID = "codeThemeID", iconStyle = "iconStyle", searchInCode = "searchInCode"
+        static let languageIconStyle = "languageIconStyle"
         static let fontSize = "codeFontSize", lineNumbers = "showLineNumbers"
         static let iCloudSync = "iCloudSyncEnabled", handoff = "handoffEnabled", suggestions = "suggestionsEnabled"
         static let haptics = "hapticsEnabled", hapticStrength = "hapticStrength"
@@ -105,6 +110,7 @@ public final class AppSettings {
         appearance = defaults.string(forKey: Key.appearance).flatMap(AppAppearance.init) ?? .system
         accent = defaults.string(forKey: Key.accent).flatMap(AccentChoice.init) ?? .blue
         iconStyle = defaults.string(forKey: Key.iconStyle).flatMap(IconStyle.init) ?? .sfSymbols
+        languageIconStyle = defaults.string(forKey: Key.languageIconStyle).flatMap(LanguageIconStyle.init) ?? .color
         searchInCode = defaults.bool(forKey: Key.searchInCode)
         let storedTheme = defaults.string(forKey: Key.codeThemeID) ?? CodeTheme.defaultID
         codeThemeID = CodeTheme.named(storedTheme) == nil ? CodeTheme.defaultID : storedTheme
@@ -128,7 +134,7 @@ public final class AppSettings {
     public var synced: SyncedSettings {
         SyncedSettings(appearance: appearance, accent: accent, codeThemeID: codeThemeID,
                        codeFontSize: codeFontSize, showLineNumbers: showLineNumbers, iconStyle: iconStyle,
-                       searchInCode: searchInCode)
+                       searchInCode: searchInCode, languageIconStyle: languageIconStyle)
     }
 
     public func apply(_ remote: SyncedSettings) {
@@ -139,6 +145,7 @@ public final class AppSettings {
         if showLineNumbers != remote.showLineNumbers { showLineNumbers = remote.showLineNumbers }
         if let style = remote.iconStyle, iconStyle != style { iconStyle = style }
         if let code = remote.searchInCode, searchInCode != code { searchInCode = code }
+        if let style = remote.languageIconStyle, languageIconStyle != style { languageIconStyle = style }
     }
 }
 
@@ -164,9 +171,11 @@ public struct SyncedSettings: Codable, Equatable, Sendable {
     /// Optional: absent in settings synced by earlier versions.
     public var iconStyle: IconStyle?
     public var searchInCode: Bool?
+    public var languageIconStyle: LanguageIconStyle?
 
     public init(appearance: AppAppearance, accent: AccentChoice, codeThemeID: String, codeFontSize: Double,
-                showLineNumbers: Bool, iconStyle: IconStyle? = nil, searchInCode: Bool? = nil) {
+                showLineNumbers: Bool, iconStyle: IconStyle? = nil, searchInCode: Bool? = nil,
+                languageIconStyle: LanguageIconStyle? = nil) {
         self.appearance = appearance
         self.accent = accent
         self.codeThemeID = codeThemeID
@@ -174,6 +183,7 @@ public struct SyncedSettings: Codable, Equatable, Sendable {
         self.showLineNumbers = showLineNumbers
         self.iconStyle = iconStyle
         self.searchInCode = searchInCode
+        self.languageIconStyle = languageIconStyle
     }
 }
 
