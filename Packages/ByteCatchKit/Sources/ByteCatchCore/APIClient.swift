@@ -43,6 +43,24 @@ public struct APIClient: Sendable {
         return user
     }
 
+    // MARK: Account (password logins only — ByteStash doesn't accept API keys here)
+
+    public func apiKeys() async throws(APIError) -> [APIKeyInfo] {
+        try await send(.get, "/api/keys")
+    }
+
+    public func createAPIKey(name: String) async throws(APIError) -> CreatedAPIKey {
+        try await send(.post, "/api/keys", body: ["name": name])
+    }
+
+    public func deleteAPIKey(id: Int) async throws(APIError) {
+        try await sendVoid(.delete, "/api/keys/\(id)")
+    }
+
+    public func changePassword(current: String, new: String) async throws(APIError) {
+        try await sendVoid(.post, "/api/auth/change-password", body: ["currentPassword": current, "newPassword": new])
+    }
+
     // MARK: Snippets
 
     public func snippets(_ query: SnippetQuery) async throws(APIError) -> SnippetPage {

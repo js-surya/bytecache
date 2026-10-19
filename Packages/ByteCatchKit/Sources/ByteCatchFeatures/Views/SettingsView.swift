@@ -35,6 +35,16 @@ public struct SettingsView: View {
                         }
                     }
                     .padding(.vertical, 4)
+                    NavigationLink {
+                        APIKeysView(model: AccountModel(session: session))
+                    } label: {
+                        SettingsLabel(title: "API Keys", systemName: "key.fill", color: .orange)
+                    }
+                    NavigationLink {
+                        ChangePasswordView(model: AccountModel(session: session))
+                    } label: {
+                        SettingsLabel(title: "Change Password", systemName: "lock.rotation", color: .gray)
+                    }
                 }
             }
 

@@ -7,22 +7,24 @@ public struct AuthConfig: Decodable, Equatable, Sendable {
     public let hasUsers: Bool
     public let disableAccounts: Bool
     public let disableInternalAccounts: Bool
+    public let allowPasswordChanges: Bool
 
     public init(
         authRequired: Bool = true, allowNewAccounts: Bool = false, hasUsers: Bool = true,
-        disableAccounts: Bool = false, disableInternalAccounts: Bool = false
+        disableAccounts: Bool = false, disableInternalAccounts: Bool = false, allowPasswordChanges: Bool = true
     ) {
         self.authRequired = authRequired
         self.allowNewAccounts = allowNewAccounts
         self.hasUsers = hasUsers
         self.disableAccounts = disableAccounts
         self.disableInternalAccounts = disableInternalAccounts
+        self.allowPasswordChanges = allowPasswordChanges
     }
 }
 
 extension AuthConfig {
     private enum CodingKeys: String, CodingKey {
-        case authRequired, allowNewAccounts, hasUsers, disableAccounts, disableInternalAccounts
+        case authRequired, allowNewAccounts, hasUsers, disableAccounts, disableInternalAccounts, allowPasswordChanges
     }
 
     /// Tolerant decoding: older or single-user servers may omit flags, so each falls back to its default.
@@ -35,7 +37,8 @@ extension AuthConfig {
             allowNewAccounts: try c.decodeIfPresent(Bool.self, forKey: .allowNewAccounts) ?? defaults.allowNewAccounts,
             hasUsers: try c.decodeIfPresent(Bool.self, forKey: .hasUsers) ?? defaults.hasUsers,
             disableAccounts: try c.decodeIfPresent(Bool.self, forKey: .disableAccounts) ?? defaults.disableAccounts,
-            disableInternalAccounts: try c.decodeIfPresent(Bool.self, forKey: .disableInternalAccounts) ?? defaults.disableInternalAccounts
+            disableInternalAccounts: try c.decodeIfPresent(Bool.self, forKey: .disableInternalAccounts) ?? defaults.disableInternalAccounts,
+            allowPasswordChanges: try c.decodeIfPresent(Bool.self, forKey: .allowPasswordChanges) ?? defaults.allowPasswordChanges
         )
     }
 }
