@@ -118,6 +118,26 @@ public final class SnippetListModel {
         }
     }
 
+    /// Renames a snippet (Suggest Title). Sends the whole snippet (PUT replaces everything).
+    public func rename(_ snippet: Snippet, to raw: String) async {
+        let title = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !title.isEmpty, let client = session.client else { return }
+        // Opened by id, a snippet may not be on the loaded page.
+        let index = snippets.firstIndex(where: { $0.id == snippet.id })
+        let original = index.map { snippets[$0] } ?? snippet
+        var draft = SnippetDraft(from: original)
+        draft.title = title
+        if let index { snippets[index].title = title }
+        do {
+            let saved = try await client.update(id: snippet.id, draft)
+            if let i = snippets.firstIndex(where: { $0.id == snippet.id }) { snippets[i] = saved }
+            cache?.upsert(saved, server: client.server)
+        } catch {
+            if let i = snippets.firstIndex(where: { $0.id == snippet.id }) { snippets[i] = original }
+            handle(error, offlineQuery: nil, server: client.server)
+        }
+    }
+
     /// Makes a snippet public or private. Sends the whole snippet (PUT replaces everything).
     public func setPublic(_ snippet: Snippet, _ isPublic: Bool) async {
         guard let client = session.client, let index = snippets.firstIndex(where: { $0.id == snippet.id }) else { return }

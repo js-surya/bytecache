@@ -25,6 +25,15 @@ public struct SnippetDetailView: View {
 
     private var readOnly: Bool { list?.isReadOnly ?? false }
 
+    /// `-BCSuggestTitlePreview`: offer Suggest Title on any snippet (screenshots; Debug builds only).
+    private static var previewSuggestTitle: Bool {
+        #if DEBUG
+        ProcessInfo.processInfo.arguments.contains("-BCSuggestTitlePreview")
+        #else
+        false
+        #endif
+    }
+
     private var wholeSnippet: ExportFile {
         ExportFile(wrapper: SnippetExport.fileWrapper(for: snippet), contentType: SnippetExport.contentType(for: snippet))
     }
@@ -44,6 +53,9 @@ public struct SnippetDetailView: View {
                     Text(snippet.title.isEmpty ? "Untitled snippet" : snippet.title)
                         .font(.title2.bold())
                         .textSelection(.enabled)
+                    if snippet.needsTitle || Self.previewSuggestTitle, let list, !readOnly, let suggester = settings.suggester {
+                        SuggestTitleBar(snippet: snippet, suggester: suggester, list: list)
+                    }
                     if snippet.isPinned || snippet.isFavorite || snippet.isPublic {
                         HStack(spacing: 8) {
                             if snippet.isPinned { StatusChip(title: "Pinned", symbol: .pinFill, color: .orange) }
