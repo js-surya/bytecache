@@ -14,6 +14,11 @@ public final class SnippetListModel {
     }
 
     public private(set) var snippets: [Snippet] = []
+    /// Nothing matched exactly, so `snippets` holds close (fuzzy) title matches from the cache.
+    public private(set) var showsCloseMatches = false
+    /// Languages and tags in the library, for search suggestions. Set by the view that owns the sidebar.
+    public var knownLanguages: [String] = []
+    public var knownCategories: [String] = []
     public private(set) var isOffline = false
     public private(set) var isLoading = false
     public var error: String?
@@ -161,10 +166,19 @@ public final class SnippetListModel {
         usage.recordCopy(snippetID: snippet.id, server: server)
     }
 
+    /// The search field split into text and filters (`lang:`, `#tag`, `is:pinned`, `is:favorite`).
+    var parsedSearch: SearchSyntax { SearchSyntax.parse(searchText) }
+
+    /// Suggestions for what's being typed in the search field.
+    public var searchSuggestions: [SearchSuggestion] {
+        SearchSyntax.suggestions(for: searchText, languages: knownLanguages, categories: knownCategories,
+                                 languageName: LanguageName.display)
+    }
+
     var query: SnippetQuery {
         var q = SnippetQuery()
-        let search = searchText.trimmingCharacters(in: .whitespaces)
-        q.search = search.isEmpty ? nil : search
+        let parsed = parsedSearch
+        q.search = parsed.text.isEmpty ? nil : parsed.text
         q.searchCode = searchCode
         q.sort = sort
         switch selection {
@@ -175,6 +189,13 @@ public final class SnippetListModel {
         case .language(let id): q.language = id
         case .category(let name): q.categories = [name.lowercased()]
         }
+        // Typed filters narrow the selection further (a selected language wins over `lang:`).
+        if q.language == nil, let language = parsed.language {
+            q.language = knownLanguages.first { $0.lowercased() == language } ?? language
+        }
+        for category in parsed.categories where !q.categories.contains(category) { q.categories.append(category) }
+        if parsed.pinned { q.pinned = true }
+        if parsed.favorite { q.favorites = true }
         return q
     }
 
@@ -196,6 +217,7 @@ public final class SnippetListModel {
         generation += 1
         let current = generation
         let q = query
+        showsCloseMatches = false
         guard let client = session.client else { return }
         isLoading = true
         defer { if current == generation { isLoading = false } }
@@ -211,6 +233,15 @@ public final class SnippetListModel {
             isOffline = false
             error = nil
             cache?.store(page.snippets, server: client.server)
+            showsCloseMatches = false
+            if page.snippets.isEmpty, let text = q.search, selection != .publicSnippets {
+                // Nothing matched exactly: offer titles that nearly match, from this device's cache.
+                var base = q
+                base.search = nil
+                let close = SearchRanking.closeMatches(cache?.all(server: client.server, matching: base) ?? [], to: text)
+                snippets = close
+                showsCloseMatches = !close.isEmpty
+            }
         } catch {
             guard current == generation else { return }
             handle(error, offlineQuery: q, server: client.server)
@@ -306,9 +337,12 @@ public final class SnippetListModel {
 
     // MARK: Private
 
-    /// Most Used keeps its own order (by copy count).
+    /// Most Used keeps its own order (by copy count). While searching, best matches come first.
     private func arranged(_ list: [Snippet]) -> [Snippet] {
-        selection == .mostUsed ? list : SnippetOrdering.arranged(list, by: sort)
+        guard selection != .mostUsed else { return list }
+        let sorted = SnippetOrdering.arranged(list, by: sort)
+        let text = parsedSearch.text
+        return text.isEmpty ? sorted : SearchRanking.arranged(sorted, by: text)
     }
 
     /// Most Used comes from this device's copy counts, not a server query.
@@ -322,7 +356,7 @@ public final class SnippetListModel {
             }
         }
         guard current == generation else { return }
-        let search = searchText.trimmingCharacters(in: .whitespaces)
+        let search = parsedSearch.text
         snippets = search.isEmpty ? loaded : loaded.filter {
             $0.title.localizedCaseInsensitiveContains(search) || $0.description.localizedCaseInsensitiveContains(search)
         }
