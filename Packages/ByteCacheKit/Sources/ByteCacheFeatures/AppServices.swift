@@ -38,7 +38,7 @@ public final class AppServices {
         self.detector = detector
         self.settings = settings
         self.lock = lock
-        widgets = WidgetSnapshotWriter(session: session)
+        widgets = WidgetSnapshotWriter(session: session, smartGroups: { [settings] in settings.smartGroups })
         quickSearch = QuickSearchModel(list: SnippetListModel(session: session, cache: cache))
         saveQueue = SaveQueueFlusher(session: session, queue: pendingSaves)
         updates = UpdateModel(settings: settings, checker: Self.makeUpdateChecker())
