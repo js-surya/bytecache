@@ -55,3 +55,33 @@ final class PendingCaptureTests: XCTestCase {
         XCTAssertNil(PendingCapture.consume(from: d))
     }
 }
+
+/// CP-49: installs without an App Group share the widget snapshot through the keychain.
+final class WidgetKeychainFallbackTests: XCTestCase {
+    private func store() -> (WidgetSnapshotStore, KeychainBlob) {
+        let blob = KeychainBlob(service: "app.bytecache.tests.\(UUID().uuidString)", account: "snapshot", accessGroup: nil)
+        addTeardownBlock { blob.delete() }
+        return (WidgetSnapshotStore(keychain: blob), blob)
+    }
+
+    private func snippet(code: String) -> WidgetSnippet {
+        WidgetSnippet(Snippet(id: 1, title: "t", description: "", updatedAt: nil, expiryDate: nil, isPublic: false,
+                              isPinned: false, isFavorite: false, categories: [],
+                              fragments: [Fragment(id: 1, fileName: "f", code: code, language: "bash", position: 0)],
+                              shareCount: 0))
+    }
+
+    func testNothingWrittenMeansUnavailable() {
+        XCTAssertEqual(store().0.state(), .unavailable)
+        XCTAssertEqual(store().0.sharing, "Shared keychain")
+    }
+
+    func testWritesACompactSnapshotAndSignsOutExplicitly() throws {
+        let (store, _) = store()
+        let long = String(repeating: "x", count: WidgetSnapshotStore.keychainCodeLimit + 500)
+        try store.write(WidgetSnapshot(serverName: "x.io", pinned: [], recent: [snippet(code: long)]))
+        XCTAssertEqual(store.read()?.recent.first?.code.count, WidgetSnapshotStore.keychainCodeLimit)
+        try store.clear()
+        XCTAssertEqual(store.state(), .signedOut)
+    }
+}

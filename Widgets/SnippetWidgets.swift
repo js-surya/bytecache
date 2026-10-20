@@ -14,9 +14,13 @@ struct SnippetProvider: TimelineProvider {
 
     private func entry() -> SnippetEntry {
         guard !AppEnvironment.isAppLockEnabled else { return SnippetEntry(date: .now, content: .locked) }
-        // Without an App Group the app's snapshot is out of reach, which isn't the same as signed out.
-        guard WidgetSnapshotStore.isShared else { return SnippetEntry(date: .now, content: .notShared) }
-        guard let snapshot = WidgetSnapshotStore().read() else { return SnippetEntry(date: .now, content: .signedOut) }
+        let snapshot: WidgetSnapshot
+        switch WidgetSnapshotStore().state() {
+        case .snapshot(let shared): snapshot = shared
+        case .signedOut: return SnippetEntry(date: .now, content: .signedOut)
+        // The app's data is out of reach, which isn't the same as signed out.
+        case .unavailable: return SnippetEntry(date: .now, content: .notShared)
+        }
         if let problem = snapshot.problem, snapshot.pinned.isEmpty, snapshot.recent.isEmpty {
             return SnippetEntry(date: .now, content: .problem(problem))
         }
@@ -54,7 +58,7 @@ struct SnippetWidgetView: View {
         case .problem(let problem):
             message(problem, systemImage: "wifi.exclamationmark")
         case .notShared:
-            message("This copy of ByteCache can't share data with widgets. Reinstall it with App Groups enabled.",
+            message("Open ByteCache once. If this stays, this install can't share data with widgets — see Settings → About.",
                     systemImage: "exclamationmark.triangle")
         case .snippets(let snippets, _) where snippets.isEmpty:
             message(emptyMessage, systemImage: "tray")
