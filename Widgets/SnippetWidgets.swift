@@ -7,6 +7,26 @@ struct SnippetEntry: TimelineEntry {
     enum Content { case snippets([WidgetSnippet], server: String), locked, signedOut, problem(String), notShared }
     let date: Date
     let content: Content
+    /// The configurable widget's heading (the chosen source); nil for the fixed widgets.
+    var title: String?
+}
+
+/// Builds an entry for one source from the shared snapshot.
+enum SnippetEntries {
+    static func entry(for source: WidgetSource) -> SnippetEntry {
+        guard !AppEnvironment.isAppLockEnabled else { return SnippetEntry(date: .now, content: .locked, title: source.title) }
+        let snapshot: WidgetSnapshot
+        switch WidgetSnapshotStore().state() {
+        case .snapshot(let shared): snapshot = shared
+        case .signedOut: return SnippetEntry(date: .now, content: .signedOut, title: source.title)
+        case .unavailable: return SnippetEntry(date: .now, content: .notShared, title: source.title)
+        }
+        if let problem = snapshot.problem, snapshot.pinned.isEmpty, snapshot.recent.isEmpty {
+            return SnippetEntry(date: .now, content: .problem(problem), title: source.title)
+        }
+        return SnippetEntry(date: .now, content: .snippets(snapshot.list(for: source), server: snapshot.serverName),
+                            title: source.title)
+    }
 }
 
 struct SnippetProvider: TimelineProvider {
@@ -14,9 +34,13 @@ struct SnippetProvider: TimelineProvider {
 
     private func entry() -> SnippetEntry {
         guard !AppEnvironment.isAppLockEnabled else { return SnippetEntry(date: .now, content: .locked) }
-        // Without an App Group the app's snapshot is out of reach, which isn't the same as signed out.
-        guard WidgetSnapshotStore.isShared else { return SnippetEntry(date: .now, content: .notShared) }
-        guard let snapshot = WidgetSnapshotStore().read() else { return SnippetEntry(date: .now, content: .signedOut) }
+        let snapshot: WidgetSnapshot
+        switch WidgetSnapshotStore().state() {
+        case .snapshot(let shared): snapshot = shared
+        case .signedOut: return SnippetEntry(date: .now, content: .signedOut)
+        // The app's data is out of reach, which isn't the same as signed out.
+        case .unavailable: return SnippetEntry(date: .now, content: .notShared)
+        }
         if let problem = snapshot.problem, snapshot.pinned.isEmpty, snapshot.recent.isEmpty {
             return SnippetEntry(date: .now, content: .problem(problem))
         }
@@ -54,7 +78,7 @@ struct SnippetWidgetView: View {
         case .problem(let problem):
             message(problem, systemImage: "wifi.exclamationmark")
         case .notShared:
-            message("This copy of ByteCache can't share data with widgets. Reinstall it with App Groups enabled.",
+            message("Open ByteCache once. If this stays, this install can't share data with widgets — see Settings → About.",
                     systemImage: "exclamationmark.triangle")
         case .snippets(let snippets, _) where snippets.isEmpty:
             message(emptyMessage, systemImage: "tray")
@@ -199,9 +223,75 @@ struct ScanCodeControl: ControlWidget {
 }
 #endif
 
+/// A source the configurable widget can show; the choices come from the app's snapshot.
+struct WidgetSourceEntity: AppEntity {
+    static let typeDisplayRepresentation: TypeDisplayRepresentation = "Snippets to Show"
+    static let defaultQuery = WidgetSourceQuery()
+
+    let source: WidgetSource
+    var id: String { source.id }
+    var displayRepresentation: DisplayRepresentation { DisplayRepresentation(title: "\(source.title)") }
+}
+
+struct WidgetSourceQuery: EntityQuery {
+    private var available: [WidgetSource] {
+        WidgetSnapshotStore().read()?.sources ?? [.recent, .pinned, .favorites]
+    }
+
+    func entities(for identifiers: [String]) async throws -> [WidgetSourceEntity] {
+        available.filter { identifiers.contains($0.id) }.map(WidgetSourceEntity.init)
+    }
+
+    func suggestedEntities() async throws -> [WidgetSourceEntity] {
+        available.map(WidgetSourceEntity.init)
+    }
+
+    func defaultResult() async -> WidgetSourceEntity? {
+        WidgetSourceEntity(source: .recent)
+    }
+}
+
+struct SnippetSourceIntent: WidgetConfigurationIntent {
+    static let title: LocalizedStringResource = "Snippets"
+    static let description = IntentDescription("Choose what the widget shows: recent, pinned or favorite snippets, a Smart Group, a tag or a language.")
+
+    @Parameter(title: "Show")
+    var source: WidgetSourceEntity?
+}
+
+struct ConfigurableSnippetProvider: AppIntentTimelineProvider {
+    func placeholder(in context: Context) -> SnippetEntry {
+        SnippetEntry(date: .now, content: .snippets(SnippetWidgetView.samples, server: "bytestash.example.com"), title: "Recent")
+    }
+
+    func snapshot(for configuration: SnippetSourceIntent, in context: Context) async -> SnippetEntry {
+        context.isPreview ? placeholder(in: context) : SnippetEntries.entry(for: configuration.source?.source ?? .recent)
+    }
+
+    func timeline(for configuration: SnippetSourceIntent, in context: Context) async -> Timeline<SnippetEntry> {
+        // The app reloads timelines whenever its data changes; this is only a safety net.
+        Timeline(entries: [SnippetEntries.entry(for: configuration.source?.source ?? .recent)],
+                 policy: .after(.now.addingTimeInterval(3600)))
+    }
+}
+
+struct ConfigurableSnippetsWidget: Widget {
+    var body: some WidgetConfiguration {
+        AppIntentConfiguration(kind: "app.bytecache.snippets", intent: SnippetSourceIntent.self,
+                               provider: ConfigurableSnippetProvider()) { entry in
+            SnippetWidgetView(entry: entry, title: entry.title ?? "Snippets", emptyMessage: "Nothing here yet")
+                .containerBackground(.fill.tertiary, for: .widget)
+        }
+        .configurationDisplayName("Snippets")
+        .description("Recent, pinned or favorite snippets, a Smart Group, a tag or a language — choose with Edit Widget.")
+        .supportedFamilies(supportedFamilies)
+    }
+}
+
 @main
 struct ByteCacheWidgets: WidgetBundle {
     var body: some Widget {
+        ConfigurableSnippetsWidget()
         PinnedSnippetsWidget()
         RecentSnippetsWidget()
         #if os(iOS)

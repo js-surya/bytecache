@@ -88,3 +88,53 @@ final class IntentLogicTests: XCTestCase {
         XCTAssertEqual(found.map(\.id), [2])
     }
 }
+
+/// CP-52: Find Snippets and Get Snippet Code for Shortcuts.
+@MainActor
+final class ShortcutActionTests: XCTestCase {
+    private let server = TestSession.server
+
+    private func signedInStore() -> InMemoryCredentialStore {
+        InMemoryCredentialStore(Credentials(server: server, token: "t", username: "demo"))
+    }
+
+    private func items(_ request: URLRequest) -> [URLQueryItem] {
+        URLComponents(url: request.url!, resolvingAgainstBaseURL: false)?.queryItems ?? []
+    }
+
+    func testFindPassesTextLanguageAndTag() async throws {
+        let transport = StubTransport([.json(TestJSON.page([TestJSON.snippet(3, title: "Reader")]))])
+        let found = try await IntentActions.find("reader #files", language: "Python", tag: "io",
+                                                 store: signedInStore(), transport: transport, cache: nil, isLocked: false)
+        XCTAssertEqual(found.map(\.title), ["Reader"])
+        let query = items(transport.last)
+        XCTAssertTrue(query.contains(URLQueryItem(name: "search", value: "reader")))
+        XCTAssertTrue(query.contains(URLQueryItem(name: "language", value: "python")))
+        XCTAssertTrue(query.contains(URLQueryItem(name: "category", value: "io,files")))
+    }
+
+    func testCodeReturnsAllFilesOrTheFirst() async throws {
+        let json = TestJSON.snippet(5, code: "first")
+        let transport = StubTransport([.json(json), .json(json)])
+        let all = try await IntentActions.code(ofSnippet: 5, allFiles: true, store: signedInStore(),
+                                               transport: transport, cache: nil, isLocked: false)
+        XCTAssertEqual(all, "first")
+        XCTAssertEqual(transport.last.url?.path, "/api/snippets/5")
+        let first = try await IntentActions.code(ofSnippet: 5, allFiles: false, store: signedInStore(),
+                                                 transport: transport, cache: nil, isLocked: false)
+        XCTAssertEqual(first, "first")
+    }
+
+    func testLockedAndSignedOutAreRefused() async {
+        do {
+            _ = try await IntentActions.code(ofSnippet: 1, allFiles: true, store: signedInStore(),
+                                             transport: StubTransport([]), cache: nil, isLocked: true)
+            XCTFail("expected locked")
+        } catch { XCTAssertEqual(error, .locked) }
+        do {
+            _ = try await IntentActions.find("x", store: InMemoryCredentialStore(), transport: StubTransport([]),
+                                             cache: nil, isLocked: false)
+            XCTFail("expected signed out")
+        } catch { XCTAssertEqual(error, .signedOut) }
+    }
+}

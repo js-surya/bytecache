@@ -10,6 +10,11 @@ public struct FragmentCard: View {
     @State private var copied = false
     @State private var exporting = false
     @State private var showSource = false
+    @State private var sharingImage = false
+    #if DEBUG
+    /// `-BCShareImage`: open Share as Image once for the first file shown (screenshots).
+    @MainActor private static var debugShareImageShown = false
+    #endif
 
     private var isMarkdown: Bool { MarkdownDocument.isMarkdown(language: fragment.language) }
 
@@ -24,10 +29,10 @@ public struct FragmentCard: View {
             // Pick the first header layout that fits: one line with a "Copy" label, one line with an
             // icon-only Copy, or the Preview/Source switch on its own line.
             ViewThatFits(in: .horizontal) {
-                HStack { title; Spacer(minLength: 8); viewSwitch; copyButton(iconOnly: false) }
-                HStack { title; Spacer(minLength: 8); viewSwitch; copyButton(iconOnly: true) }
+                HStack { title; Spacer(minLength: 8); viewSwitch; imageButton; copyButton(iconOnly: false) }
+                HStack { title; Spacer(minLength: 8); viewSwitch; imageButton; copyButton(iconOnly: true) }
                 VStack(alignment: .leading, spacing: 8) {
-                    HStack { title; Spacer(minLength: 8); copyButton(iconOnly: true) }
+                    HStack { title; Spacer(minLength: 8); imageButton; copyButton(iconOnly: true) }
                     viewSwitch
                 }
             }
@@ -48,8 +53,20 @@ public struct FragmentCard: View {
                 Pasteboard.copy(fragment.code)
                 onCopy()
             } label: { Label("Copy Code", symbol: .copy) }
+            Button { sharingImage = true } label: { Label("Share as Image…", symbol: .image) }
             Button { exporting = true } label: { Label("Save File…", symbol: .download) }
         }
+        .sheet(isPresented: $sharingImage) {
+            NavigationStack { CodeImageSheet(fragment: fragment) }
+        }
+        #if DEBUG
+        .task {
+            if ProcessInfo.processInfo.arguments.contains("-BCShareImage"), !Self.debugShareImageShown {
+                Self.debugShareImageShown = true
+                sharingImage = true
+            }
+        }
+        #endif
         .fileExporter(isPresented: $exporting,
                       document: SnippetFileDocument(wrapper: exportFile.0),
                       contentType: exportFile.1,
@@ -86,6 +103,18 @@ public struct FragmentCard: View {
             .fixedSize()
             .controlSize(.small)
         }
+    }
+
+    private var imageButton: some View {
+        Button { sharingImage = true } label: {
+            Label("Share as Image", symbol: .image).labelStyle(.iconOnly)
+        }
+        .buttonStyle(.bordered)
+        .controlSize(.small)
+        .fixedSize()
+        .help("Share as Image")
+        // The icon-only label isn't spoken on its own; give the button its name.
+        .accessibilityLabel("Share as Image")
     }
 
     private func copyButton(iconOnly: Bool) -> some View {

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Builds unsigned release files into dist/:
-#   ByteCache-<version>-iOS.ipa    universal: iPhone and iPad (sideload, e.g. with Sideloadly or AltStore)
+#   ByteCache-<version>-iOS.ipa    universal: iPhone and iPad, ad-hoc signed with its App Group (sideload,
+#                                  e.g. with AltStore, SideStore or Sideloadly)
 #   ByteCache-<version>-macOS.zip  the Mac app, ad-hoc signed (right-click → Open the first time)
 # Usage: scripts/package-release.sh [build number]
 set -euo pipefail
@@ -21,6 +22,31 @@ xcodebuild -scheme ByteCache -configuration Release -destination 'generic/platfo
 payload="$derived/ipa/Payload"
 mkdir -p "$payload"
 cp -R "$derived/ios/Build/Products/Release-iphoneos/ByteCache.app" "$payload/"
+# Ad-hoc sign with the App Group entitlement (frameworks, then extensions, then the app). Sideloading
+# tools re-sign the app and only set up the App Groups its binaries declare; without one the widget
+# can't see the app's snippets. iCloud and keychain groups need a real team, so the installer adds those.
+ios_app="$payload/ByteCache.app"
+entitlements="$derived/ios-app-group.entitlements"
+cat > "$entitlements" <<'PLIST'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>com.apple.security.application-groups</key>
+	<array><string>group.app.bytecache</string></array>
+</dict>
+</plist>
+PLIST
+plutil -lint -s "$entitlements"
+find "$ios_app/Frameworks" -maxdepth 1 \( -name "*.framework" -o -name "*.dylib" \) -exec codesign --force --sign - {} \; 2>/dev/null || true
+for appex in "$ios_app"/PlugIns/*.appex; do
+    codesign --force --sign - --entitlements "$entitlements" "$appex"
+done
+codesign --force --sign - --entitlements "$entitlements" "$ios_app"
+for bundle in "$ios_app" "$ios_app"/PlugIns/*.appex; do
+    signed="$(codesign -d --entitlements - "$bundle" 2>/dev/null || true)"
+    [[ "$signed" == *group.app.bytecache* ]] || { echo "error: $bundle has no App Group entitlement" >&2; exit 1; }
+done
 (cd "$derived/ipa" && zip -qry "../../../$dist/ByteCache-$version-iOS.ipa" Payload)
 
 echo "▸ macOS $version ($build)"

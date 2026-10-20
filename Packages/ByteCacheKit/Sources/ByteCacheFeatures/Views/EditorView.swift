@@ -5,6 +5,8 @@ public struct EditorView: View {
     @Bindable var model: SnippetEditorModel
     let knownCategories: [String]
     let onSaved: (Snippet) -> Void
+    @Environment(AppSettings.self) private var settings
+    @State private var expiry = ExpiryChoice.never
     let onCancel: () -> Void
 
     public init(model: SnippetEditorModel, knownCategories: [String], onSaved: @escaping (Snippet) -> Void, onCancel: @escaping () -> Void) {
@@ -64,6 +66,7 @@ public struct EditorView: View {
                     }
                 }
             }
+            ExpiryEditorSection(choice: $expiry)
             Section {
                 Button { model.addFragment() } label: { Label("Add File", symbol: .plus) }
                 Toggle("Public", isOn: $model.draft.isPublic)
@@ -72,6 +75,12 @@ public struct EditorView: View {
             }
         }
         .formStyle(.grouped)
+        .task {
+            if let id = model.existingID, let server = model.server,
+               let date = settings.snippetExpiries.date(snippetID: id, server: server) {
+                expiry = .date(date)
+            }
+        }
         .navigationTitle(model.isNew ? "New Snippet" : "Edit Snippet")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
@@ -86,7 +95,12 @@ public struct EditorView: View {
                 } else {
                     Button("Save") {
                         Task {
-                            if let saved = try? await model.save() { onSaved(saved) }
+                            if let saved = try? await model.save() {
+                                if let server = model.server {
+                                    settings.setExpiry(expiry.date(), snippetID: saved.id, server: server)
+                                }
+                                onSaved(saved)
+                            }
                         }
                     }
                     .disabled(!model.canSave)

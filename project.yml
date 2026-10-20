@@ -10,7 +10,7 @@ configFiles:
   Release: Config/Base.xcconfig
 settings:
   base:
-    MARKETING_VERSION: "1.2.0"
+    MARKETING_VERSION: "1.2.5"
     CURRENT_PROJECT_VERSION: "1"
     SWIFT_VERSION: "6.0"
     BC_APP_GROUP_ID: group.app.bytecache
@@ -123,7 +123,26 @@ targets:
         INFOPLIST_FILE: ShareExtension-macOS/Info.plist
         CODE_SIGN_ENTITLEMENTS: ShareExtension-macOS/ShareExtension-macOS.entitlements
         ENABLE_HARDENED_RUNTIME: YES
+  ByteCacheUITests:
+    type: bundle.ui-testing
+    supportedDestinations: [iOS]
+    sources: [UITests]
+    dependencies:
+      - target: ByteCache
+    settings:
+      base:
+        TEST_TARGET_NAME: ByteCache
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: app.bytecache.ByteCacheUITests
 schemes:
+  ByteCache-UITests:
+    build:
+      targets:
+        ByteCache: all
+        ByteCacheUITests: [test]
+    test:
+      targets:
+        - ByteCacheUITests
   ByteCache:
     build:
       targets:
