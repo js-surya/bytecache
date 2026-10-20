@@ -21,7 +21,7 @@ struct ServerEditView: View {
     private var isActive: Bool { account.id == session.activeAccountID }
 
     var body: some View {
-        Form {
+        SettingsList {
             Section {
                 TextField("Name", text: $name, prompt: Text(account.address))
             } footer: {
@@ -54,7 +54,6 @@ struct ServerEditView: View {
                 }
             }
         }
-        .formStyle(.grouped)
         .navigationTitle("Edit Server")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)

@@ -53,7 +53,7 @@ public struct ReportBugView: View {
     }
 
     public var body: some View {
-        Form {
+        SettingsList {
             Section {
                 TextField("Short title, e.g. “Scan shows no text”", text: $model.title)
                 TextField("What happened? What did you expect?", text: $model.whatHappened, axis: .vertical)
@@ -94,7 +94,6 @@ public struct ReportBugView: View {
                 }
             }
         }
-        .formStyle(.grouped)
         .navigationTitle("Report a Bug")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)

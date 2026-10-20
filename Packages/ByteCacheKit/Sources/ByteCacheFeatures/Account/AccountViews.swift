@@ -104,7 +104,7 @@ struct ChangePasswordView: View {
     @State private var working = false
 
     var body: some View {
-        Form {
+        SettingsList {
             if !model.canManage {
                 ContentUnavailableView("Password Sign-In Needed", symbol: .keyOff,
                                        description: Text("You're signed in with an API key. Sign in with your password to change it."))
@@ -153,7 +153,6 @@ struct ChangePasswordView: View {
                 .listRowInsets(EdgeInsets())
             }
         }
-        .formStyle(.grouped)
         .navigationTitle("Change Password")
         .task { await model.loadKeys() }
     }
