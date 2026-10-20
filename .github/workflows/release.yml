@@ -1,9 +1,10 @@
 name: Build and release
 
 # Features are merged into `develop` (no CI run). A release is one pull request from `develop` into `main`:
-# - the pull request runs the tests and builds the iPhone/iPad and Mac apps (downloadable from the run);
-# - merging it (a regular merge, not squash) publishes a release if the version in project.yml is new,
-#   with the builds, the source code and notes listing every change since the previous release.
+# - the pull request checks it: the tests, and a quick unsigned compile of the iPhone/iPad and Mac apps;
+# - merging it (a regular merge, not squash) builds the release files once and publishes a release if the
+#   version in project.yml is new, with the builds, the source code and notes listing every change since
+#   the previous release. The files are built from the merged commit, so they match the tag.
 # Change the version with scripts/set-version.sh X.Y.Z. Docs-only changes don't start a run.
 on:
   pull_request:
@@ -62,10 +63,20 @@ jobs:
           TEST_RUNNER_CI: "true"   # xcodebuild hands TEST_RUNNER_* to the tests as CI=true
         run: xcodebuild test -scheme ByteCacheKit-Package -destination 'platform=macOS' -quiet
 
+      - name: Check the iPhone/iPad and Mac apps compile
+        if: github.event_name == 'pull_request'
+        run: |
+          for platform in iOS macOS; do
+            xcodebuild build -scheme ByteCache -configuration Debug -destination "generic/platform=$platform" \
+              CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" -quiet
+          done
+
       - name: Build iPhone/iPad and Mac apps
+        if: github.event_name != 'pull_request'
         run: scripts/package-release.sh "${{ github.run_number }}"
 
       - name: Keep the builds with this run
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v7
         with:
           name: ByteCache-${{ steps.version.outputs.version }}-build${{ github.run_number }}
@@ -89,13 +100,14 @@ jobs:
           Check downloads against \`SHA256SUMS.txt\`.
           NOTES
           # Every change since the previous release (features land on develop, so pull-request-based
-          # notes would miss them). Housekeeping commits (chore/ci/docs/test) are left out.
+          # notes would miss them). Housekeeping commits (chore/ci/docs/test, version bumps) are left out.
           previous=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || true)
           {
             echo
             echo "## What's changed"
             git log --no-merges --format='%s' ${previous:+$previous..}HEAD \
               | grep -vE '^(chore|ci|docs|test)(\(|:)' \
+              | grep -vE '^Release [0-9]' \
               | perl -pe 's/^[a-z]+(\([^)]*\))?!?: //; s/^(.)/\u$1/; s/^/- /'
           } >> notes.md
           gh release create "v$VERSION" dist/* \
