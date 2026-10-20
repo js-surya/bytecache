@@ -7,16 +7,20 @@ struct SnippetEntity: AppEntity {
     static let defaultQuery = SnippetEntityQuery()
 
     let id: Int
-    let title: String
-    let language: String
-    let code: String
+    // Properties a shortcut can pick from each result (e.g. "Code" of a found snippet).
+    @Property(title: "Title") var title: String
+    @Property(title: "Language") var language: String
+    @Property(title: "Code") var code: String
+    @Property(title: "Tags") var tags: [String]
 
     init(_ snippet: Snippet) {
         id = snippet.id
-        title = snippet.title
-        let first = snippet.fragments.sorted { $0.position < $1.position }.first
-        language = first.map { LanguageName.display($0.language) } ?? ""
-        code = first?.code ?? ""
+        let files = snippet.fragments.sorted { $0.position < $1.position }
+        title = snippet.title.isEmpty ? "Untitled snippet" : snippet.title
+        language = files.first.map { LanguageName.display($0.language) } ?? ""
+        // With App Lock on, shortcuts get titles only, not code.
+        code = AppEnvironment.isAppLockEnabled ? "" : files.map(\.code).joined(separator: "\n\n")
+        tags = snippet.categories
     }
 
     var displayRepresentation: DisplayRepresentation {

@@ -42,17 +42,70 @@ struct SaveToByteCacheIntent: AppIntent {
     }
 }
 
+/// Kept under its original type name so existing shortcuts keep working.
 struct SearchSnippetsIntent: AppIntent {
-    static let title: LocalizedStringResource = "Search Snippets"
-    static let description = IntentDescription("Finds snippets on your ByteStash server, or in recently viewed ones when offline.")
+    static let title: LocalizedStringResource = "Find Snippets"
+    static let description = IntentDescription(
+        "Finds snippets on your ByteStash server (or saved ones when offline). Each result has a Title, Language, Code and Tags to use in later steps. The search can include filters like lang:python or #tag."
+    )
 
-    @Parameter(title: "Search")
+    @Parameter(title: "Search", default: "")
     var term: String
+
+    @Parameter(title: "Language", description: "A language such as python or bash.")
+    var language: String?
+
+    @Parameter(title: "Tag")
+    var tag: String?
+
+    @Parameter(title: "Limit", default: 20, inclusiveRange: (1, 100))
+    var limit: Int
+
+    static var parameterSummary: some ParameterSummary {
+        Summary("Find snippets matching \(\.$term)") {
+            \.$language
+            \.$tag
+            \.$limit
+        }
+    }
 
     @MainActor
     func perform() async throws -> some IntentResult & ReturnsValue<[SnippetEntity]> {
-        let found = await IntentActions.search(term, store: AppEnvironment.makeCredentialStore(), cache: try? SnippetCache())
-        return .result(value: found.map(SnippetEntity.init))
+        do {
+            let found = try await IntentActions.find(term, language: language, tag: tag, limit: limit,
+                                                     store: AppEnvironment.makeCredentialStore(), cache: try? SnippetCache())
+            return .result(value: found.map(SnippetEntity.init))
+        } catch {
+            throw IntentMessage(message: error.message)
+        }
+    }
+}
+
+struct GetSnippetCodeIntent: AppIntent {
+    static let title: LocalizedStringResource = "Get Snippet Code"
+    static let description = IntentDescription("Gets a snippet's code as text, to use in later steps of a shortcut.")
+
+    @Parameter(title: "Snippet")
+    var snippet: SnippetEntity
+
+    @Parameter(title: "All Files", description: "Off: only the first file.", default: true)
+    var allFiles: Bool
+
+    static var parameterSummary: some ParameterSummary {
+        Summary("Get the code of \(\.$snippet)") {
+            \.$allFiles
+        }
+    }
+
+    @MainActor
+    func perform() async throws -> some IntentResult & ReturnsValue<String> {
+        do {
+            let code = try await IntentActions.code(ofSnippet: snippet.id, allFiles: allFiles,
+                                                    store: AppEnvironment.makeCredentialStore(), cache: try? SnippetCache())
+            return .result(value: code)
+        } catch {
+            throw IntentMessage(message: error.message)
+        }
     }
 }
 
@@ -92,8 +145,14 @@ struct ByteCacheShortcuts: AppShortcutsProvider {
         AppShortcut(
             intent: SearchSnippetsIntent(),
             phrases: ["Search \(.applicationName)", "Find a snippet in \(.applicationName)"],
-            shortTitle: "Search Snippets",
+            shortTitle: "Find Snippets",
             systemImageName: "magnifyingglass"
+        )
+        AppShortcut(
+            intent: GetSnippetCodeIntent(),
+            phrases: ["Get code from \(.applicationName)", "Get a snippet from \(.applicationName)"],
+            shortTitle: "Get Snippet Code",
+            systemImageName: "chevron.left.forwardslash.chevron.right"
         )
     }
 }
