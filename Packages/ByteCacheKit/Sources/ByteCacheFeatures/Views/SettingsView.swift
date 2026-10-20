@@ -491,6 +491,10 @@ struct AboutView: View {
         SettingsList {
             Section {
                 LabeledContent("Version", value: AboutText.displayVersion)
+                #if os(iOS)
+                // How widgets get the app's snippets: App Group, shared keychain, or not at all.
+                LabeledContent("Widgets", value: WidgetSnapshotStore().sharing)
+                #endif
                 Text(AboutText.tagline)
                 Text("ByteCache is not affiliated with the ByteStash project.").foregroundStyle(.secondary)
             }
