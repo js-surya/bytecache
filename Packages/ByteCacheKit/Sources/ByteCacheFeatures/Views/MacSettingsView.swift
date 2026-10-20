@@ -217,6 +217,16 @@ private struct MacSearchPage: View {
             } footer: {
                 Text("When on, searching also matches the code in your snippets, not just titles and descriptions.")
             }
+            Section {
+                Toggle("Show in Menu Bar", isOn: $settings.quickSearchInMenuBar)
+                Picker("Keyboard Shortcut", selection: $settings.quickSearchShortcut) {
+                    ForEach(QuickSearchShortcut.allCases) { Text($0.title).tag($0) }
+                }
+            } header: {
+                Text("Quick Search")
+            } footer: {
+                Text("Find a snippet from anywhere: press the shortcut or click the menu bar icon, type, then press Return to copy it or ⌘Return to open it.")
+            }
         }
         .navigationTitle("Search")
     }

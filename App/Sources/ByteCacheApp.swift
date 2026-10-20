@@ -17,6 +17,12 @@ struct ByteCacheApp: App {
                 .environment(services.lock)
                 .environment(services.updates)
                 .appLockCover(services.lock)
+                #if os(macOS)
+                .task { QuickSearchPanel.shared.configure(services) }
+                .onChange(of: services.settings.quickSearchShortcut) { _, shortcut in
+                    GlobalHotKey.shared.register(shortcut)
+                }
+                #endif
         }
         .commands {
             SnippetCommandsMenu()
@@ -45,6 +51,12 @@ struct ByteCacheApp: App {
                 .appLockCover(services.lock)
             .frame(minWidth: 720, idealWidth: 780, minHeight: 520, idealHeight: 600)
         }
+        MenuBarExtra(isInserted: Bindable(services.settings).quickSearchInMenuBar) {
+            MenuBarQuickSearch(services: services)
+        } label: {
+            Label("ByteCache Quick Search", systemImage: "curlybraces")
+        }
+        .menuBarExtraStyle(.window)
         #endif
     }
 }
