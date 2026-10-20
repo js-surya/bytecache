@@ -127,14 +127,6 @@ struct PhoneTabsView: View {
                             placement: .toolbar, prompt: "Search snippets")
                 .snippetSearchSuggestions(search)
                 .onChange(of: search.searchText) { search.searchTextChanged() }
-                // The sidebar (Library tab) may not have loaded languages and tags yet.
-                .task { if sidebar.languages.isEmpty && sidebar.categories.isEmpty { await sidebar.load() } }
-                .onChange(of: sidebar.languages + sidebar.categories, initial: true) {
-                    for model in [all, pinned, favorites, library, search] {
-                        model.knownLanguages = sidebar.languages
-                        model.knownCategories = sidebar.categories
-                    }
-                }
                 .onChange(of: services.settings.searchInCode, initial: true) {
                     search.searchCode = services.settings.searchInCode
                     if !search.searchText.isEmpty { Task { await search.refresh() } }
@@ -149,6 +141,18 @@ struct PhoneTabsView: View {
             #endif
         }
         .tabBarMinimizeBehavior(.onScrollDown)
+        .onChange(of: services.settings.smartGroups, initial: true) {
+            library.smartGroups = services.settings.smartGroups
+            if case .smartGroup = library.selection { Task { await library.refresh() } }
+        }
+        // The sidebar (Library tab) may not have loaded languages and tags yet.
+        .task { if sidebar.languages.isEmpty && sidebar.categories.isEmpty { await sidebar.load() } }
+        .onChange(of: sidebar.languages + sidebar.categories, initial: true) {
+            for model in [all, pinned, favorites, library, search] {
+                model.knownLanguages = sidebar.languages
+                model.knownCategories = sidebar.categories
+            }
+        }
         .sheet(isPresented: $showingSettings) {
             NavigationStack {
                 SettingsView(session: services.session)

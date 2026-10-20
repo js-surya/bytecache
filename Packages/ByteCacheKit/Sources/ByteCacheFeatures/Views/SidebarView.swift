@@ -6,6 +6,8 @@ public struct SidebarView: View {
     @Binding var selection: SidebarItem?
     let session: SessionManager
     @State private var showingSettings = false
+    /// The Smart Group being created (`.some(nil)`) or edited.
+    @State private var editingGroup: SmartGroup??
     @Environment(AppSettings.self) private var settings
     #if DEBUG
     @MainActor private static var debugSettingsShown = false
@@ -24,6 +26,21 @@ public struct SidebarView: View {
                     Label(item.title, symbol: item.symbol).tag(item)
                 }
             }
+            Section("Smart Groups") {
+                ForEach(settings.smartGroups) { group in
+                    Label(group.name, symbol: .smartGroup)
+                        .tag(SidebarItem.smartGroup(group.id))
+                        .contextMenu {
+                            Button { editingGroup = .some(group) } label: { Label("Edit Smart Group…", symbol: .edit) }
+                            Button(role: .destructive) { delete(group) } label: { Label("Delete", symbol: .trash) }
+                        }
+                }
+                .onDelete { offsets in offsets.map { settings.smartGroups[$0] }.forEach(delete) }
+                Button { editingGroup = .some(nil) } label: {
+                    Label("New Smart Group…", symbol: .plusCircle)
+                }
+                .buttonStyle(.borderless)
+            }
             if !model.languages.isEmpty {
                 Section("Languages") {
                     ForEach(model.languages, id: \.self) { id in
@@ -41,6 +58,19 @@ public struct SidebarView: View {
             }
         }
         .navigationTitle(AboutText.appName)
+        .sheet(item: Binding(get: { editingGroup.map { EditingGroup(group: $0) } }, set: { if $0 == nil { editingGroup = nil } })) { editing in
+            NavigationStack {
+                SmartGroupEditor(group: editing.group, languages: model.languages, categories: model.categories) { saved in
+                    if let index = settings.smartGroups.firstIndex(where: { $0.id == saved.id }) {
+                        settings.smartGroups[index] = saved
+                    } else {
+                        settings.smartGroups.append(saved)
+                        selection = .smartGroup(saved.id)
+                    }
+                }
+            }
+            .appSettingsStyle(settings)
+        }
         .refreshable { await model.load() }
         .task {
             #if DEBUG
@@ -49,6 +79,16 @@ public struct SidebarView: View {
                 Self.debugSettingsShown = true
                 showingSettings = true
             }
+            // `-BCSmartGroupDemo`: add (once) and select a sample Smart Group; `-BCNewSmartGroup`: open the editor.
+            if ProcessInfo.processInfo.arguments.contains("-BCSmartGroupDemo") {
+                if !settings.smartGroups.contains(where: { $0.name == "Recent Python" }) {
+                    settings.smartGroups.append(SmartGroup(name: "Recent Python", rules: [
+                        SmartRule(field: .language, value: "python"), SmartRule(field: .modifiedWithinDays, value: "365"),
+                    ]))
+                }
+                selection = settings.smartGroups.first { $0.name == "Recent Python" }.map { .smartGroup($0.id) }
+            }
+            if ProcessInfo.processInfo.arguments.contains("-BCNewSmartGroup") { editingGroup = .some(nil) }
             #endif
             await model.load()
         }
@@ -74,4 +114,15 @@ public struct SidebarView: View {
         }
         #endif
     }
+
+    private func delete(_ group: SmartGroup) {
+        if selection == .smartGroup(group.id) { selection = .all }
+        settings.smartGroups.removeAll { $0.id == group.id }
+    }
+}
+
+/// Sheet item for the Smart Group editor; a new group has no definition yet.
+private struct EditingGroup: Identifiable {
+    let group: SmartGroup?
+    var id: UUID? { group?.id }
 }

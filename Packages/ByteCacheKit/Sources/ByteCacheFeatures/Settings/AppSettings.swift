@@ -68,6 +68,10 @@ public final class AppSettings {
     public var showLineNumbers: Bool { didSet { defaults.set(showLineNumbers, forKey: Key.lineNumbers) } }
     /// Long lines wrap in the code view instead of scrolling sideways.
     public var wrapLines: Bool { didSet { defaults.set(wrapLines, forKey: Key.wrapLines) } }
+    /// Saved rule-based groups, shown in the sidebar.
+    public var smartGroups: [SmartGroup] {
+        didSet { defaults.set(try? JSONEncoder().encode(smartGroups), forKey: Key.smartGroups) }
+    }
     /// Device-only switches (never synced themselves).
     public var iCloudSyncEnabled: Bool { didSet { defaults.set(iCloudSyncEnabled, forKey: Key.iCloudSync) } }
     public var handoffEnabled: Bool { didSet { defaults.set(handoffEnabled, forKey: Key.handoff) } }
@@ -104,7 +108,7 @@ public final class AppSettings {
     private enum Key {
         static let appearance = "appearance", accent = "accent", codeThemeID = "codeThemeID", iconStyle = "iconStyle", searchInCode = "searchInCode"
         static let languageIconStyle = "languageIconStyle"
-        static let fontSize = "codeFontSize", lineNumbers = "showLineNumbers", wrapLines = "wrapLines"
+        static let fontSize = "codeFontSize", lineNumbers = "showLineNumbers", wrapLines = "wrapLines", smartGroups = "smartGroups"
         static let iCloudSync = "iCloudSyncEnabled", handoff = "handoffEnabled", suggestions = "suggestionsEnabled"
         static let haptics = "hapticsEnabled", hapticStrength = "hapticStrength"
         static let checkForUpdates = "checkForUpdates"
@@ -123,6 +127,7 @@ public final class AppSettings {
         codeFontSize = min(max(size, Self.fontSizes.lowerBound), Self.fontSizes.upperBound)
         showLineNumbers = defaults.object(forKey: Key.lineNumbers) as? Bool ?? true
         wrapLines = defaults.bool(forKey: Key.wrapLines)
+        smartGroups = defaults.data(forKey: Key.smartGroups).flatMap { try? JSONDecoder().decode([SmartGroup].self, from: $0) } ?? []
         iCloudSyncEnabled = defaults.object(forKey: Key.iCloudSync) as? Bool ?? true
         handoffEnabled = defaults.object(forKey: Key.handoff) as? Bool ?? true
         suggestionsEnabled = defaults.object(forKey: Key.suggestions) as? Bool ?? true
@@ -141,7 +146,8 @@ public final class AppSettings {
     public var synced: SyncedSettings {
         SyncedSettings(appearance: appearance, accent: accent, codeThemeID: codeThemeID,
                        codeFontSize: codeFontSize, showLineNumbers: showLineNumbers, iconStyle: iconStyle,
-                       searchInCode: searchInCode, languageIconStyle: languageIconStyle, wrapLines: wrapLines)
+                       searchInCode: searchInCode, languageIconStyle: languageIconStyle, wrapLines: wrapLines,
+                       smartGroups: smartGroups)
     }
 
     public func apply(_ remote: SyncedSettings) {
@@ -154,6 +160,7 @@ public final class AppSettings {
         if let code = remote.searchInCode, searchInCode != code { searchInCode = code }
         if let style = remote.languageIconStyle, languageIconStyle != style { languageIconStyle = style }
         if let wrap = remote.wrapLines, wrapLines != wrap { wrapLines = wrap }
+        if let groups = remote.smartGroups, smartGroups != groups { smartGroups = groups }
     }
 }
 
@@ -181,10 +188,12 @@ public struct SyncedSettings: Codable, Equatable, Sendable {
     public var searchInCode: Bool?
     public var languageIconStyle: LanguageIconStyle?
     public var wrapLines: Bool?
+    public var smartGroups: [SmartGroup]?
 
     public init(appearance: AppAppearance, accent: AccentChoice, codeThemeID: String, codeFontSize: Double,
                 showLineNumbers: Bool, iconStyle: IconStyle? = nil, searchInCode: Bool? = nil,
-                languageIconStyle: LanguageIconStyle? = nil, wrapLines: Bool? = nil) {
+                languageIconStyle: LanguageIconStyle? = nil, wrapLines: Bool? = nil,
+                smartGroups: [SmartGroup]? = nil) {
         self.appearance = appearance
         self.accent = accent
         self.codeThemeID = codeThemeID
@@ -194,6 +203,7 @@ public struct SyncedSettings: Codable, Equatable, Sendable {
         self.searchInCode = searchInCode
         self.languageIconStyle = languageIconStyle
         self.wrapLines = wrapLines
+        self.smartGroups = smartGroups
     }
 }
 
