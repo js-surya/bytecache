@@ -320,3 +320,45 @@ final class SuggestTitleTests: XCTestCase {
         XCTAssertEqual(model.snippets[0].title, "Say Hi")
     }
 }
+
+/// CP-46: typed filters and close matches.
+@MainActor
+final class SearchFilterTests: XCTestCase {
+    private func items(_ request: URLRequest) -> [URLQueryItem] {
+        URLComponents(url: request.url!, resolvingAgainstBaseURL: false)?.queryItems ?? []
+    }
+
+    func testTypedFiltersReachTheServerQuery() async {
+        let (session, transport) = await TestSession.signedIn([.json(TestJSON.page([]))])
+        let model = SnippetListModel(session: session, cache: nil)
+        model.knownLanguages = ["Python"]
+        model.searchText = "reader lang:python #io is:pinned"
+        await model.refresh()
+        let query = items(transport.last)
+        XCTAssertTrue(query.contains(URLQueryItem(name: "search", value: "reader")))
+        XCTAssertTrue(query.contains(URLQueryItem(name: "language", value: "Python")))
+        XCTAssertTrue(query.contains(URLQueryItem(name: "pinned", value: "true")))
+        XCTAssertTrue(query.contains(URLQueryItem(name: "category", value: "io")))
+    }
+
+    func testSelectedLanguageWinsOverTypedOne() async {
+        let (session, _) = await TestSession.signedIn([])
+        let model = SnippetListModel(session: session, cache: nil)
+        model.selection = .language("bash")
+        model.searchText = "lang:python"
+        XCTAssertEqual(model.query.language, "bash")
+        XCTAssertNil(model.query.search)
+    }
+
+    func testNoExactMatchShowsCloseMatchesFromTheCache() async throws {
+        let cache = try SnippetCache(inMemory: true)
+        let (session, _) = await TestSession.signedIn([.json(TestJSON.page([]))])
+        let reader = try JSONDecoder.byteStash.decode(Snippet.self, from: Data(TestJSON.snippet(4, title: "CSV Reader").utf8))
+        cache.store([reader], server: session.client!.server)
+        let model = SnippetListModel(session: session, cache: cache)
+        model.searchText = "csvrd"
+        await model.refresh()
+        XCTAssertTrue(model.showsCloseMatches)
+        XCTAssertEqual(model.snippets.map(\.title), ["CSV Reader"])
+    }
+}

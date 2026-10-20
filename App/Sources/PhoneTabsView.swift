@@ -125,7 +125,16 @@ struct PhoneTabsView: View {
                 // Only the Search tab searches; tapping the tab opens the field with the keyboard.
                 .searchable(text: $search.searchText, isPresented: $searchPresented,
                             placement: .toolbar, prompt: "Search snippets")
+                .snippetSearchSuggestions(search)
                 .onChange(of: search.searchText) { search.searchTextChanged() }
+                // The sidebar (Library tab) may not have loaded languages and tags yet.
+                .task { if sidebar.languages.isEmpty && sidebar.categories.isEmpty { await sidebar.load() } }
+                .onChange(of: sidebar.languages + sidebar.categories, initial: true) {
+                    for model in [all, pinned, favorites, library, search] {
+                        model.knownLanguages = sidebar.languages
+                        model.knownCategories = sidebar.categories
+                    }
+                }
                 .onChange(of: services.settings.searchInCode, initial: true) {
                     search.searchCode = services.settings.searchInCode
                     if !search.searchText.isEmpty { Task { await search.refresh() } }

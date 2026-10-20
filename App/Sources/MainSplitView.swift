@@ -57,6 +57,10 @@ struct MainSplitView: View {
             activity.isEligibleForHandoff = true
         }
         .onAppear { clipboard.check() }
+        .onChange(of: sidebar.languages + sidebar.categories, initial: true) {
+            list.knownLanguages = sidebar.languages
+            list.knownCategories = sidebar.categories
+        }
         .onChange(of: list.snippets) {
             if let server = services.session.client?.server { SpotlightIndexer.index(list.snippets, server: server) }
             Task { await services.widgets.refresh() }
