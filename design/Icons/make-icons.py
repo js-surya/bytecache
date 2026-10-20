@@ -77,8 +77,11 @@ public enum AppSymbol: String, CaseIterable, Sendable {{
 
 def write_assets(icons_dir):
     catalog = os.path.join(FEATURES, "Resources/Icons.xcassets")
-    shutil.rmtree(catalog, ignore_errors=True)
-    os.makedirs(catalog)
+    # Only replace this script's own icons; language logos and other assets come from other scripts.
+    os.makedirs(catalog, exist_ok=True)
+    for old in os.listdir(catalog):
+        if old.startswith("lucide-") and old.endswith(".imageset"):
+            shutil.rmtree(os.path.join(catalog, old))
     json.dump({"info": {"author": "xcode", "version": 1}}, open(os.path.join(catalog, "Contents.json"), "w"), indent=2)
     for entry in sorted({l for _, _, l in TABLE}):
         name, _, variant = entry.partition(":")
