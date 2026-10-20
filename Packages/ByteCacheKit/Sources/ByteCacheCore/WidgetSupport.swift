@@ -28,12 +28,17 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
     public var pinned: [WidgetSnippet]
     public var recent: [WidgetSnippet]
     public var updatedAt: Date
+    /// Signed in but the snippets couldn't be loaded (e.g. "Can't reach the server"). Optional: absent
+    /// in snapshots written by earlier versions.
+    public var problem: String?
 
-    public init(serverName: String, pinned: [WidgetSnippet], recent: [WidgetSnippet], updatedAt: Date = Date()) {
+    public init(serverName: String, pinned: [WidgetSnippet], recent: [WidgetSnippet], updatedAt: Date = Date(),
+                problem: String? = nil) {
         self.serverName = serverName
         self.pinned = pinned
         self.recent = recent
         self.updatedAt = updatedAt
+        self.problem = problem
     }
 
     public func snippet(id: Int) -> WidgetSnippet? {
@@ -44,6 +49,9 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
 /// The snapshot file shared by the app (writer) and the widget extension (reader), in the App Group.
 public struct WidgetSnapshotStore: Sendable {
     private let file: URL
+
+    /// False when this install has no App Group, so the widget can't see what the app writes.
+    public static var isShared: Bool { AppEnvironment.appGroupID != nil }
 
     public init(directory: URL? = nil) {
         let dir = directory

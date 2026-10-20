@@ -4,7 +4,7 @@ import SwiftUI
 import WidgetKit
 
 struct SnippetEntry: TimelineEntry {
-    enum Content { case snippets([WidgetSnippet], server: String), locked, signedOut }
+    enum Content { case snippets([WidgetSnippet], server: String), locked, signedOut, problem(String), notShared }
     let date: Date
     let content: Content
 }
@@ -14,7 +14,12 @@ struct SnippetProvider: TimelineProvider {
 
     private func entry() -> SnippetEntry {
         guard !AppEnvironment.isAppLockEnabled else { return SnippetEntry(date: .now, content: .locked) }
+        // Without an App Group the app's snapshot is out of reach, which isn't the same as signed out.
+        guard WidgetSnapshotStore.isShared else { return SnippetEntry(date: .now, content: .notShared) }
         guard let snapshot = WidgetSnapshotStore().read() else { return SnippetEntry(date: .now, content: .signedOut) }
+        if let problem = snapshot.problem, snapshot.pinned.isEmpty, snapshot.recent.isEmpty {
+            return SnippetEntry(date: .now, content: .problem(problem))
+        }
         return SnippetEntry(date: .now, content: .snippets(pinnedOnly ? snapshot.pinned : snapshot.recent, server: snapshot.serverName))
     }
 
@@ -46,6 +51,11 @@ struct SnippetWidgetView: View {
             message("ByteCache is Locked", systemImage: "lock.fill")
         case .signedOut:
             message("Open ByteCache to sign in", systemImage: "curlybraces")
+        case .problem(let problem):
+            message(problem, systemImage: "wifi.exclamationmark")
+        case .notShared:
+            message("This copy of ByteCache can't share data with widgets. Reinstall it with App Groups enabled.",
+                    systemImage: "exclamationmark.triangle")
         case .snippets(let snippets, _) where snippets.isEmpty:
             message(emptyMessage, systemImage: "tray")
         case .snippets(let snippets, _):
