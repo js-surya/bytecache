@@ -113,7 +113,8 @@ public struct SnippetListView: View {
     }
 
     private func row(_ snippet: Snippet) -> some View {
-        SnippetRow(snippet: snippet, showOwner: model.isReadOnly, search: model.parsedSearch.text, searchCode: model.searchCode)
+        SnippetRow(snippet: snippet, showOwner: model.isReadOnly, search: model.parsedSearch.text, searchCode: model.searchCode,
+                   expiry: settings.expiry(of: snippet, server: model.session.client?.server))
             .tag(snippet.id)
             .task { await model.loadMoreIfNeeded(current: snippet) }
             .contextMenu { SnippetActions(snippet: snippet, model: model) }

@@ -408,3 +408,38 @@ final class InvalidTokenTests: XCTestCase {
         XCTAssertTrue(session.sessionExpired)
     }
 }
+
+/// CP-54: expired snippets move to the Recycle Bin.
+@MainActor
+final class ExpirySweepTests: XCTestCase {
+    func testExpiredSnippetIsRecycledAndForgotten() async {
+        let page = TestJSON.page([TestJSON.snippet(3, title: "Temp"), TestJSON.snippet(4, title: "Keep")])
+        let (session, transport) = await TestSession.signedIn([.json(page), .json("{}"), .json(TestJSON.snippet(3, title: "Temp"))])
+        let model = SnippetListModel(session: session, cache: nil)
+        await model.refresh()
+        let settings = AppSettings(defaults: UserDefaults(suiteName: UUID().uuidString)!)
+        let server = session.client!.server
+        settings.setExpiry(Date().addingTimeInterval(-5), snippetID: 3, server: server)
+        settings.setExpiry(Date().addingTimeInterval(3600), snippetID: 4, server: server)
+
+        await ExpirySweeper.sweep(settings: settings, list: model)
+
+        XCTAssertEqual(model.snippets.map(\.id), [4])
+        XCTAssertTrue(transport.requests.contains { $0.httpMethod == "PATCH" && $0.url?.path == "/api/snippets/3/recycle" })
+        XCTAssertNil(settings.snippetExpiries.date(snippetID: 3, server: server))
+        XCTAssertNotNil(settings.snippetExpiries.date(snippetID: 4, server: server))
+    }
+
+    func testFailedRecycleKeepsTheExpiry() async {
+        let page = TestJSON.page([TestJSON.snippet(3, title: "Temp")])
+        let (session, _) = await TestSession.signedIn([.json(page), .failure(URLError(.notConnectedToInternet))])
+        let model = SnippetListModel(session: session, cache: nil)
+        await model.refresh()
+        let settings = AppSettings(defaults: UserDefaults(suiteName: UUID().uuidString)!)
+        let server = session.client!.server
+        settings.setExpiry(Date().addingTimeInterval(-5), snippetID: 3, server: server)
+        await ExpirySweeper.sweep(settings: settings, list: model)
+        XCTAssertEqual(model.snippets.map(\.id), [3])
+        XCTAssertNotNil(settings.snippetExpiries.date(snippetID: 3, server: server))
+    }
+}

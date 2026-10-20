@@ -106,6 +106,13 @@ struct MainSplitView: View {
             Task { await services.saveQueue.flush() }
         }
         .task {
+            // Expired snippets go to the Recycle Bin while ByteCache is open.
+            while !Task.isCancelled {
+                await ExpirySweeper.sweep(settings: services.settings, list: list)
+                try? await Task.sleep(for: .seconds(60))
+            }
+        }
+        .task {
             services.saveQueue.startMonitoring()
             await services.saveQueue.flush()
         }
