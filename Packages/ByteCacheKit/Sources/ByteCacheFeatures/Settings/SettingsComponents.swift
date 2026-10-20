@@ -73,8 +73,23 @@ struct SettingsList<Content: View>: View {
             .formStyle(.grouped)
             .toggleStyle(.switch)
         #else
-        List { content }
-            .listStyle(.insetGrouped)
+        List {
+            content
+                .listRowBackground(Self.base(.secondarySystemGroupedBackground))
+        }
+        .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .background(Self.base(.systemGroupedBackground))
         #endif
     }
+
+    #if os(iOS)
+    /// Settings is a sheet, and dark mode draws sheets in lighter "elevated" greys; these keep
+    /// the black background and dark cards of the rest of the app. Light mode is unchanged.
+    private static func base(_ color: UIColor) -> Color {
+        Color(UIColor { traits in
+            color.resolvedColor(with: traits.modifyingTraits { $0.userInterfaceLevel = .base })
+        })
+    }
+    #endif
 }

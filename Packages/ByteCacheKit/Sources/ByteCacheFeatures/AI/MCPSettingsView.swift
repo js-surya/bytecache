@@ -7,7 +7,7 @@ struct MCPSettingsView: View {
     @State private var pastedKey = ""
 
     var body: some View {
-        Form {
+        SettingsList {
             Section {
                 if let endpoint = model.endpoint {
                     HStack {
@@ -109,7 +109,6 @@ struct MCPSettingsView: View {
                                      : "Replace YOUR_API_KEY with your key, or turn on “Put the key in the setup below”.")
             }
         }
-        .formStyle(.grouped)
         .navigationTitle("AI Assistants (MCP)")
         .task { if model.savedKeyHint != nil, model.status == nil { await model.testConnection() } }
         .alert("Something went wrong", isPresented: Binding(get: { model.error != nil }, set: { if !$0 { model.error = nil } })) {
