@@ -119,6 +119,17 @@ public final class SessionManager {
     }
 
     /// Call when any request returns 401; signs out cleanly and shows login.
+    #if DEBUG
+    /// Debug: swaps the login for a session token the server no longer accepts, to show what an
+    /// expired session looks like (`-BCExpireSession`).
+    public func debugExpireSession() {
+        guard case .signedIn = state, var current = credentials else { return }
+        current.apiKey = nil
+        current.token = "expired.session.token"
+        credentials = current
+    }
+    #endif
+
     public func handleUnauthorized() {
         guard case .signedIn = state else { return }
         AppLog.shared.record("session", "server rejected the login (401 or invalid token); showing sign-in")
