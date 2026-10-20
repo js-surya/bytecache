@@ -27,6 +27,9 @@ final class SearchSyntaxTests: XCTestCase {
         XCTAssertEqual(SearchSyntax.suggestions(for: "is:f", languages: [], categories: []).map(\.completion),
                        ["is:favorite "])
         XCTAssertEqual(SearchSyntax.suggestions(for: "reader", languages: ["Python"], categories: []), [])
+        // Finished filters show results, not suggestions.
+        XCTAssertEqual(SearchSyntax.suggestions(for: "import lang:python", languages: ["Python"], categories: []), [])
+        XCTAssertEqual(SearchSyntax.suggestions(for: "#io", languages: [], categories: ["io", "iot"]), [])
     }
 
     private func snippet(_ id: Int, _ title: String, description: String = "", code: String = "",

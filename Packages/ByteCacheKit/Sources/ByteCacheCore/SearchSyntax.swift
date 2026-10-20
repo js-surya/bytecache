@@ -73,10 +73,13 @@ extension SearchSyntax {
         }
 
         if let typed = value(ofPartial: partial, prefixes: ["lang:", "language:"]) {
+            // A finished filter ("lang:python") needs no suggestion, so the results show.
+            if languages.contains(where: { $0.lowercased() == typed }) { return [] }
             return languages.filter { typed.isEmpty || $0.lowercased().hasPrefix(typed) }
                 .prefix(limit).map { complete("lang:\($0.lowercased())", "Language: \(languageName($0))") }
         }
         if let typed = value(ofPartial: partial, prefixes: ["#", "tag:"]) {
+            if categories.contains(where: { $0.lowercased() == typed }) { return [] }
             return categories.filter { typed.isEmpty || $0.lowercased().hasPrefix(typed) }
                 .prefix(limit).map { complete("#\($0.lowercased())", "Tag: \($0)") }
         }
