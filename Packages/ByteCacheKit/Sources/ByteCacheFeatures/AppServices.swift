@@ -19,6 +19,8 @@ public final class AppServices {
     public let saveQueue: SaveQueueFlusher
     /// New releases on GitHub, and What's New after an update.
     public let updates: UpdateModel
+    /// Quick Search (Mac menu bar and global shortcut) has its own list, so it doesn't disturb the window's.
+    public let quickSearch: QuickSearchModel
 
     public init(
         store: any CredentialStore = AppEnvironment.makeCredentialStore(),
@@ -37,6 +39,7 @@ public final class AppServices {
         self.settings = settings
         self.lock = lock
         widgets = WidgetSnapshotWriter(session: session)
+        quickSearch = QuickSearchModel(list: SnippetListModel(session: session, cache: cache))
         saveQueue = SaveQueueFlusher(session: session, queue: pendingSaves)
         updates = UpdateModel(settings: settings, checker: Self.makeUpdateChecker())
         lock.appDidLaunch()

@@ -52,7 +52,7 @@ public struct SnippetListView: View {
         .modifier(OptionalSearch(enabled: showsSearchField, model: model))
         .onChange(of: model.searchText) { model.searchTextChanged() }
         .refreshable { await model.refresh() }
-        .navigationTitle(model.selection.title)
+        .navigationTitle(model.title)
         .toolbar {
             if !model.isReadOnly && !model.snippets.isEmpty {
                 ToolbarItem {
@@ -92,7 +92,13 @@ public struct SnippetListView: View {
         if let saveQueue, saveQueue.pendingCount > 0, model.selection == .all, !model.isSelecting {
             Section { PendingSavesRow(flusher: saveQueue) }
         }
-        if model.pinnedSection.isEmpty {
+        if model.showsCloseMatches {
+            Section {
+                ForEach(model.snippets) { row($0) }
+            } header: {
+                Text("No exact matches. Close matches:")
+            }
+        } else if model.pinnedSection.isEmpty {
             ForEach(model.snippets) { row($0) }
         } else {
             Section {
@@ -107,7 +113,7 @@ public struct SnippetListView: View {
     }
 
     private func row(_ snippet: Snippet) -> some View {
-        SnippetRow(snippet: snippet, showOwner: model.isReadOnly, search: model.searchText, searchCode: model.searchCode)
+        SnippetRow(snippet: snippet, showOwner: model.isReadOnly, search: model.parsedSearch.text, searchCode: model.searchCode)
             .tag(snippet.id)
             .task { await model.loadMoreIfNeeded(current: snippet) }
             .contextMenu { SnippetActions(snippet: snippet, model: model) }
@@ -212,6 +218,7 @@ private struct OptionalSearch: ViewModifier {
         if enabled {
             content
                 .searchable(text: $model.searchText, prompt: "Search snippets")
+                .snippetSearchSuggestions(model)
                 .modifier(SearchFocus(request: model.searchFocusRequest))
         } else {
             content
@@ -283,6 +290,17 @@ struct BulkActionBar: View {
             }
         } message: {
             Text("For the \(model.selectedIDs.count) selected snippets.")
+        }
+    }
+}
+
+extension View {
+    /// Filter and value suggestions (`lang:`, `#tag`, `is:pinned`…) under the search field.
+    public func snippetSearchSuggestions(_ model: SnippetListModel) -> some View {
+        searchSuggestions {
+            ForEach(model.searchSuggestions) { suggestion in
+                Text(suggestion.title).searchCompletion(suggestion.completion)
+            }
         }
     }
 }

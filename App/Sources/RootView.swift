@@ -69,7 +69,7 @@ struct RootView: View {
             }
         }
         .onChange(of: services.session.state) {
-            if case .signedIn = services.session.state { return }
+            // Signing in refreshes too, so a first load that fails shows up in the widget.
             Task { await services.widgets.refresh() }
         }
         .onContinueUserActivity(SnippetActivity.type) { activity in

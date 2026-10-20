@@ -32,15 +32,19 @@ public final class WidgetSnapshotWriter {
             reload()
             return
         }
+        let name = client.server.base.host() ?? client.server.base.absoluteString
         do {
             let pinned = try await client.snippets(SnippetQuery(pinned: true, limit: Self.rowsPerList)).snippets
             let recent = try await client.snippets(SnippetQuery(limit: Self.rowsPerList)).snippets
-            let name = client.server.base.host() ?? client.server.base.absoluteString
             try store.write(WidgetSnapshot(serverName: name, pinned: pinned.map(WidgetSnippet.init),
                                            recent: recent.map(WidgetSnippet.init)))
             reload()
         } catch {
-            // Offline or server trouble: widgets keep the last snapshot.
+            // Offline or server trouble: widgets keep the last snapshot of this server. With none,
+            // they say so instead of asking to sign in.
+            if let last = store.read(), last.serverName == name, last.problem == nil { return }
+            try? store.write(WidgetSnapshot(serverName: name, pinned: [], recent: [], problem: "Can't reach \(name)"))
+            reload()
         }
     }
 }

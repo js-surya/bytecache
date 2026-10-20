@@ -41,8 +41,27 @@ final class WidgetWriterTests: XCTestCase {
     func testOfflineKeepsLastSnapshot() async throws {
         let (session, _) = await TestSession.signedIn([.failure(URLError(.notConnectedToInternet))])
         let target = store()
-        try target.write(WidgetSnapshot(serverName: "kept", pinned: [], recent: []))
+        let kept = WidgetSnippet(Snippet(id: 7, title: "Kept", description: "", updatedAt: nil, expiryDate: nil, isPublic: false,
+                                         isPinned: false, isFavorite: false, categories: [], fragments: [], shareCount: 0))
+        try target.write(WidgetSnapshot(serverName: "x.io", pinned: [], recent: [kept]))
         await WidgetSnapshotWriter(session: session, store: target, reload: {}).refresh()
-        XCTAssertEqual(target.read()?.serverName, "kept")
+        XCTAssertEqual(target.read()?.recent.map(\.title), ["Kept"])
+        XCTAssertNil(target.read()?.problem)
+    }
+
+    /// CP-42: signed in but nothing loaded yet → the widget says the server can't be reached, not "sign in".
+    func testOfflineWithNoSnapshotRecordsTheProblem() async {
+        let (session, _) = await TestSession.signedIn([.failure(URLError(.notConnectedToInternet))])
+        let target = store()
+        var reloads = 0
+        await WidgetSnapshotWriter(session: session, store: target, reload: { reloads += 1 }).refresh()
+        XCTAssertEqual(target.read()?.problem, "Can't reach x.io")
+        XCTAssertEqual(target.read()?.recent, [])
+        XCTAssertEqual(reloads, 1)
+    }
+
+    func testSnapshotsFromEarlierVersionsStillDecode() throws {
+        let old = #"{"serverName":"x.io","pinned":[],"recent":[],"updatedAt":0}"#
+        XCTAssertNil(try JSONDecoder().decode(WidgetSnapshot.self, from: Data(old.utf8)).problem)
     }
 }
