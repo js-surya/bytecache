@@ -113,6 +113,8 @@ public struct FragmentCard: View {
         .controlSize(.small)
         .fixedSize()
         .help("Share as Image")
+        // The icon-only label isn't spoken on its own; give the button its name.
+        .accessibilityLabel("Share as Image")
     }
 
     private func copyButton(iconOnly: Bool) -> some View {
