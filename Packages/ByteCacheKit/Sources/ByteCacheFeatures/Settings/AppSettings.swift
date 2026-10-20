@@ -68,6 +68,11 @@ public final class AppSettings {
     public var showLineNumbers: Bool { didSet { defaults.set(showLineNumbers, forKey: Key.lineNumbers) } }
     /// Long lines wrap in the code view instead of scrolling sideways.
     public var wrapLines: Bool { didSet { defaults.set(wrapLines, forKey: Key.wrapLines) } }
+    /// Mac, device-only: Quick Search in the menu bar, and its global keyboard shortcut.
+    public var quickSearchInMenuBar: Bool { didSet { defaults.set(quickSearchInMenuBar, forKey: Key.quickSearchMenuBar) } }
+    public var quickSearchShortcut: QuickSearchShortcut {
+        didSet { defaults.set(quickSearchShortcut.rawValue, forKey: Key.quickSearchShortcut) }
+    }
     /// Saved rule-based groups, shown in the sidebar.
     public var smartGroups: [SmartGroup] {
         didSet { defaults.set(try? JSONEncoder().encode(smartGroups), forKey: Key.smartGroups) }
@@ -109,6 +114,7 @@ public final class AppSettings {
         static let appearance = "appearance", accent = "accent", codeThemeID = "codeThemeID", iconStyle = "iconStyle", searchInCode = "searchInCode"
         static let languageIconStyle = "languageIconStyle"
         static let fontSize = "codeFontSize", lineNumbers = "showLineNumbers", wrapLines = "wrapLines", smartGroups = "smartGroups"
+        static let quickSearchMenuBar = "quickSearchInMenuBar", quickSearchShortcut = "quickSearchShortcut"
         static let iCloudSync = "iCloudSyncEnabled", handoff = "handoffEnabled", suggestions = "suggestionsEnabled"
         static let haptics = "hapticsEnabled", hapticStrength = "hapticStrength"
         static let checkForUpdates = "checkForUpdates"
@@ -127,6 +133,8 @@ public final class AppSettings {
         codeFontSize = min(max(size, Self.fontSizes.lowerBound), Self.fontSizes.upperBound)
         showLineNumbers = defaults.object(forKey: Key.lineNumbers) as? Bool ?? true
         wrapLines = defaults.bool(forKey: Key.wrapLines)
+        quickSearchInMenuBar = defaults.object(forKey: Key.quickSearchMenuBar) as? Bool ?? true
+        quickSearchShortcut = defaults.string(forKey: Key.quickSearchShortcut).flatMap(QuickSearchShortcut.init) ?? .controlOptionSpace
         smartGroups = defaults.data(forKey: Key.smartGroups).flatMap { try? JSONDecoder().decode([SmartGroup].self, from: $0) } ?? []
         iCloudSyncEnabled = defaults.object(forKey: Key.iCloudSync) as? Bool ?? true
         handoffEnabled = defaults.object(forKey: Key.handoff) as? Bool ?? true
