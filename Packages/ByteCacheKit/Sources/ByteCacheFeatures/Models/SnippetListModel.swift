@@ -19,6 +19,14 @@ public final class SnippetListModel {
     /// Languages and tags in the library, for search suggestions. Set by the view that owns the sidebar.
     public var knownLanguages: [String] = []
     public var knownCategories: [String] = []
+    /// Smart Group definitions (from `AppSettings`). Set by the view that owns the sidebar.
+    public var smartGroups: [SmartGroup] = []
+
+    /// The list's title: the selected sidebar item, or the Smart Group's name.
+    public var title: String {
+        if case .smartGroup(let id) = selection { return smartGroups.first { $0.id == id }?.name ?? "Smart Group" }
+        return selection.title
+    }
     public private(set) var isOffline = false
     public private(set) var isLoading = false
     public var error: String?
@@ -182,7 +190,7 @@ public final class SnippetListModel {
         q.searchCode = searchCode
         q.sort = sort
         switch selection {
-        case .all, .mostUsed, .publicSnippets: break
+        case .all, .mostUsed, .publicSnippets, .smartGroup: break
         case .pinned: q.pinned = true
         case .favorites: q.favorites = true
         case .recycleBin: q.recycled = true
@@ -223,6 +231,10 @@ public final class SnippetListModel {
         defer { if current == generation { isLoading = false } }
         if selection == .mostUsed {
             await loadMostUsed(client: client, generation: current)
+            return
+        }
+        if case .smartGroup(let id) = selection {
+            await loadSmartGroup(id, query: q, client: client, generation: current)
             return
         }
         do {
@@ -362,6 +374,61 @@ public final class SnippetListModel {
         }
         hasMore = false
         error = nil
+    }
+
+    /// Smart Groups are filtered on the device: every snippet (paged from the server, or the
+    /// offline cache) that matches the group's rules and the typed search.
+    private func loadSmartGroup(_ id: UUID, query q: SnippetQuery, client: APIClient, generation current: Int) async {
+        guard let group = smartGroups.first(where: { $0.id == id }) else {
+            snippets = []
+            hasMore = false
+            return
+        }
+        var all: [Snippet] = []
+        var base = SnippetQuery(sort: sort, limit: 100)
+        do {
+            repeat {
+                base.offset = all.count
+                let page = try await client.snippets(base)
+                all += page.snippets
+                cache?.store(page.snippets, server: client.server)
+                if !page.hasMore || page.snippets.isEmpty { break }
+            } while all.count < Self.smartGroupLimit
+            isOffline = false
+        } catch .unauthorized {
+            session.handleUnauthorized()
+            return
+        } catch {
+            isOffline = true
+            all = cache?.all(server: client.server, matching: SnippetQuery()) ?? []
+        }
+        guard current == generation else { return }
+        snippets = arranged(all.filter { snippet in
+            group.matches(snippet) && Self.matches(snippet, q)
+        })
+        hasMore = false
+        error = nil
+    }
+
+    /// Most snippets a Smart Group loads from the server.
+    static let smartGroupLimit = 2000
+
+    /// The typed search and filters, applied on the device (for Smart Groups).
+    private static func matches(_ snippet: Snippet, _ q: SnippetQuery) -> Bool {
+        if let language = q.language, !snippet.fragments.contains(where: { $0.language.caseInsensitiveCompare(language) == .orderedSame }) {
+            return false
+        }
+        for tag in q.categories where !snippet.categories.contains(where: { $0.caseInsensitiveCompare(tag) == .orderedSame }) {
+            return false
+        }
+        if q.pinned && !snippet.isPinned { return false }
+        if q.favorites && !snippet.isFavorite { return false }
+        if let text = q.search {
+            let inText = snippet.title.localizedCaseInsensitiveContains(text) || snippet.description.localizedCaseInsensitiveContains(text)
+            let inCode = q.searchCode && snippet.fragments.contains { $0.code.localizedCaseInsensitiveContains(text) }
+            if !inText && !inCode { return false }
+        }
+        return true
     }
 
     private func mutate(

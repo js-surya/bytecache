@@ -26,7 +26,7 @@ TABLE = [
     ("closeCircle", "xmark.circle.fill", "circle-x"), ("offline", "wifi.slash", "wifi-off"),
     ("tray", "tray", "inbox"), ("allSnippets", "tray.full", "library"),
     ("textSmaller", "textformat.size.smaller", "a-arrow-down"), ("textLarger", "textformat.size.larger", "a-arrow-up"),
-    ("wrapLines", "arrow.turn.down.left", "wrap-text"),
+    ("wrapLines", "arrow.turn.down.left", "wrap-text"), ("smartGroup", "folder.badge.gearshape", "folder-cog"),
     ("noText", "text.badge.xmark", "file-x"), ("tag", "tag", "tag"),
     ("star", "star", "star"), ("starFill", "star.fill", "star:fill"), ("starOff", "star.slash", "star-off"),
     ("newSnippet", "square.and.pencil", "square-pen"), ("share", "square.and.arrow.up", "share"), ("download", "square.and.arrow.down", "download"),

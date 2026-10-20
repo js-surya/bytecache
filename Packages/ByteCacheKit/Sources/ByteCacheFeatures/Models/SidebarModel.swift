@@ -6,6 +6,8 @@ public enum SidebarItem: Hashable, Sendable {
     case all, pinned, favorites, mostUsed, publicSnippets, recycleBin
     case language(String)
     case category(String)
+    /// A Smart Group, by id (its definition lives in `AppSettings.smartGroups`).
+    case smartGroup(UUID)
 
     public var title: String {
         switch self {
@@ -17,6 +19,7 @@ public enum SidebarItem: Hashable, Sendable {
         case .recycleBin: "Recycle Bin"
         case .language(let id): id
         case .category(let name): name
+        case .smartGroup: "Smart Group"
         }
     }
 
@@ -30,6 +33,7 @@ public enum SidebarItem: Hashable, Sendable {
         case .recycleBin: .trash
         case .language: .code
         case .category: .tag
+        case .smartGroup: .smartGroup
         }
     }
 }

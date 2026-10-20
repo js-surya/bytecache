@@ -52,7 +52,7 @@ public struct SnippetListView: View {
         .modifier(OptionalSearch(enabled: showsSearchField, model: model))
         .onChange(of: model.searchText) { model.searchTextChanged() }
         .refreshable { await model.refresh() }
-        .navigationTitle(model.selection.title)
+        .navigationTitle(model.title)
         .toolbar {
             if !model.isReadOnly && !model.snippets.isEmpty {
                 ToolbarItem {

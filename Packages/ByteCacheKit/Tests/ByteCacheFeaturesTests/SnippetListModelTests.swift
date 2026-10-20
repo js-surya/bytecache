@@ -362,3 +362,35 @@ final class SearchFilterTests: XCTestCase {
         XCTAssertEqual(model.snippets.map(\.title), ["CSV Reader"])
     }
 }
+
+/// CP-47: Smart Groups load every snippet and filter on the device.
+@MainActor
+final class SmartGroupListTests: XCTestCase {
+    func testLoadsAllPagesAndFiltersByTheRules() async {
+        let first = TestJSON.page([TestJSON.snippet(1, title: "Shell tip", language: "bash"),
+                                   TestJSON.snippet(2, title: "CSV reader", language: "python")], total: 3, limit: 2)
+        let second = TestJSON.page([TestJSON.snippet(3, title: "Python setup", language: "python")], total: 3, offset: 2)
+        let (session, transport) = await TestSession.signedIn([.json(first), .json(second), .json(first), .json(second)])
+        let model = SnippetListModel(session: session, cache: nil)
+        let group = SmartGroup(name: "Python", rules: [SmartRule(field: .language, value: "python")])
+        model.smartGroups = [group]
+        model.selection = .smartGroup(group.id)
+        await model.refresh()
+        XCTAssertEqual(Set(model.snippets.map(\.id)), [2, 3])
+        XCTAssertEqual(model.title, "Python")
+        XCTAssertEqual(transport.requests.compactMap { $0.url?.path }.filter { $0 == "/api/snippets" }.count, 2)
+
+        model.searchText = "csv"
+        await model.refresh()
+        XCTAssertEqual(model.snippets.map(\.id), [2])
+    }
+
+    func testMissingGroupShowsNothing() async {
+        let (session, _) = await TestSession.signedIn([])
+        let model = SnippetListModel(session: session, cache: nil)
+        model.selection = .smartGroup(UUID())
+        await model.refresh()
+        XCTAssertEqual(model.snippets, [])
+        XCTAssertEqual(model.title, "Smart Group")
+    }
+}
