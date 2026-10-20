@@ -40,19 +40,58 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
     /// Signed in but the snippets couldn't be loaded (e.g. "Can't reach the server"). Optional: absent
     /// in snapshots written by earlier versions.
     public var problem: String?
+    /// What a configurable widget can show (Edit Widget), and the snippets for each, by source id.
+    /// Optional: absent in snapshots written by earlier versions.
+    public var sources: [WidgetSource]?
+    public var lists: [String: [WidgetSnippet]]?
 
     public init(serverName: String, pinned: [WidgetSnippet], recent: [WidgetSnippet], updatedAt: Date = Date(),
-                problem: String? = nil) {
+                problem: String? = nil, sources: [WidgetSource]? = nil, lists: [String: [WidgetSnippet]]? = nil) {
         self.serverName = serverName
         self.pinned = pinned
         self.recent = recent
         self.updatedAt = updatedAt
         self.problem = problem
+        self.sources = sources
+        self.lists = lists
     }
 
     public func snippet(id: Int) -> WidgetSnippet? {
-        (pinned + recent).first { $0.id == id }
+        (pinned + recent + (lists ?? [:]).values.flatMap { $0 }).first { $0.id == id }
     }
+
+    /// The snippets for one source.
+    public func list(for source: WidgetSource) -> [WidgetSnippet] {
+        switch source.kind {
+        case .recent: recent
+        case .pinned: pinned
+        default: lists?[source.id] ?? []
+        }
+    }
+}
+
+/// What a configurable widget shows: recent, pinned or favorite snippets, a Smart Group, a tag or a language.
+public struct WidgetSource: Codable, Hashable, Identifiable, Sendable {
+    public enum Kind: String, Codable, Sendable {
+        case recent, pinned, favorites, smartGroup, tag, language
+    }
+
+    public var kind: Kind
+    /// The Smart Group id, tag or language; empty for the fixed lists.
+    public var value: String
+    public var title: String
+
+    public var id: String { "\(kind.rawValue):\(value)" }
+
+    public init(kind: Kind, value: String = "", title: String) {
+        self.kind = kind
+        self.value = value
+        self.title = title
+    }
+
+    public static let recent = WidgetSource(kind: .recent, title: "Recent")
+    public static let pinned = WidgetSource(kind: .pinned, title: "Pinned")
+    public static let favorites = WidgetSource(kind: .favorites, title: "Favorites")
 }
 
 /// What the widget can see of the app's data.
@@ -135,6 +174,7 @@ public struct WidgetSnapshotStore: Sendable {
             var compact = snapshot
             compact.pinned = snapshot.pinned.map { $0.capped(Self.keychainCodeLimit) }
             compact.recent = snapshot.recent.map { $0.capped(Self.keychainCodeLimit) }
+            compact.lists = snapshot.lists?.mapValues { $0.map { $0.capped(Self.keychainCodeLimit) } }
             let status = blob.write(try JSONEncoder().encode(compact))
             guard status == errSecSuccess else { throw KeychainBlobError(status: status) }
         }
@@ -157,7 +197,7 @@ public struct KeychainBlobError: Error, Equatable {
 
 extension WidgetSnippet {
     /// The same snippet with its code cut to `limit` characters.
-    func capped(_ limit: Int) -> WidgetSnippet {
+    public func capped(_ limit: Int) -> WidgetSnippet {
         WidgetSnippet(id: id, title: title, language: language, preview: preview, code: String(code.prefix(limit)))
     }
 }
