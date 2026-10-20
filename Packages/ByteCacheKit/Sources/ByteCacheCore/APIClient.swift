@@ -229,7 +229,12 @@ extension APIClient {
             if contentType.contains("text/html") { throw .notByteStash }
             return data
         case 401: throw .unauthorized
-        case 403: throw .forbidden(Self.message(in: data))
+        case 403:
+            // ByteStash answers 403 "Invalid token" for an expired or no-longer-valid session token
+            // (e.g. after the server restarts with a new secret): that's a sign-in problem, like 401.
+            let message = Self.message(in: data)
+            if let message, message.localizedCaseInsensitiveContains("token") { throw .unauthorized }
+            throw .forbidden(message)
         case 404: throw .notFound
         default: throw .server(status: http.statusCode, message: Self.message(in: data))
         }

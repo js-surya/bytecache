@@ -394,3 +394,17 @@ final class SmartGroupListTests: XCTestCase {
         XCTAssertEqual(model.title, "Smart Group")
     }
 }
+
+/// CP-51: a session token the server no longer accepts sends you to sign-in instead of an error.
+@MainActor
+final class InvalidTokenTests: XCTestCase {
+    func testInvalidTokenSignsOut() async {
+        let (session, _) = await TestSession.signedIn([.response(status: 403, body: #"{"error":"Invalid token"}"#, contentType: "application/json")])
+        let model = SnippetListModel(session: session, cache: nil)
+        model.selection = .category("generation")
+        await model.refresh()
+        XCTAssertNil(model.error)
+        guard case .needsLogin = session.state else { return XCTFail("expected sign-in, got \(session.state)") }
+        XCTAssertTrue(session.sessionExpired)
+    }
+}
