@@ -8,8 +8,12 @@ public struct SnippetRow: View {
     var search = ""
     /// Whether the search looks inside code, so the preview can show the matching line.
     var searchCode = false
+    /// When the snippet expires, for a countdown.
+    var expiry: Date?
 
-    public init(snippet: Snippet, showOwner: Bool = false, search: String = "", searchCode: Bool = false) {
+    public init(snippet: Snippet, showOwner: Bool = false, search: String = "", searchCode: Bool = false,
+                expiry: Date? = nil) {
+        self.expiry = expiry
         self.snippet = snippet
         self.showOwner = showOwner
         self.search = search
@@ -89,6 +93,7 @@ public struct SnippetRow: View {
                     Text("#\(category)").font(.caption2).foregroundStyle(.secondary)
                 }
                 if !typeSize.isAccessibilitySize { Spacer(minLength: 0) }
+                if let expiry { ExpiryBadge(date: expiry, compact: true) }
                 if let date = snippet.updatedAt {
                     Text(date, format: .relative(presentation: .named))
                         .font(.caption2).foregroundStyle(.tertiary)

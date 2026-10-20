@@ -73,6 +73,10 @@ public final class AppSettings {
     public var quickSearchShortcut: QuickSearchShortcut {
         didSet { defaults.set(quickSearchShortcut.rawValue, forKey: Key.quickSearchShortcut) }
     }
+    /// When snippets expire (ByteStash doesn't store this), per server and snippet.
+    public var snippetExpiries: SnippetExpiries {
+        didSet { defaults.set(try? JSONEncoder().encode(snippetExpiries), forKey: Key.snippetExpiries) }
+    }
     /// Saved rule-based groups, shown in the sidebar.
     public var smartGroups: [SmartGroup] {
         didSet { defaults.set(try? JSONEncoder().encode(smartGroups), forKey: Key.smartGroups) }
@@ -115,6 +119,7 @@ public final class AppSettings {
         static let languageIconStyle = "languageIconStyle"
         static let fontSize = "codeFontSize", lineNumbers = "showLineNumbers", wrapLines = "wrapLines", smartGroups = "smartGroups"
         static let quickSearchMenuBar = "quickSearchInMenuBar", quickSearchShortcut = "quickSearchShortcut"
+        static let snippetExpiries = "snippetExpiries"
         static let iCloudSync = "iCloudSyncEnabled", handoff = "handoffEnabled", suggestions = "suggestionsEnabled"
         static let haptics = "hapticsEnabled", hapticStrength = "hapticStrength"
         static let checkForUpdates = "checkForUpdates"
@@ -135,6 +140,8 @@ public final class AppSettings {
         wrapLines = defaults.bool(forKey: Key.wrapLines)
         quickSearchInMenuBar = defaults.object(forKey: Key.quickSearchMenuBar) as? Bool ?? true
         quickSearchShortcut = defaults.string(forKey: Key.quickSearchShortcut).flatMap(QuickSearchShortcut.init) ?? .controlOptionSpace
+        snippetExpiries = defaults.data(forKey: Key.snippetExpiries)
+            .flatMap { try? JSONDecoder().decode(SnippetExpiries.self, from: $0) } ?? SnippetExpiries()
         smartGroups = defaults.data(forKey: Key.smartGroups).flatMap { try? JSONDecoder().decode([SmartGroup].self, from: $0) } ?? []
         iCloudSyncEnabled = defaults.object(forKey: Key.iCloudSync) as? Bool ?? true
         handoffEnabled = defaults.object(forKey: Key.handoff) as? Bool ?? true
@@ -155,7 +162,7 @@ public final class AppSettings {
         SyncedSettings(appearance: appearance, accent: accent, codeThemeID: codeThemeID,
                        codeFontSize: codeFontSize, showLineNumbers: showLineNumbers, iconStyle: iconStyle,
                        searchInCode: searchInCode, languageIconStyle: languageIconStyle, wrapLines: wrapLines,
-                       smartGroups: smartGroups)
+                       smartGroups: smartGroups, snippetExpiries: snippetExpiries)
     }
 
     public func apply(_ remote: SyncedSettings) {
@@ -169,6 +176,7 @@ public final class AppSettings {
         if let style = remote.languageIconStyle, languageIconStyle != style { languageIconStyle = style }
         if let wrap = remote.wrapLines, wrapLines != wrap { wrapLines = wrap }
         if let groups = remote.smartGroups, smartGroups != groups { smartGroups = groups }
+        if let expiries = remote.snippetExpiries, snippetExpiries != expiries { snippetExpiries = expiries }
     }
 }
 
@@ -197,11 +205,12 @@ public struct SyncedSettings: Codable, Equatable, Sendable {
     public var languageIconStyle: LanguageIconStyle?
     public var wrapLines: Bool?
     public var smartGroups: [SmartGroup]?
+    public var snippetExpiries: SnippetExpiries?
 
     public init(appearance: AppAppearance, accent: AccentChoice, codeThemeID: String, codeFontSize: Double,
                 showLineNumbers: Bool, iconStyle: IconStyle? = nil, searchInCode: Bool? = nil,
                 languageIconStyle: LanguageIconStyle? = nil, wrapLines: Bool? = nil,
-                smartGroups: [SmartGroup]? = nil) {
+                smartGroups: [SmartGroup]? = nil, snippetExpiries: SnippetExpiries? = nil) {
         self.appearance = appearance
         self.accent = accent
         self.codeThemeID = codeThemeID
@@ -212,6 +221,7 @@ public struct SyncedSettings: Codable, Equatable, Sendable {
         self.languageIconStyle = languageIconStyle
         self.wrapLines = wrapLines
         self.smartGroups = smartGroups
+        self.snippetExpiries = snippetExpiries
     }
 }
 

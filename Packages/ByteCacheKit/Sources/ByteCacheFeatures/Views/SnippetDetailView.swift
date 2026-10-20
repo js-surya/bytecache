@@ -63,6 +63,9 @@ public struct SnippetDetailView: View {
                             if snippet.isPublic { StatusChip(title: "Public", symbol: .globe, color: .blue) }
                         }
                     }
+                    if let expiry = settings.expiry(of: snippet, server: list?.session.client?.server) {
+                        ExpiryBadge(date: expiry)
+                    }
                     if readOnly, let owner = snippet.username {
                         Text("Shared publicly by \(owner)").font(.subheadline).foregroundStyle(.secondary)
                     }

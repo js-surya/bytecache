@@ -31,6 +31,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case wrapLines
     case smartGroup
     case image
+    case timer
     case noText
     case tag
     case star
@@ -115,6 +116,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .wrapLines: "arrow.turn.down.left"
         case .smartGroup: "folder.badge.gearshape"
         case .image: "photo"
+        case .timer: "timer"
         case .noText: "text.badge.xmark"
         case .tag: "tag"
         case .star: "star"
@@ -201,6 +203,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .wrapLines: "wrap-text"
         case .smartGroup: "folder-cog"
         case .image: "image"
+        case .timer: "timer"
         case .noText: "file-x"
         case .tag: "tag"
         case .star: "star"

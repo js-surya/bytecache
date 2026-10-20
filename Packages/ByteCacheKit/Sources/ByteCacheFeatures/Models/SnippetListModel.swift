@@ -313,6 +313,32 @@ public final class SnippetListModel {
         }
     }
 
+    /// Moves an expired snippet to the Recycle Bin. True when it's done (or the snippet is already gone).
+    public func recycleExpired(id: Int) async -> Bool {
+        guard let client = session.client else { return false }
+        if let snippet = snippets.first(where: { $0.id == id }) {
+            snippets.removeAll { $0.id == id }
+            do {
+                try await client.recycle(id: id)
+            } catch .notFound {
+                return true
+            } catch {
+                snippets = arranged(snippets + [snippet])
+                return false
+            }
+        } else {
+            do {
+                try await client.recycle(id: id)
+            } catch .notFound {
+                return true
+            } catch {
+                return false
+            }
+        }
+        if let fresh = try? await client.snippet(id: id) { cache?.upsert(fresh, server: client.server) }
+        return true
+    }
+
     public func recycle(_ snippet: Snippet) async {
         await removeRow(snippet) { client throws(APIError) in try await client.recycle(id: snippet.id) }
     }

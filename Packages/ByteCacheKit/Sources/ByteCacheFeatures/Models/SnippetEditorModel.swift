@@ -15,6 +15,8 @@ public final class SnippetEditorModel {
 
     public let existingID: Int?
     public var isNew: Bool { existingID == nil }
+    /// The server the snippet is saved to.
+    public var server: ServerURL? { session.client?.server }
 
     /// Fragment indexes whose language the user chose (or that came from the server); detection leaves them alone.
     @ObservationIgnored private var pinnedLanguages: Set<Int>
