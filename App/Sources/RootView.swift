@@ -103,6 +103,8 @@ struct RootView: View {
                     }
                 }
             }
+            // `-BCExpireSession`: the server stops accepting the login, as when a session expires.
+            if ProcessInfo.processInfo.arguments.contains("-BCExpireSession") { services.session.debugExpireSession() }
             // `-BCOpenSnippet <id>`: open a snippet once signed in (screenshots).
             if let i = ProcessInfo.processInfo.arguments.firstIndex(of: "-BCOpenSnippet"),
                ProcessInfo.processInfo.arguments.indices.contains(i + 1),

@@ -58,6 +58,9 @@ final class APIClientTests: XCTestCase {
         XCTAssertEqual(unauthorized, .unauthorized)
         let forbidden = await error(StubTransport(status: 403, body: #"{"error":"Account has been deactivated"}"#))
         XCTAssertEqual(forbidden, .forbidden("Account has been deactivated"))
+        // CP-51: an expired or invalid session token is a sign-in problem, not a refusal.
+        let expired = await error(StubTransport(status: 403, body: #"{"error":"Invalid token"}"#))
+        XCTAssertEqual(expired, .unauthorized)
         let notFound = await error(StubTransport(status: 404, body: "{}"))
         XCTAssertEqual(notFound, .notFound)
         let failure = await error(StubTransport(status: 500, body: #"{"error":"Internal server error"}"#))

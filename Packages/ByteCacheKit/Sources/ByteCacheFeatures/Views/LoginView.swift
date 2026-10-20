@@ -91,6 +91,8 @@ public struct LoginView: View {
             } footer: {
                 if let error = model.errorMessage {
                     Text(error).foregroundStyle(.red)
+                } else if model.session.sessionExpired {
+                    Text("Your session expired. Sign in again to continue.").foregroundStyle(.orange)
                 } else if model.method == .apiKey {
                     Text("Create a key in ByteStash under Settings → API Keys. It's kept in the Keychain on this device.")
                 }

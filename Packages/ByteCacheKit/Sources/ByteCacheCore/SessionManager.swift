@@ -15,7 +15,11 @@ public final class SessionManager {
     /// Shown as the user name for API-key logins; ByteStash has no "who am I" for keys.
     public nonisolated static let apiKeyUserName = "API key"
 
-    public private(set) var state: State = .needsServer
+    public private(set) var state: State = .needsServer {
+        didSet { if case .signedIn = state { sessionExpired = false } }
+    }
+    /// The server stopped accepting the saved login while the app was open; sign-in says so.
+    public private(set) var sessionExpired = false
     /// Every saved server, in the order they were added.
     public private(set) var accounts: [Credentials] = []
     public var activeAccountID: UUID? { credentials?.id }
@@ -115,9 +119,21 @@ public final class SessionManager {
     }
 
     /// Call when any request returns 401; signs out cleanly and shows login.
+    #if DEBUG
+    /// Debug: swaps the login for a session token the server no longer accepts, to show what an
+    /// expired session looks like (`-BCExpireSession`).
+    public func debugExpireSession() {
+        guard case .signedIn = state, var current = credentials else { return }
+        current.apiKey = nil
+        current.token = "expired.session.token"
+        credentials = current
+    }
+    #endif
+
     public func handleUnauthorized() {
         guard case .signedIn = state else { return }
-        AppLog.shared.record("session", "server rejected the login (401); showing sign-in")
+        AppLog.shared.record("session", "server rejected the login (401 or invalid token); showing sign-in")
+        sessionExpired = true
         dropToLogin()
     }
 
