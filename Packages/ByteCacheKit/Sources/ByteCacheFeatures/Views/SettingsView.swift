@@ -349,7 +349,7 @@ struct AppearanceSettingsView: View {
             } header: {
                 Text("Language Icons")
             } footer: {
-                Text("Shown next to languages in the sidebar, snippet lists, files and the language picker. Logos from Devicon; trademarks belong to their owners.")
+                Text("Shown next to languages in the sidebar, snippet lists, files and the language picker. Logos from Devicon; where a logo is black or missing, Colour uses the language's colour from GitHub Linguist. Trademarks belong to their owners.")
             }
             Section("Accent Color") {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 14) {
@@ -550,6 +550,16 @@ struct AboutView: View {
                                 .padding()
                         }
                         .navigationTitle("Devicon Licence")
+                    }
+                    NavigationLink("Language colours from GitHub Linguist — MIT License, © 2017 GitHub, Inc.; brand colours from Simple Icons (CC0).") {
+                        ScrollView {
+                            Text(Bundle.module.url(forResource: "LINGUIST-LICENSE", withExtension: "txt")
+                                .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "")
+                                .font(.footnote.monospaced())
+                                .textSelection(.enabled)
+                                .padding()
+                        }
+                        .navigationTitle("Linguist Licence")
                     }
                     Text("Dracula, Monokai, Nord, Gruvbox, Night Owl and Catppuccin colour palettes by their respective authors (MIT).")
                 Text("The GitHub mark is a trademark of GitHub, Inc., used to link to GitHub.")
