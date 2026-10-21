@@ -14,7 +14,9 @@ derived="build/release"
 rm -rf "$dist" "$derived"
 mkdir -p "$dist"
 
-common=(CURRENT_PROJECT_VERSION="$build" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="")
+# TIP_LINKS: GitHub builds include the Ko-fi link; App Store archives never set it (guideline 3.1.1).
+common=(CURRENT_PROJECT_VERSION="$build" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
+        'SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) TIP_LINKS')
 
 echo "▸ iOS (iPhone + iPad) $version ($build)"
 xcodebuild -scheme ByteCache -configuration Release -destination 'generic/platform=iOS' \

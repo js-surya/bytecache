@@ -33,3 +33,4 @@ ByteCache ("Cache the bytes"; renamed from ByteCatch in CP-18 because of a name 
 - Auth header `bytestashauth: Bearer <jwt>`. Snippet PUT replaces everything — always send all fields incl. `is_public`.
 - Test server `https://bytestash-demo.pikapod.net` (`demo`/`demodemo`) is public: no real code.
 - Signing: copy `Config/Signing.xcconfig.example` → `Config/Signing.xcconfig` and set your Team ID.
+- Ko-fi link: compiled only with `TIP_LINKS` (Debug builds, and `scripts/package-release.sh` for GitHub). App Store/TestFlight archives must never set it: outside tip links break guideline 3.1.1.
