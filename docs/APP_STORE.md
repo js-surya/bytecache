@@ -13,11 +13,12 @@ ByteCache is an unofficial client for ByteStash (github.com/jordan-dalby/ByteSta
 ## Review notes (paste into App Store Connect)
 > ByteCache connects to a self-hosted ByteStash server. To review, tap "Try the demo server" on the first screen; it signs in to the public demo at https://bytestash-demo.pikapod.net (username `demo`, password `demodemo`). The demo is maintained by the ByteStash community and is public, so its content is user-generated test data.
 > To test sharing: select text in Safari → Share → ByteCache → Save.
+> App Transport Security: ByteStash is self-hosted, and many people run it at home or on a private network over plain HTTP, at an address only they know. `NSAllowsArbitraryLoads` lets ByteCache reach the server the user types in; it never contacts any other HTTP host.
 
 ## Privacy
 - Privacy policy: docs/PRIVACY.md (host it, e.g. GitHub Pages, and link it in App Store Connect).
 - App Privacy questionnaire: "Data Not Collected".
-- Privacy manifests ship in the app and both extensions (`PrivacyInfo.xcprivacy`).
+- Privacy manifests ship in the app, the widgets and both share extensions (`PrivacyInfo.xcprivacy`).
 
 ## Before uploading
 1. Paid Apple Developer Program membership; set your Team in `Config/Signing.xcconfig`.

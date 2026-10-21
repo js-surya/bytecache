@@ -21,6 +21,7 @@
 		5EB3AFAD3041F834E14F1478 /* CopySnippetIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94EFFAB61EEFDFCC00528068 /* CopySnippetIntent.swift */; };
 		65D75583AB366EBAB7D1BDDD /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = C670EAA82E45A829A5652A5E /* AppIcon.icon */; };
 		6688C473BE7F774D2A5ED5BC /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA8448700FF7E78640F04C5 /* ShareViewController.swift */; };
+		6AD5F31D791485AC9D7088F0 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 7F31B6298B2F885456681F97 /* PrivacyInfo.xcprivacy */; };
 		70370D6431E5981CA063004B /* MainSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F147A1AC4A5FDB504FD181E5 /* MainSplitView.swift */; };
 		7793B779B8F7A06381211C92 /* ByteCacheFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = F4CD42BA44998DB5090517A0 /* ByteCacheFeatures */; };
 		7C57527CDB440E6F2C77A227 /* ByteCacheApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33E4BE438EFEE3536D9B0D57 /* ByteCacheApp.swift */; };
@@ -106,6 +107,7 @@
 		554D8BBFA7DFD04CF8A582DB /* ShareExtension-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ShareExtension-iOS.entitlements"; sourceTree = "<group>"; };
 		5C2EB5A5AAF63D1087909E0F /* ByteCacheUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ByteCacheUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		66F44EE4730BF764EBBB8DDD /* Widgets-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Widgets-iOS.entitlements"; sourceTree = "<group>"; };
+		7F31B6298B2F885456681F97 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		88519509BC45ABBCD838A62C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		88BB3269C865DB06121B67A3 /* ByteCache-macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ByteCache-macOS.entitlements"; sourceTree = "<group>"; };
 		902C7392FB9E4C154F9BDCE9 /* Widgets-macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Widgets-macOS.entitlements"; sourceTree = "<group>"; };
@@ -272,6 +274,7 @@
 			children = (
 				94EFFAB61EEFDFCC00528068 /* CopySnippetIntent.swift */,
 				4E4B60EE3C1DF4C3460F0580 /* Info.plist */,
+				7F31B6298B2F885456681F97 /* PrivacyInfo.xcprivacy */,
 				9410E8194624BCFCB3E8120D /* SnippetWidgets.swift */,
 				66F44EE4730BF764EBBB8DDD /* Widgets-iOS.entitlements */,
 				902C7392FB9E4C154F9BDCE9 /* Widgets-macOS.entitlements */,
@@ -315,6 +318,7 @@
 			buildConfigurationList = 159E7238D9EE44FDB594ED6B /* Build configuration list for PBXNativeTarget "Widgets" */;
 			buildPhases = (
 				DBFB76C4DBAC40097F84AC01 /* Sources */,
+				1BB2EF0E9E367BC322BA6D66 /* Resources */,
 				FAF44475C9C63D1F71721CF0 /* Frameworks */,
 			);
 			buildRules = (
@@ -467,6 +471,14 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		1BB2EF0E9E367BC322BA6D66 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6AD5F31D791485AC9D7088F0 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A5AB2CE876EE8A9CA148F985 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
