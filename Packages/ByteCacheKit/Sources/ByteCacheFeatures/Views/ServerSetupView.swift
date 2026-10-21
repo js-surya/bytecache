@@ -69,7 +69,7 @@ public struct ServerSetupView: View {
                 Text(model.savedServers.isEmpty ? "Your ByteStash server" : "Or add another server")
             } footer: {
                 if let error = model.errorMessage {
-                    Text(error).foregroundStyle(.red)
+                    Text(error).font(.footnote).foregroundStyle(.red)
                 }
             }
 

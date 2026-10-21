@@ -40,6 +40,11 @@ public struct LoginView: View {
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
+                #if os(macOS)
+                // A Mac segmented control keeps its natural width; centre it under the heading.
+                .fixedSize()
+                .frame(maxWidth: .infinity)
+                #endif
             }
             .listRowBackground(Color.clear)
             .listRowInsets(EdgeInsets())
@@ -89,13 +94,17 @@ public struct LoginView: View {
                     .buttonStyle(.borderless)
                 }
             } footer: {
-                if let error = model.errorMessage {
-                    Text(error).foregroundStyle(.red)
-                } else if model.session.sessionExpired {
-                    Text("Your session expired. Sign in again to continue.").foregroundStyle(.orange)
-                } else if model.method == .apiKey {
-                    Text("Create a key in ByteStash under Settings → API Keys. It's kept in the Keychain on this device.")
+                Group {
+                    if let error = model.errorMessage {
+                        Text(error).foregroundStyle(.red)
+                    } else if model.session.sessionExpired {
+                        Text("Your session expired. Sign in again to continue.").foregroundStyle(.orange)
+                    } else if model.method == .apiKey {
+                        Text("Create a key in ByteStash under Settings → API Keys. It's kept in the Keychain on this device.")
+                            .foregroundStyle(.secondary)
+                    }
                 }
+                .font(.footnote)
             }
 
             Section {
