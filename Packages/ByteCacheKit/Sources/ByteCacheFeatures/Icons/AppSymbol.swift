@@ -16,7 +16,6 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case warning
     case copy
     case braces
-    case appMark
     case appearance
     case code
     case checkCircle
@@ -101,7 +100,6 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .warning: "exclamationmark.triangle"
         case .copy: "doc.on.doc"
         case .braces: "curlybraces"
-        case .appMark: "curlybraces.square.fill"
         case .appearance: "circle.lefthalf.filled"
         case .code: "chevron.left.forwardslash.chevron.right"
         case .checkCircle: "checkmark.circle.fill"
@@ -188,7 +186,6 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .warning: "triangle-alert"
         case .copy: "copy"
         case .braces: "braces"
-        case .appMark: "braces"
         case .appearance: "contrast"
         case .code: "code-xml"
         case .checkCircle: "circle-check"

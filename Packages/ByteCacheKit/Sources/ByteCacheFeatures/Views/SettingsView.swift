@@ -568,12 +568,7 @@ struct AboutView: View {
 private struct AboutFooter: View {
     var body: some View {
         VStack(spacing: 10) {
-            Image("about-app-icon", bundle: .module)
-                .resizable()
-                .frame(width: 64, height: 64)
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
-                .accessibilityHidden(true)
+            AppIconImage(size: 64)
             VStack(spacing: 2) {
                 Text(AboutText.appName).font(.headline)
                 Text(AboutText.tagline).font(.subheadline).foregroundStyle(.secondary)

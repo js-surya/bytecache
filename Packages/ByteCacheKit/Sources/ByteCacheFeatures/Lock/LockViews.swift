@@ -40,7 +40,7 @@ private struct PrivacyCover: View {
     var body: some View {
         ZStack {
             Rectangle().fill(.background)
-            Icon(.appMark, size: 64).font(.system(size: 64)).foregroundStyle(.tint)
+            AppIconImage(size: 64)
         }
         .ignoresSafeArea()
     }

@@ -12,9 +12,8 @@ public struct ServerSetupView: View {
         OnboardingForm {
             Section {
                 VStack(spacing: 8) {
-                    Icon(.appMark, size: 48)
-                        .font(.system(size: 48))
-                        .foregroundStyle(.tint)
+                    AppIconImage(size: 72)
+                        .padding(.bottom, 4)
                     Text(AboutText.appName).font(.largeTitle.bold())
                     Text(AboutText.tagline).font(.title3.weight(.medium))
                     Text(AboutText.purpose).font(.subheadline).foregroundStyle(.secondary)
