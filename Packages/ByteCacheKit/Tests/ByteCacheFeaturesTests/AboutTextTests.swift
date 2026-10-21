@@ -19,4 +19,8 @@ final class AboutTextTests: XCTestCase {
         XCTAssertFalse(AboutText.displayVersion.contains("("), AboutText.displayVersion)
         XCTAssertTrue(AboutText.versionWithBuild.hasPrefix(AboutText.displayVersion + " ("), AboutText.versionWithBuild)
     }
+
+    func testSupportLinkGoesToKofi() {
+        XCTAssertEqual(AboutText.support.absoluteString, "https://ko-fi.com/trailingfox")
+    }
 }

@@ -577,7 +577,7 @@ struct AboutView: View {
                 // Buttons, not Links: a Link tints its whole row like a web link.
                 Button { openURL(AboutText.sourceCode) } label: {
                     HStack(spacing: 12) {
-                        GitHubSettingsIcon()
+                        BrandSettingsIcon(asset: "brand-github", color: .black)
                         Text("Source Code")
                         Spacer(minLength: 8)
                     }
@@ -593,6 +593,20 @@ struct AboutView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityHint("Writes an email")
+                // App Store and TestFlight copies may not link to an outside tip page (guideline 3.1.1).
+                if InstallSource.current == .direct {
+                    Button { openURL(AboutText.support) } label: {
+                        HStack(spacing: 12) {
+                            BrandSettingsIcon(asset: "brand-kofi", color: Color(red: 1, green: 0.392, blue: 0.2))
+                            Text("Support on Ko-fi")
+                            Spacer(minLength: 8)
+                        }
+                        .foregroundStyle(.primary)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityHint("Opens Ko-fi in your browser")
+                }
                 NavigationLink {
                     AcknowledgementsView()
                 } label: {
@@ -641,16 +655,19 @@ private struct AboutHeader: View {
     }
 }
 
-/// GitHub's mark in a Settings-style tile.
-private struct GitHubSettingsIcon: View {
+/// A brand mark (GitHub, Ko-fi) in a Settings-style tile.
+private struct BrandSettingsIcon: View {
+    let asset: String
+    let color: Color
+
     var body: some View {
-        Image("brand-github", bundle: .module)
+        Image(asset, bundle: .module)
             .resizable()
             .renderingMode(.template)
             .frame(width: 17, height: 17)
             .foregroundStyle(.white)
             .frame(width: 29, height: 29)
-            .background(Color.black.gradient, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+            .background(color.gradient, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
             .accessibilityHidden(true)
     }
 }
@@ -670,7 +687,7 @@ struct AcknowledgementsView: View {
             } header: {
                 Text("Icons and Colours")
             } footer: {
-                Text("Logos are trademarks of their owners, used only to identify languages. The GitHub mark is a trademark of GitHub, Inc., used to link to GitHub.")
+                Text("Logos are trademarks of their owners, used only to identify languages. The GitHub mark and the Ko-fi logo are trademarks of GitHub, Inc. and Ko-fi Labs Ltd, used to link to them.")
             }
             Section {
                 Text("Dracula, Monokai, Nord, Gruvbox, Night Owl and Catppuccin colour palettes by their respective authors (MIT).")

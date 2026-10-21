@@ -11,6 +11,8 @@ public enum AboutText {
     /// The project's source code (the About footer shows no account name).
     public static let sourceCode = URL(string: "https://github.com/js-surya/bytecache")!
     public static let contactEmail = "hello@suryajs.me"
+    /// Tips (GitHub and Xcode copies only: App Store apps may not link to outside tip pages).
+    public static let support = URL(string: "https://ko-fi.com/trailingfox")!
     public static let contact = URL(string: "mailto:\(contactEmail)")!
     public static let disclaimer = "ByteCache is not affiliated with the ByteStash project."
 
