@@ -1,9 +1,11 @@
 # App Store submission notes
 
-**Name:** ByteCache — Snippets for ByteStash
+**Name:** ByteCache
 **Subtitle:** Save code from anywhere
 **Category:** Developer Tools
-**Platforms:** iOS / iPadOS 17+, macOS 14+ (two builds, one App Store record each or universal purchase)
+**Platforms:** iOS / iPadOS 17+, macOS 14+ (one App Store record, universal purchase)
+**Bundle ID:** `me.suryajs.bytecache` · **SKU:** `bytecache`
+**Export compliance:** `ITSAppUsesNonExemptEncryption = NO` in Info.plist (HTTPS only, exempt)
 
 ## Positioning
 ByteCache is an unofficial client for ByteStash (github.com/jordan-dalby/ByteStash). It is not affiliated with or endorsed by the ByteStash project. It does not use the ByteStash logo. Say this in the description and in review notes.
