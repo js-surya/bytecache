@@ -7,6 +7,7 @@ struct ByteCacheApp: App {
 
     init() {
         CopyToastWindow.install()
+        CrashReporting.appLaunched()
     }
 
     var body: some Scene {
@@ -30,6 +31,9 @@ struct ByteCacheApp: App {
         .commands {
             SnippetCommandsMenu()
             #if os(macOS)
+            CommandGroup(replacing: .help) {
+                ReportBugMenuItem()
+            }
             CommandGroup(after: .appInfo) {
                 if services.updates.offersUpdates {
                     Button("Check for Updates…") { Task { await services.updates.checkNow() } }
@@ -47,6 +51,14 @@ struct ByteCacheApp: App {
             }
         }
         #if os(macOS)
+        Window("Report a Bug", id: "report-bug") {
+            NavigationStack {
+                ReportBugView(model: ReportBugModel(session: services.session), showsCancel: true)
+            }
+            .appSettingsStyle(services.settings)
+            .frame(minWidth: 520, idealWidth: 560, minHeight: 600)
+        }
+        .windowResizability(.contentMinSize)
         Settings {
             MacSettingsView(session: services.session)
             .appSettingsStyle(services.settings)
@@ -65,3 +77,14 @@ struct ByteCacheApp: App {
         #endif
     }
 }
+
+#if os(macOS)
+/// Help → Report a Bug…
+private struct ReportBugMenuItem: View {
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some View {
+        Button("Report a Bug…") { openWindow(id: "report-bug") }
+    }
+}
+#endif

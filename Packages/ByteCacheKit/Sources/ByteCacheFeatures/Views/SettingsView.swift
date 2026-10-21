@@ -513,6 +513,7 @@ struct PrivacyInfoView: View {
                 Label("Your login is kept in the Keychain; your password is never stored.", symbol: .key)
                 Label("Copied text is read only when you tap Paste.", symbol: .clipboard)
                 Label("Language detection runs on this device.", symbol: .cpu)
+                Label("Bug reports leave the device only when you send one, after you've seen what's in it.", symbol: .bug)
                 if InstallSource.current == .direct {
                     Label("Once a day ByteCache asks GitHub whether there's a newer version (turn off in About → Updates).", symbol: .download)
                 }

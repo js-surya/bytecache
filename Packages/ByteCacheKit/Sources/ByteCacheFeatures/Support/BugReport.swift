@@ -73,8 +73,8 @@ public struct DeviceInfo: Equatable, Sendable {
     #endif
 }
 
-/// A bug report sent as a pre-filled GitHub issue (no account or token in the app: the user
-/// reviews and submits it in the browser). Logs too long for a link go into a file to attach.
+/// A bug report, sent as a pre-filled GitHub issue or an email (no account or token in the app: the
+/// user reviews and sends it themselves). Logs too long for a link go into a file to attach.
 public struct BugReport: Sendable {
     public static let repository = "js-surya/bytecache"
     /// Browsers and GitHub handle links up to about 8 KB.
@@ -87,13 +87,20 @@ public struct BugReport: Sendable {
     public var device: DeviceInfo
     /// Already scrubbed.
     public var logs: [String]
+    /// App details (ReportContext): settings and state, nothing personal.
+    public var context: [String]
+    /// The newest crash or hang report from the system (MetricKit JSON), for the log file.
+    public var diagnostic: String?
 
-    public init(title: String, whatHappened: String, steps: String, device: DeviceInfo, logs: [String]) {
+    public init(title: String, whatHappened: String, steps: String, device: DeviceInfo, logs: [String],
+                context: [String] = [], diagnostic: String? = nil) {
         self.title = title
         self.whatHappened = whatHappened
         self.steps = steps
         self.device = device
         self.logs = logs
+        self.context = context
+        self.diagnostic = diagnostic
     }
 
     public var issueTitle: String {
@@ -103,12 +110,17 @@ public struct BugReport: Sendable {
 
     public var versions: String { "ByteCache \(device.app), \(device.os), \(device.model)" }
 
-    private var logBlock: String { "```\n" + logs.joined(separator: "\n") + "\n```" }
+    /// App details, then the activity, as one block.
+    private var details: [String] {
+        context + (context.isEmpty || logs.isEmpty ? [] : [""]) + logs
+    }
+
+    private var logBlock: String { "```\n" + details.joined(separator: "\n") + "\n```" }
 
     public var logsFitInLink: Bool { link(logs: logBlock).absoluteString.count <= Self.maxLinkLength }
 
     public func issueURL() -> URL {
-        if logs.isEmpty { return link(logs: "") }
+        if details.isEmpty { return link(logs: "") }
         return logsFitInLink ? link(logs: logBlock)
             : link(logs: "Recent logs are in the attached file \(Self.logFileName) (drag it into this box).")
     }
@@ -120,9 +132,33 @@ public struct BugReport: Sendable {
         \(versions)
         Created \(ISO8601DateFormatter().string(from: .now))
 
-        \(logs.joined(separator: "\n"))
-
+        \(details.joined(separator: "\n"))
+        \(diagnostic.map { "\n\nCrash or hang report from the system (MetricKit):\n\($0)\n" } ?? "")
         """
+    }
+
+    /// The whole report as text, for email and Copy Report.
+    public var plainText: String {
+        var parts = ["# \(issueTitle)", "What happened:\n\(whatHappened)"]
+        if steps.contains(where: { !$0.isWhitespace }) { parts.append("Steps to reproduce:\n\(steps)") }
+        parts.append("Versions: \(versions)")
+        if !context.isEmpty { parts.append("App details:\n" + context.joined(separator: "\n")) }
+        if !logs.isEmpty { parts.append("Recent activity:\n" + logs.joined(separator: "\n")) }
+        if diagnostic != nil { parts.append("The system's crash or hang report is in the attached \(Self.logFileName).") }
+        return parts.joined(separator: "\n\n")
+    }
+
+    /// An email to the developer. Mail links can't carry attachments, so the activity is in the body;
+    /// the share and mail sheets attach the log file instead when they can.
+    public func mailURL(body: String? = nil) -> URL {
+        var components = URLComponents()
+        components.scheme = "mailto"
+        components.path = AboutText.contactEmail
+        components.queryItems = [
+            URLQueryItem(name: "subject", value: "ByteCache bug: \(issueTitle)"),
+            URLQueryItem(name: "body", value: String((body ?? plainText).prefix(6_000))),
+        ]
+        return components.url!
     }
 
     private func link(logs: String) -> URL {

@@ -18,6 +18,9 @@ struct RootView: View {
 
     let services: AppServices
     @State private var restored = false
+    /// After a crash: offer a report once per launch.
+    @State private var offerCrashReport = CrashWatch.shared.endedUnexpectedly
+    @State private var reportingCrash = false
 
     /// Debug: `-BCLoadingPreview` shows only the loading animation (screenshots).
     private static var previewLoading: Bool {
@@ -55,8 +58,24 @@ struct RootView: View {
             if let link = DeepLink(url: url) { AppNavigator.shared.handle(link) }
         }
         .onChange(of: scenePhase) { _, phase in
+            CrashReporting.scenePhaseChanged(phase)
             if phase == .active, let link = PendingCapture.consume() { AppNavigator.shared.handle(link) }
             if phase == .active { Task { await services.updates.appBecameActive() } }
+        }
+        .alert("ByteCache Closed Unexpectedly", isPresented: $offerCrashReport) {
+            Button("Report…") { reportingCrash = true }
+            Button("Not Now", role: .cancel) {}
+        } message: {
+            Text("Send a short report so it can be fixed? You'll see everything in it before it's sent.")
+        }
+        .sheet(isPresented: $reportingCrash) {
+            NavigationStack {
+                ReportBugView(model: ReportBugModel(session: services.session, title: "ByteCache closed unexpectedly"),
+                              showsCancel: true)
+            }
+            #if os(macOS)
+            .frame(minWidth: 520, minHeight: 600)
+            #endif
         }
         .sheet(item: Bindable(services.updates).offered) { release in
             UpdateSheet(release: release, kind: .update, current: services.updates.runningVersion) {

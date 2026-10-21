@@ -4,7 +4,7 @@ _Last updated: 2026-10-19_
 
 ByteCache is an unofficial client for ByteStash, the self-hosted code snippet manager.
 
-**ByteCache collects no data.** There is no analytics, tracking, advertising or crash reporting, and no ByteCache server.
+**ByteCache collects no data.** There is no analytics, tracking or advertising, no automatic crash reporting, and no ByteCache server.
 
 - **Your snippets** go only to the ByteStash server address you enter, over the connection you configure (use HTTPS).
 - **Your logins** (each server's address, username and session token or API key) are stored in the Apple Keychain on your device and shared only with ByteCache's own share extension. Your password is never stored. Removing a server in Settings → Servers deletes its login from the device.
@@ -22,6 +22,7 @@ ByteCache is an unofficial client for ByteStash, the self-hosted code snippet ma
 - **Offline saves:** snippets you save while offline are kept in a file on your device (shared with ByteCache's extensions) until they upload to your server or you discard them.
 - **Most Used** counts how often you copy each snippet, on your device only.
 - **Backups** you export are files you choose where to put; ByteCache keeps no copy.
+- **Bug reports** (only when you send one; Settings → Report a Bug, or the prompt after ByteCache closed unexpectedly): you choose to open a GitHub issue, write an email to hello@suryajs.me or copy the report, and you see all of it first. Besides what you type, it can include the app version, system and device model; app details (your settings, the number of servers and how you sign in, network type, Low Power Mode); a recent activity log of requests with their status and timing, screen names and errors; and, after a crash or hang, the report iOS or macOS made (call stacks, no personal data). None of it contains your code, searches, server addresses, passwords or tokens, and you can leave the details out with one switch. On the device the activity log keeps only the latest 400 lines.
 - **Update check** (optional, on by default; Settings → About → Updates): once a day ByteCache asks GitHub's public API (`api.github.com`) for the latest ByteCache release, to tell you about new versions. The request carries nothing about you or your snippets; GitHub sees your IP address, as with any web request.
 - **Spotlight:** titles and the first lines of recently viewed snippets are indexed on your device so Spotlight can find them. Signing out removes them from the index.
 
