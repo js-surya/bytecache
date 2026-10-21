@@ -209,20 +209,25 @@ extension APIClient {
 
         let data: Data
         let response: URLResponse
-        // Method and path only: no query (search text), body, server address or credentials.
-        let label = "\(method.rawValue) /\(path.drop { $0 == "/" })"
+        // Method, route and timing only: no IDs, query (search text), body, server address or credentials.
+        let label = "\(method.rawValue) \(Self.logPath(path))"
+        let started = ContinuousClock.now
+        func elapsed() -> String {
+            let ms = (ContinuousClock.now - started).components
+            return "\(ms.seconds * 1000 + ms.attoseconds / 1_000_000_000_000_000) ms"
+        }
         do {
             (data, response) = try await transport.data(for: request)
         } catch let error as URLError {
-            log.record("api", "\(label) → offline (URLError \(error.code.rawValue))")
+            log.record("api", "\(label) → offline (URLError \(error.code.rawValue)) after \(elapsed())")
             throw Self.map(error)
         } catch {
-            log.record("api", "\(label) → failed")
+            log.record("api", "\(label) → failed after \(elapsed())")
             throw .offline
         }
 
         guard let http = response as? HTTPURLResponse else { throw .notByteStash }
-        log.record("api", "\(label) → \(http.statusCode)")
+        log.record("api", "\(label) → \(http.statusCode) in \(elapsed())")
         switch http.statusCode {
         case 200..<300:
             let contentType = http.value(forHTTPHeaderField: "Content-Type")?.lowercased() ?? ""
@@ -249,5 +254,22 @@ extension APIClient {
         case .badURL, .unsupportedURL: .invalidServer
         default: .offline
         }
+    }
+}
+
+extension APIClient {
+    /// Words that appear in ByteStash's routes. Any other path segment is an ID, a share link or a
+    /// name, so the log shows `<id>` instead.
+    private static let routeWords: Set<String> = [
+        "api", "auth", "anonymous", "change-password", "config", "login", "verify", "oidc", "keys",
+        "public", "snippets", "snippet", "share", "embed", "favorite", "pin", "recycle", "restore",
+        "metadata", "settings", "admin", "mcp",
+    ]
+
+    /// A request path as the activity log shows it: "/api/snippets/<id>/pin", without the query.
+    static func logPath(_ path: String) -> String {
+        let route = path.prefix { $0 != "?" }
+        let segments = route.split(separator: "/").map { routeWords.contains($0.lowercased()) ? String($0) : "<id>" }
+        return "/" + segments.joined(separator: "/")
     }
 }

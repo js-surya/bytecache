@@ -201,6 +201,7 @@ public struct SettingsView: View {
         #if DEBUG
         .modifier(DebugSettingsPage(session: session))
         #endif
+        .logScreen("Settings")
     }
 
     private struct ChangeSignature: Equatable {

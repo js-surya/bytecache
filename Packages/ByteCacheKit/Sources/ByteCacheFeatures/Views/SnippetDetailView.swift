@@ -163,6 +163,7 @@ public struct SnippetDetailView: View {
                 }
             }
         }
+        .logScreen("Snippet")
     }
 }
 

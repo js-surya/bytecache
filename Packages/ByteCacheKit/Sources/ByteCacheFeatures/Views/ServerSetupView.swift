@@ -115,6 +115,7 @@ public struct ServerSetupView: View {
                 }
             }
         }
+        .logScreen("Server setup")
     }
 
     private var savedServerList: some View {

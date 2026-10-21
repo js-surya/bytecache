@@ -131,6 +131,7 @@ public struct LoginView: View {
             .listRowBackground(Color.clear)
             .listRowInsets(EdgeInsets())
         }
+        .logScreen("Sign in")
     }
 
     private func signIn() {

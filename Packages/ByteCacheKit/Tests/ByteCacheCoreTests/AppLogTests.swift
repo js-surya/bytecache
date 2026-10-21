@@ -41,6 +41,20 @@ final class AppLogTests: XCTestCase {
         XCTAssertFalse(text.contains("private search words"))
         XCTAssertFalse(text.contains("secret-token"))
     }
+
+    func testSizesAreRoundedForTheLog() {
+        XCTAssertEqual(AppLog.size(0), "0 KB")
+        XCTAssertEqual(AppLog.size(380), "0.4 KB")
+        XCTAssertEqual(AppLog.size(2_048), "2 KB")
+        XCTAssertEqual(AppLog.size(5_400_000), "5.1 MB")
+    }
+
+    func testErrorsAreLoggedByKindWithoutTheirText() {
+        XCTAssertEqual(APIError.server(status: 500, message: "stack trace with secrets").logName, "server error 500")
+        XCTAssertEqual(APIError.decoding("body: my code").logName, "unreadable response")
+        XCTAssertEqual(APIError.forbidden("reason").logName, "forbidden")
+        XCTAssertEqual(APIError.offline.logName, "offline")
+    }
 }
 
 /// Minimal transport so this test doesn't depend on ByteCacheTestSupport.

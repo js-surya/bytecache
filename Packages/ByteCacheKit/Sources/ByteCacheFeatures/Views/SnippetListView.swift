@@ -85,6 +85,7 @@ public struct SnippetListView: View {
         } message: {
             Text(model.error ?? "")
         }
+        .logScreen("Snippet list")
     }
 
     @ViewBuilder

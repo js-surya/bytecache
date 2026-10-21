@@ -93,5 +93,6 @@ public struct CaptureSheet: View {
                 }
             }
         }
+        .logScreen("Capture")
     }
 }

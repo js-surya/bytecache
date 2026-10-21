@@ -170,6 +170,7 @@ public final class SnippetListModel {
 
     /// Counts a copy towards Most Used.
     public func recordCopy(_ snippet: Snippet) {
+        AppLog.shared.record("snippet", "copied a snippet (\(snippet.fragments.count) file\(snippet.fragments.count == 1 ? "" : "s"))")
         guard let server = session.client?.server else { return }
         usage.recordCopy(snippetID: snippet.id, server: server)
     }

@@ -110,8 +110,11 @@ public final class CaptureModel {
             isPublic: false
         )
         do {
-            return try await client.create(draft)
+            let saved = try await client.create(draft)
+            AppLog.shared.record("capture", "saved: \(FragmentDraft.logSummary(draft.fragments))")
+            return saved
         } catch {
+            AppLog.shared.record("capture", "save failed: \(error.logName)")
             if error == .offline, let queue, (try? queue.enqueue(draft, server: client.server)) != nil {
                 didQueue = true
                 self.error = nil
