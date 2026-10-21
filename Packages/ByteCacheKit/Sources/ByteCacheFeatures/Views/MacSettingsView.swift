@@ -28,7 +28,10 @@ public struct MacSettingsView: View {
                     }
                 }
             }
-            .navigationSplitViewColumnWidth(min: 210, ideal: 230)
+            // Fixed, like System Settings. The Settings window ignores the column width on its own and
+            // drew the sidebar at 144 pt, cutting the labels off ("Ser…", "Ap…"); the frame enforces it.
+            .frame(minWidth: 230)
+            .navigationSplitViewColumnWidth(230)
             // Like System Settings: the sidebar always shows, so no hide-sidebar button.
             .toolbar(removing: .sidebarToggle)
         } detail: {
@@ -40,6 +43,14 @@ public struct MacSettingsView: View {
                 }
             }
         }
+        // Signed out, Account and its pages aren't in the sidebar: open the first page that is.
+        .onAppear(perform: showAvailablePage)
+        .onChange(of: session.state) { showAvailablePage() }
+    }
+
+    private func showAvailablePage() {
+        guard page.map({ !$0.isAvailable(session) }) ?? true else { return }
+        page = MacSettingsPage.allCases.first { $0.isAvailable(session) }
     }
 
     @ViewBuilder
