@@ -9,7 +9,7 @@ public struct ServerSetupView: View {
     }
 
     public var body: some View {
-        Form {
+        OnboardingForm {
             Section {
                 VStack(spacing: 8) {
                     Icon(.appMark, size: 48)
@@ -25,7 +25,7 @@ public struct ServerSetupView: View {
             .listRowBackground(Color.clear)
 
             Section {
-                TextField("Server address", text: $model.serverText, prompt: Text("https://bytestash.example.com"))
+                TextField("Server address", text: $model.serverText, prompt: Text(verbatim: "https://bytestash.example.com"))
                     .autocorrectionDisabled()
                     #if os(iOS)
                     .keyboardType(.URL)
@@ -41,27 +41,39 @@ public struct ServerSetupView: View {
             }
 
             Section {
-                Button {
-                    Task { await model.connect() }
-                } label: {
-                    HStack {
-                        Text("Connect")
-                        if model.isWorking { Spacer(); ProgressView() }
+                VStack(spacing: 14) {
+                    Button {
+                        Task { await model.connect() }
+                    } label: {
+                        ZStack {
+                            Text("Connect").opacity(model.isWorking ? 0 : 1)
+                            if model.isWorking { ProgressView() }
+                        }
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
                     }
-                }
-                .disabled(!model.canConnect)
-                .keyboardShortcut(.defaultAction)
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .disabled(!model.canConnect)
+                    .keyboardShortcut(.defaultAction)
 
-                Button("Try the demo server") {
-                    model.useDemoServer()
-                    Task { await model.connect() }
+                    Button("Try the demo server") {
+                        model.useDemoServer()
+                        Task { await model.connect() }
+                    }
+                    .buttonStyle(.borderless)
+                    .font(.subheadline)
+                    .disabled(model.isWorking)
+
+                    Text("The demo server is public. Don't save real code there.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
                 }
-                .disabled(model.isWorking)
-            } footer: {
-                Text("The demo server is public. Don't save real code there.")
             }
+            .listRowBackground(Color.clear)
+            .listRowInsets(EdgeInsets())
         }
-        .formStyle(.grouped)
         .toolbar {
             if model.session.canCancelAddServer {
                 ToolbarItem(placement: .cancellationAction) {
@@ -69,7 +81,5 @@ public struct ServerSetupView: View {
                 }
             }
         }
-        .frame(maxWidth: 520)
-        .frame(maxWidth: .infinity)
     }
 }

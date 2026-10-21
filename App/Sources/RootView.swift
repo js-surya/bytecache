@@ -39,8 +39,10 @@ struct RootView: View {
                 switch services.session.state {
                 case .needsServer:
                     NavigationStack { ServerSetupView(model: services.onboarding) }
+                        .onboardingWindowSize()
                 case .needsLogin(let server, _):
                     NavigationStack { LoginView(model: services.onboarding, server: server) }
+                        .onboardingWindowSize()
                 case .signedIn:
                     // A fresh list, sidebar and selection for each server.
                     MainSplitView(services: services)
@@ -126,5 +128,16 @@ struct RootView: View {
             if let link = PendingCapture.consume() { AppNavigator.shared.handle(link) }
             await services.cloudSync.start()
         }
+    }
+}
+
+private extension View {
+    /// Room for the whole server or sign-in screen without scrolling on the Mac.
+    func onboardingWindowSize() -> some View {
+        #if os(macOS)
+        frame(minWidth: 480, minHeight: 600)
+        #else
+        self
+        #endif
     }
 }

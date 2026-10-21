@@ -14,7 +14,7 @@ public struct LoginView: View {
     private var host: String { server.base.host() ?? server.base.absoluteString }
 
     public var body: some View {
-        Form {
+        OnboardingForm {
             Section {
                 VStack(spacing: 8) {
                     Icon(model.method == .apiKey ? .key : .person, size: 28)
@@ -122,9 +122,6 @@ public struct LoginView: View {
             .listRowBackground(Color.clear)
             .listRowInsets(EdgeInsets())
         }
-        .formStyle(.grouped)
-        .frame(maxWidth: 520)
-        .frame(maxWidth: .infinity)
     }
 
     private func signIn() {
