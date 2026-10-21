@@ -18,3 +18,11 @@ Regenerate with `xcrun swift design/AppIcon/make-layers.swift design/AppIcon`.
 3. Background: drag in `1-background.png`, or pick a blue gradient fill in the document inspector.
 4. Check Default / Dark / Clear / Tinted and iPhone, iPad, Mac previews; tune glass, shadow and translucency.
 5. Save as `App/Resources/AppIcon.icon` (name must be `AppIcon`).
+
+## Dark look and alternate icons
+`xcrun python3 design/AppIcon/make-app-icons.py` (needs Icon Composer) gives `AppIcon.icon` its dark look
+(navy background, blue glyphs) and writes the alternate icons for Settings → Appearance → App Icon
+(`App/Resources/AppIcon-<Name>.icon`: Midnight, Mint, Grape, Sunset, Graphite, Light), each with its own
+dark look, plus their previews in the ByteCacheFeatures asset catalog. Colours are in the script's
+`ICONS` table. A new icon also needs its name in `ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES`
+(project.yml) and a case in `AppIconChoice`.

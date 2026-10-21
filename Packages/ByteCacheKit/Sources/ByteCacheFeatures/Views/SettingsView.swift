@@ -272,6 +272,7 @@ struct HapticsSettingsView: View {
 
 struct AppearanceSettingsView: View {
     @Environment(AppSettings.self) private var settings
+    @State private var appIcon = AppIconModel()
 
     var body: some View {
         @Bindable var settings = settings
@@ -294,6 +295,49 @@ struct AppearanceSettingsView: View {
                     }
                 }
                 .padding(.vertical, 8)
+            }
+            if appIcon.isAvailable {
+                Section {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 72), spacing: 12)], spacing: 14) {
+                        ForEach(AppIconChoice.allCases) { choice in
+                            Button { Task { await appIcon.choose(choice) } } label: {
+                                VStack(spacing: 6) {
+                                    choice.preview
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 60, height: 60)
+                                        .padding(3)
+                                        .overlay {
+                                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                                .strokeBorder(settings.accent.color, lineWidth: 2.5)
+                                                .opacity(appIcon.current == choice ? 1 : 0)
+                                        }
+                                    Text(choice.title)
+                                        .font(.caption)
+                                        .foregroundStyle(appIcon.current == choice ? .primary : .secondary)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("\(choice.title) icon")
+                            .accessibilityAddTraits(appIcon.current == choice ? .isSelected : [])
+                        }
+                    }
+                    .padding(.vertical, 8)
+                } header: {
+                    Text("App Icon")
+                } footer: {
+                    if let error = appIcon.errorMessage {
+                        Text(error).foregroundStyle(.red)
+                    } else {
+                        #if os(macOS)
+                        Text("Shown in the Dock while ByteCache is open. Finder and Launchpad keep the default icon.")
+                        #else
+                        Text("Each icon has its own look for the Home Screen's Dark, Tinted and Clear styles.")
+                        #endif
+                    }
+                }
             }
             Section {
                 ForEach(IconStyle.allCases) { style in

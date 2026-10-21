@@ -18,7 +18,10 @@ struct ByteCacheApp: App {
                 .environment(services.updates)
                 .appLockCover(services.lock)
                 #if os(macOS)
-                .task { QuickSearchPanel.shared.configure(services) }
+                .task {
+                    QuickSearchPanel.shared.configure(services)
+                    SystemAppIconSwitcher.shared.apply()
+                }
                 .onChange(of: services.settings.quickSearchShortcut) { _, shortcut in
                     GlobalHotKey.shared.register(shortcut)
                 }
