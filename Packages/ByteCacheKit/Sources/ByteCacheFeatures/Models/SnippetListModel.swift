@@ -42,6 +42,7 @@ public final class SnippetListModel {
     @ObservationIgnored private var hasMore = false
     @ObservationIgnored private var loadingMore = false
     @ObservationIgnored private var generation = 0
+    @ObservationIgnored nonisolated(unsafe) private var changeObserver: NSObjectProtocol?
 
     let session: SessionManager
     private let cache: SnippetCache?
@@ -58,6 +59,17 @@ public final class SnippetListModel {
         self.searchDelay = searchDelay
         self.usage = usage
         if let raw = sortDefaults?.string(forKey: Self.sortKey), let saved = SnippetSort(rawValue: raw) { sort = saved }
+        // Other lists (each iPhone tab has its own) say when they change a snippet.
+        changeObserver = NotificationCenter.default.addObserver(forName: SnippetChange.notification, object: nil, queue: nil) {
+            [weak self] note in
+            guard let change = note.userInfo?[SnippetChange.key] as? SnippetChange,
+                  let self, note.object as AnyObject? !== self else { return }
+            MainActor.assumeIsolated { self.apply(change) }
+        }
+    }
+
+    deinit {
+        if let changeObserver { NotificationCenter.default.removeObserver(changeObserver) }
     }
 
     /// Public snippets belong to everyone: browse, copy and save only.
@@ -126,6 +138,7 @@ public final class SnippetListModel {
             let saved = try await client.update(id: snippet.id, draft)
             if let i = snippets.firstIndex(where: { $0.id == snippet.id }) { snippets[i] = saved }
             cache?.upsert(saved, server: client.server)
+            announce(.updated(saved), server: client.server)
         } catch {
             handle(error, offlineQuery: nil, server: client.server)
         }
@@ -145,6 +158,7 @@ public final class SnippetListModel {
             let saved = try await client.update(id: snippet.id, draft)
             if let i = snippets.firstIndex(where: { $0.id == snippet.id }) { snippets[i] = saved }
             cache?.upsert(saved, server: client.server)
+            announce(.updated(saved), server: client.server)
         } catch {
             if let i = snippets.firstIndex(where: { $0.id == snippet.id }) { snippets[i] = original }
             handle(error, offlineQuery: nil, server: client.server)
@@ -162,6 +176,7 @@ public final class SnippetListModel {
             let saved = try await client.update(id: snippet.id, draft)
             if let i = snippets.firstIndex(where: { $0.id == snippet.id }) { snippets[i] = saved }
             cache?.upsert(saved, server: client.server)
+            announce(.updated(saved), server: client.server)
         } catch {
             if let i = snippets.firstIndex(where: { $0.id == snippet.id }) { snippets[i] = original }
             handle(error, offlineQuery: nil, server: client.server)
@@ -286,14 +301,16 @@ public final class SnippetListModel {
     public func togglePin(_ snippet: Snippet) async {
         guard let client = session.client, let index = snippets.firstIndex(where: { $0.id == snippet.id }) else { return }
         let before = snippets
+        let original = snippets[index]
         snippets[index].isPinned.toggle()
         let updated = snippets[index]
-        snippets = arranged(snippets)
+        show(updated, server: client.server)
         do {
             try await client.setPinned(id: updated.id, updated.isPinned)
             cache?.upsert(updated, server: client.server)
         } catch {
             snippets = before
+            announce(.updated(original), server: client.server)
             handle(error, offlineQuery: nil, server: client.server)
         }
     }
@@ -337,19 +354,20 @@ public final class SnippetListModel {
             }
         }
         if let fresh = try? await client.snippet(id: id) { cache?.upsert(fresh, server: client.server) }
+        announce(.recycled(id), server: client.server)
         return true
     }
 
     public func recycle(_ snippet: Snippet) async {
-        await removeRow(snippet) { client throws(APIError) in try await client.recycle(id: snippet.id) }
+        await removeRow(snippet, then: .recycled(snippet.id)) { client throws(APIError) in try await client.recycle(id: snippet.id) }
     }
 
     public func restore(_ snippet: Snippet) async {
-        await removeRow(snippet) { client throws(APIError) in try await client.restore(id: snippet.id) }
+        await removeRow(snippet, then: .restored(snippet.id)) { client throws(APIError) in try await client.restore(id: snippet.id) }
     }
 
     public func deletePermanently(_ snippet: Snippet) async {
-        await removeRow(snippet, uncache: true) { client throws(APIError) in try await client.delete(id: snippet.id) }
+        await removeRow(snippet, uncache: true, then: .deleted(snippet.id)) { client throws(APIError) in try await client.delete(id: snippet.id) }
     }
 
     /// Puts a saved or edited snippet into the list without a refetch.
@@ -360,7 +378,10 @@ public final class SnippetListModel {
             snippets.insert(snippet, at: 0)
         }
         snippets = arranged(snippets)
-        if let server = session.client?.server { cache?.upsert(snippet, server: server) }
+        if let server = session.client?.server {
+            cache?.upsert(snippet, server: server)
+            announce(.updated(snippet), server: server)
+        }
     }
 
     /// Makes sure a snippet (from Spotlight or Shortcuts) is in the list; fetches it if needed.
@@ -466,18 +487,19 @@ public final class SnippetListModel {
         let original = snippets[index]
         var updated = original
         change(&updated)
-        snippets[index] = updated
+        show(updated, server: client.server)
         do {
             try await send(client, updated)
             cache?.upsert(updated, server: client.server)
         } catch {
-            if let i = snippets.firstIndex(where: { $0.id == snippet.id }) { snippets[i] = original }
+            show(original, server: client.server)
             handle(error, offlineQuery: nil, server: client.server)
         }
     }
 
     private func removeRow(
-        _ snippet: Snippet, uncache: Bool = false, send: (APIClient) async throws(APIError) -> Void
+        _ snippet: Snippet, uncache: Bool = false, then change: SnippetChange.Kind,
+        send: (APIClient) async throws(APIError) -> Void
     ) async {
         guard let client = session.client, let index = snippets.firstIndex(where: { $0.id == snippet.id }) else { return }
         let removed = snippets.remove(at: index)
@@ -489,9 +511,60 @@ public final class SnippetListModel {
             } else if let fresh = try? await client.snippet(id: snippet.id) {
                 cache?.upsert(fresh, server: client.server)
             }
+            announce(change, server: client.server)
         } catch {
             snippets.insert(removed, at: min(index, snippets.count))
             handle(error, offlineQuery: nil, server: client.server)
+        }
+    }
+
+    // MARK: Keeping the other lists in step (CP-66)
+
+    /// Whether a snippet belongs in this list, when the snippet itself says so; nil for lists the
+    /// server decides (tags, languages, Smart Groups, search…), which only update rows they show.
+    private func belongs(_ snippet: Snippet) -> Bool? {
+        switch selection {
+        case .pinned: snippet.isPinned
+        case .favorites: snippet.isFavorite
+        case .recycleBin: false
+        case .all: parsedSearch.text.isEmpty ? true : nil
+        default: nil
+        }
+    }
+
+    /// Puts a changed snippet in this list (or takes it out) and tells the other lists.
+    private func show(_ snippet: Snippet, server: ServerURL) {
+        place(snippet)
+        announce(.updated(snippet), server: server)
+    }
+
+    private func place(_ snippet: Snippet) {
+        let index = snippets.firstIndex { $0.id == snippet.id }
+        switch (index, belongs(snippet)) {
+        case (let i?, false): snippets.remove(at: i)
+        case (let i?, _): snippets[i] = snippet
+        case (nil, true): snippets.append(snippet)
+        case (nil, _): return
+        }
+        snippets = arranged(snippets)
+    }
+
+    private func announce(_ kind: SnippetChange.Kind, server: ServerURL) {
+        NotificationCenter.default.post(name: SnippetChange.notification, object: self,
+                                        userInfo: [SnippetChange.key: SnippetChange(kind: kind, server: server)])
+    }
+
+    private func apply(_ change: SnippetChange) {
+        guard change.server == session.client?.server else { return }
+        switch change.kind {
+        case .updated(let snippet):
+            place(snippet)
+        case .deleted(let id):
+            snippets.removeAll { $0.id == id }
+        case .recycled(let id):
+            if selection == .recycleBin { Task { await refresh() } } else { snippets.removeAll { $0.id == id } }
+        case .restored(let id):
+            if selection == .recycleBin { snippets.removeAll { $0.id == id } } else { Task { await refresh() } }
         }
     }
 
@@ -508,4 +581,20 @@ public final class SnippetListModel {
             self.error = ErrorText.message(for: error)
         }
     }
+}
+
+/// A change one list made to a snippet, for the other lists (each iPhone tab has its own).
+struct SnippetChange: @unchecked Sendable {
+    enum Kind {
+        case updated(Snippet)
+        case recycled(Int)
+        case restored(Int)
+        case deleted(Int)
+    }
+
+    static let notification = Notification.Name("ByteCache.snippetChanged")
+    static let key = "change"
+
+    let kind: Kind
+    let server: ServerURL
 }
