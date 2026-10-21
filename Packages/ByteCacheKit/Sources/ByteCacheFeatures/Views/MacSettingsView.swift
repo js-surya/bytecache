@@ -56,7 +56,7 @@ public struct MacSettingsView: View {
     @ViewBuilder
     private func detail(_ page: MacSettingsPage) -> some View {
         switch page {
-        case .account: MacAccountPage(session: session)
+        case .account: AccountSettingsView(session: session, showsAccountPages: false)
         case .apiKeys: APIKeysView(model: AccountModel(session: session))
         case .password: ChangePasswordView(model: AccountModel(session: session))
         case .servers: ServersView(session: session)
@@ -94,9 +94,8 @@ enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
         case .appearance, .codeTheme, .haptics: .lookAndFeel
         case .search, .suggestions: .snippets
         case .appLock, .privacy: .privacy
-        case .iCloud, .handoff: .sync
-        case .backup: .data
-        case .reportBug, .about: .about
+        case .iCloud, .handoff, .backup: .sync
+        case .reportBug, .about: .support
         }
     }
 
@@ -106,7 +105,7 @@ enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
         case .apiKeys: "API Keys"
         case .password: "Change Password"
         case .servers: "Servers"
-        case .assistants: "AI Assistants (MCP)"
+        case .assistants: "AI Assistants"
         case .appearance: "Appearance"
         case .codeTheme: "Code Theme"
         case .haptics: "Haptics"
@@ -181,41 +180,6 @@ enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
 }
 
 /// Who's signed in, where, and Sign Out.
-private struct MacAccountPage: View {
-    let session: SessionManager
-    @Environment(AppSettings.self) private var settings
-
-    var body: some View {
-        SettingsList {
-            if case .signedIn(let server, let user) = session.state {
-                Section {
-                    HStack(spacing: 14) {
-                        Text(String(user.username.prefix(1)).uppercased())
-                            .font(.title2.weight(.semibold))
-                            .foregroundStyle(.white)
-                            .frame(width: 48, height: 48)
-                            .background(settings.accent.color.gradient, in: Circle())
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(user.username.isEmpty ? "Signed In" : user.username).font(.title3.weight(.semibold))
-                            Text(server.base.host() ?? server.base.absoluteString).foregroundStyle(.secondary)
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
-                Section {
-                    Button("Sign Out", role: .destructive) {
-                        SpotlightIndexer.removeAll()
-                        session.signOut()
-                    }
-                } footer: {
-                    FooterText("Signing out keeps the server in Servers, so signing in again is one step.")
-                }
-            }
-        }
-        .navigationTitle("Account")
-    }
-}
-
 /// Search options (a toggle on iPhone's main Settings list).
 private struct MacSearchPage: View {
     @Environment(AppSettings.self) private var settings

@@ -3,7 +3,7 @@ import SwiftUI
 
 /// The groups on the Settings screen, in order.
 enum SettingsSection: CaseIterable {
-    case account, lookAndFeel, snippets, privacy, sync, data, about
+    case account, lookAndFeel, snippets, privacy, sync, support
 
     var title: String {
         switch self {
@@ -11,9 +11,8 @@ enum SettingsSection: CaseIterable {
         case .lookAndFeel: "Look & Feel"
         case .snippets: "Snippets"
         case .privacy: "Privacy & Security"
-        case .sync: "Sync"
-        case .data: "Data"
-        case .about: "About"
+        case .sync: "Sync & Backup"
+        case .support: "Support"
         }
     }
 }
@@ -30,52 +29,30 @@ public struct SettingsView: View {
 
     public var body: some View {
         SettingsList {
+            if case .signedIn(let server, let user) = session.state {
+                Section {
+                    NavigationLink {
+                        AccountSettingsView(session: session)
+                    } label: {
+                        ProfileCard(user: user, server: server, serverName: activeServerName)
+                    }
+                }
+            }
+
             Section {
-                if case .signedIn(let server, let user) = session.state {
-                    HStack(spacing: 14) {
-                        Group {
-                            if user.username == SessionManager.apiKeyUserName {
-                                Icon(.key)
-                            } else {
-                                Text(String(user.username.prefix(1)).uppercased())
-                            }
-                        }
-                            .font(.title2.weight(.semibold))
-                            .foregroundStyle(.white)
-                            .frame(width: 56, height: 56)
-                            .background(settings.accent.color.gradient, in: Circle())
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(user.username.isEmpty ? "Signed In" : user.username).font(.title3.weight(.semibold))
-                                .accessibilityLabel(user.username == SessionManager.apiKeyUserName ? "Signed in with an API key" : user.username)
-                            Text(server.base.host() ?? server.base.absoluteString)
-                                .font(.subheadline).foregroundStyle(.secondary)
-                        }
-                    }
-                    .padding(.vertical, 4)
-                    NavigationLink {
-                        APIKeysView(model: AccountModel(session: session))
-                    } label: {
-                        SettingsLabel(title: "API Keys", symbol: .key, color: .orange)
-                    }
-                    NavigationLink {
-                        ChangePasswordView(model: AccountModel(session: session))
-                    } label: {
-                        SettingsLabel(title: "Change Password", symbol: .changePassword, color: .gray)
-                    }
-                }
-                NavigationLink {
-                    MCPSettingsView(model: MCPSettingsModel(session: session))
-                } label: {
-                    SettingsLabel(title: "AI Assistants (MCP)", symbol: .assistant, color: .indigo)
-                }
                 NavigationLink {
                     ServersView(session: session)
                 } label: {
                     SettingsLabel(title: "Servers", symbol: .server, color: .green,
-                                  value: session.accounts.count > 1 ? "\(session.accounts.count)" : session.accounts.first?.name)
+                                  value: session.accounts.count > 1 ? "\(session.accounts.count)" : nil)
                 }
-            } header: {
-                Text(SettingsSection.account.title)
+                if case .signedIn = session.state {
+                    NavigationLink {
+                        MCPSettingsView(model: MCPSettingsModel(session: session))
+                    } label: {
+                        SettingsLabel(title: "AI Assistants", symbol: .assistant, color: .indigo)
+                    }
+                }
             }
 
             Section {
@@ -99,8 +76,6 @@ public struct SettingsView: View {
                 }
             } header: {
                 Text(SettingsSection.lookAndFeel.title)
-            } footer: {
-                FooterText("Theme and accent colour, how code looks, and gentle taps on scans and changes.")
             }
 
             Section {
@@ -116,7 +91,7 @@ public struct SettingsView: View {
             } header: {
                 Text(SettingsSection.snippets.title)
             } footer: {
-                FooterText("Search Inside Code also matches the code itself, not just titles and descriptions. Smart Suggestions propose titles and tags on this device.")
+                FooterText("Search Inside Code also matches the code itself, not just titles and descriptions.")
             }
 
             Section {
@@ -148,32 +123,13 @@ public struct SettingsView: View {
                     SettingsLabel(title: "Handoff", symbol: .handoff, color: .blue,
                                   value: settings.handoffEnabled ? "On" : "Off")
                 }
-            } header: {
-                Text(SettingsSection.sync.title)
-            } footer: {
-                FooterText("iCloud Sync keeps settings and the server list the same on your devices. Handoff lets you continue a snippet on another device.")
-            }
-
-            Section {
                 NavigationLink {
                     BackupView(model: BackupModel(session: session))
                 } label: {
                     SettingsLabel(title: "Backup & Import", symbol: .download, color: .teal)
                 }
             } header: {
-                Text(SettingsSection.data.title)
-            } footer: {
-                FooterText("Export all snippets as files or a backup, or import from GitHub Gists, VS Code and files.")
-            }
-
-            if case .signedIn = session.state {
-                Section {
-                    Button("Sign Out", role: .destructive) {
-                        SpotlightIndexer.removeAll()
-                        session.signOut()
-                    }
-                    .frame(maxWidth: .infinity)
-                }
+                Text(SettingsSection.sync.title)
             }
 
             Section {
@@ -188,11 +144,9 @@ public struct SettingsView: View {
                     SettingsLabel(title: "About", symbol: .info, color: .gray, value: AboutText.displayVersion)
                 }
             } header: {
-                Text(SettingsSection.about.title)
+                Text(SettingsSection.support.title)
             } footer: {
-                Text("\(AboutText.appName) — \(AboutText.tagline)")
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 8)
+                SettingsSignOff()
             }
         }
         .navigationTitle("Settings")
@@ -202,6 +156,11 @@ public struct SettingsView: View {
         .modifier(DebugSettingsPage(session: session))
         #endif
         .logScreen("Settings")
+    }
+
+    /// The server's own name if it has one, else its address.
+    private var activeServerName: String? {
+        session.accounts.first { $0.id == session.activeAccountID }?.displayName
     }
 
     private struct ChangeSignature: Equatable {
@@ -216,7 +175,7 @@ public struct SettingsView: View {
 }
 
 #if DEBUG
-/// Env `BC_SETTINGS_PAGE=about|acknowledgements|haptics|servers|report|mcp` opens that page, for screenshots.
+/// Env `BC_SETTINGS_PAGE=about|acknowledgements|account|haptics|servers|report|mcp` opens that page, for screenshots.
 private struct DebugSettingsPage: ViewModifier {
     let session: SessionManager
     @State private var page = ProcessInfo.processInfo.environment["BC_SETTINGS_PAGE"]
@@ -229,6 +188,7 @@ private struct DebugSettingsPage: ViewModifier {
             case "report": ReportBugView(model: ReportBugModel(session: session))
             case "mcp": MCPSettingsView(model: MCPSettingsModel(session: session))
             case "acknowledgements": AcknowledgementsView()
+            case "account": AccountSettingsView(session: session)
             default: AboutView()
             }
         }
@@ -796,5 +756,107 @@ struct SuggestionsSettingsView: View {
             }
         }
         .navigationTitle("Smart Suggestions")
+    }
+}
+
+/// The top of Settings: who is signed in, and where. Opens the Account page.
+private struct ProfileCard: View {
+    let user: User
+    let server: ServerURL
+    let serverName: String?
+    @Environment(AppSettings.self) private var settings
+
+    private var isAPIKey: Bool { user.username == SessionManager.apiKeyUserName }
+
+    var body: some View {
+        HStack(spacing: 14) {
+            Group {
+                if isAPIKey {
+                    Icon(.key)
+                } else {
+                    Text(String(user.username.prefix(1)).uppercased())
+                }
+            }
+            .font(.title2.weight(.semibold))
+            .foregroundStyle(.white)
+            .frame(width: 58, height: 58)
+            .background(settings.accent.color.gradient, in: Circle())
+            .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(isAPIKey ? "Signed in with an API key" : (user.username.isEmpty ? "Signed In" : user.username))
+                    .font(.title3.weight(.semibold))
+                HStack(spacing: 5) {
+                    Icon(.server, size: 12).font(.caption)
+                    Text(serverName ?? server.base.host() ?? server.base.absoluteString)
+                        .truncationMode(.middle)
+                }
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+            }
+        }
+        .padding(.vertical, 6)
+    }
+}
+
+/// The bottom of Settings: the app icon in use, name and version.
+private struct SettingsSignOff: View {
+    @State private var appIcon = AppIconModel()
+
+    var body: some View {
+        VStack(spacing: 6) {
+            appIcon.current.preview
+                .resizable()
+                .scaledToFit()
+                .frame(width: 34, height: 34)
+                .accessibilityHidden(true)
+            Text("\(AboutText.appName) \(AboutText.displayVersion) · \(AboutText.tagline)")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 20)
+    }
+}
+
+/// Settings → Account: the login on this server and what can be done with it. On the Mac, API Keys
+/// and Change Password are separate pages in the sidebar, so they're left out here.
+struct AccountSettingsView: View {
+    let session: SessionManager
+    var showsAccountPages = true
+
+    var body: some View {
+        SettingsList {
+            if case .signedIn(let server, let user) = session.state {
+                Section {
+                    ProfileCard(user: user, server: server,
+                                serverName: session.accounts.first { $0.id == session.activeAccountID }?.displayName)
+                }
+                if showsAccountPages {
+                    Section {
+                        NavigationLink {
+                            APIKeysView(model: AccountModel(session: session))
+                        } label: {
+                            SettingsLabel(title: "API Keys", symbol: .key, color: .orange)
+                        }
+                        NavigationLink {
+                            ChangePasswordView(model: AccountModel(session: session))
+                        } label: {
+                            SettingsLabel(title: "Change Password", symbol: .changePassword, color: .gray)
+                        }
+                    }
+                }
+                Section {
+                    Button("Sign Out", role: .destructive) {
+                        SpotlightIndexer.removeAll()
+                        session.signOut()
+                    }
+                    .frame(maxWidth: .infinity)
+                } footer: {
+                    FooterText("Signing out keeps the server in Servers, so signing in again is one step.")
+                }
+            }
+        }
+        .navigationTitle("Account")
     }
 }
