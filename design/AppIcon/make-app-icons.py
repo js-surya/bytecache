@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Builds ByteCache's app icons from App/Resources/AppIcon.icon's layers (braces + arrow).
 
-- Gives AppIcon.icon a designed dark look (navy background, blue glyphs) instead of iOS's plain black.
+- Gives AppIcon.icon its dark look: black background, white glyphs.
 - Writes the alternate icons (Settings → Appearance → App Icon) as App/Resources/AppIcon-<Name>.icon,
   each with its own light and dark look.
 - Renders a preview of each for the picker into the ByteCacheFeatures asset catalog (app-icon-<name>),
@@ -28,7 +28,8 @@ BLUE = colour(0, 0.53333, 1)
 # name: (light background, light glyphs or None for white, dark background, dark glyphs)
 # A background is one colour (an automatic gradient from it) or two (a linear gradient).
 ICONS = {
-    "Default": (BLUE, None, colour(0.08, 0.10, 0.16), colour(0.20, 0.60, 1.00)),
+    "Default": (BLUE, None, colour(0.10, 0.10, 0.11), WHITE),
+    "Black": (colour(0.10, 0.10, 0.11), None, colour(0.10, 0.10, 0.11), WHITE),
     "Midnight": (colour(0.07, 0.10, 0.26), colour(0.45, 0.75, 1.00), colour(0.03, 0.04, 0.09), colour(0.45, 0.75, 1.00)),
     "Mint": (colour(0.00, 0.70, 0.52), None, colour(0.05, 0.13, 0.11), colour(0.20, 0.85, 0.65)),
     "Grape": (colour(0.55, 0.30, 0.95), None, colour(0.11, 0.08, 0.18), colour(0.72, 0.56, 1.00)),

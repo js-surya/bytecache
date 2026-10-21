@@ -9,7 +9,7 @@
             {
               "appearance": "dark",
               "value": {
-                "automatic-gradient": "extended-srgb:0.20000,0.60000,1.00000,1.00000"
+                "automatic-gradient": "extended-srgb:1.00000,1.00000,1.00000,1.00000"
               }
             }
           ]
@@ -21,7 +21,7 @@
             {
               "appearance": "dark",
               "value": {
-                "automatic-gradient": "extended-srgb:0.20000,0.60000,1.00000,1.00000"
+                "automatic-gradient": "extended-srgb:1.00000,1.00000,1.00000,1.00000"
               }
             }
           ]
@@ -63,7 +63,7 @@
     {
       "appearance": "dark",
       "value": {
-        "automatic-gradient": "extended-srgb:0.08000,0.10000,0.16000,1.00000"
+        "automatic-gradient": "extended-srgb:0.10000,0.10000,0.11000,1.00000"
       }
     }
   ]

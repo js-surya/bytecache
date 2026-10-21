@@ -31,6 +31,7 @@
 		7793B779B8F7A06381211C92 /* ByteCacheFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = F4CD42BA44998DB5090517A0 /* ByteCacheFeatures */; };
 		7C57527CDB440E6F2C77A227 /* ByteCacheApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33E4BE438EFEE3536D9B0D57 /* ByteCacheApp.swift */; };
 		838D7990A10020E460A1F012 /* ByteCacheCore in Frameworks */ = {isa = PBXBuildFile; productRef = DB75F2A9876D6084F5BA45C4 /* ByteCacheCore */; };
+		8D2DFB1B5511E8C1DBF4A636 /* AppIcon-Black.icon in Resources */ = {isa = PBXBuildFile; fileRef = 6AABF55D6CFA352ED7A1E896 /* AppIcon-Black.icon */; };
 		90B3576DDC493CF4CF9D955F /* QuickSearchMac.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21BB7A9CA0A0B9DC59C39FF5 /* QuickSearchMac.swift */; };
 		9E027E1A2EF50BA795BB18AA /* ShareExtension-macOS.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3C4D6B6B9A17D93D3850B091 /* ShareExtension-macOS.appex */; platformFilters = (macos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9ECFC35132FB64E0F996AFF3 /* AppNavigator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9726FF73B6C1194388EF5567 /* AppNavigator.swift */; };
@@ -116,6 +117,7 @@
 		554D8BBFA7DFD04CF8A582DB /* ShareExtension-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ShareExtension-iOS.entitlements"; sourceTree = "<group>"; };
 		5C2EB5A5AAF63D1087909E0F /* ByteCacheUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ByteCacheUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		66F44EE4730BF764EBBB8DDD /* Widgets-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Widgets-iOS.entitlements"; sourceTree = "<group>"; };
+		6AABF55D6CFA352ED7A1E896 /* AppIcon-Black.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = "AppIcon-Black.icon"; sourceTree = "<group>"; };
 		7F31B6298B2F885456681F97 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		88519509BC45ABBCD838A62C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		88BB3269C865DB06121B67A3 /* ByteCache-macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ByteCache-macOS.entitlements"; sourceTree = "<group>"; };
@@ -237,6 +239,7 @@
 		935549FE79C0807A0212EA21 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				6AABF55D6CFA352ED7A1E896 /* AppIcon-Black.icon */,
 				1F72D4D3518C70E8A4CEA0C1 /* AppIcon-Grape.icon */,
 				20D86019D48D7AED0BA6B61E /* AppIcon-Graphite.icon */,
 				03401717225BAA21AF23AEC1 /* AppIcon-Light.icon */,
@@ -501,6 +504,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8D2DFB1B5511E8C1DBF4A636 /* AppIcon-Black.icon in Resources */,
 				E05282BB50E27C4F500409D7 /* AppIcon-Grape.icon in Resources */,
 				7637E659E42895B203C1C6DA /* AppIcon-Graphite.icon in Resources */,
 				76EEA4B72286905F3BDD53B8 /* AppIcon-Light.icon in Resources */,
@@ -657,7 +661,7 @@
 		45245CA8AE9CE2321C8B24E8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon-Midnight AppIcon-Mint AppIcon-Grape AppIcon-Sunset AppIcon-Graphite AppIcon-Light";
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon-Black AppIcon-Midnight AppIcon-Mint AppIcon-Grape AppIcon-Sunset AppIcon-Graphite AppIcon-Light";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "App/Resources/ByteCache-iOS.entitlements";
@@ -737,7 +741,7 @@
 		BE3C6DE1F39364ABCBCA0C44 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon-Midnight AppIcon-Mint AppIcon-Grape AppIcon-Sunset AppIcon-Graphite AppIcon-Light";
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon-Black AppIcon-Midnight AppIcon-Mint AppIcon-Grape AppIcon-Sunset AppIcon-Graphite AppIcon-Light";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "App/Resources/ByteCache-iOS.entitlements";
