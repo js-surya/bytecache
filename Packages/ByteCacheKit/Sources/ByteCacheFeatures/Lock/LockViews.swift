@@ -104,7 +104,7 @@ struct AppLockSettingsView: View {
             } footer: {
                 VStack(alignment: .leading, spacing: 6) {
                     if let message { Text(message).foregroundStyle(.red) }
-                    Text("ByteCache asks for \(lock.biometry.name) (or your passcode) when it opens and when you come back after the chosen time. Saving from the share sheet and Shortcuts still works, so capturing stays one step.")
+                    FooterText("ByteCache asks for \(lock.biometry.name) (or your passcode) when it opens and when you come back after the chosen time. Saving from the share sheet and Shortcuts still works, so capturing stays one step.")
                 }
             }
             if lock.isEnabled {
@@ -113,7 +113,7 @@ struct AppLockSettingsView: View {
                         ForEach(WidgetLockMode.allCases) { Text($0.title).tag($0) }
                     }
                 } footer: {
-                    Text(lock.widgetMode.footer)
+                    FooterText(lock.widgetMode.footer)
                 }
             }
         }

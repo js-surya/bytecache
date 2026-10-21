@@ -100,7 +100,7 @@ public struct SettingsView: View {
             } header: {
                 Text(SettingsSection.lookAndFeel.title)
             } footer: {
-                Text("Theme and accent colour, how code looks, and gentle taps on scans and changes.")
+                FooterText("Theme and accent colour, how code looks, and gentle taps on scans and changes.")
             }
 
             Section {
@@ -116,7 +116,7 @@ public struct SettingsView: View {
             } header: {
                 Text(SettingsSection.snippets.title)
             } footer: {
-                Text("Search Inside Code also matches the code itself, not just titles and descriptions. Smart Suggestions propose titles and tags on this device.")
+                FooterText("Search Inside Code also matches the code itself, not just titles and descriptions. Smart Suggestions propose titles and tags on this device.")
             }
 
             Section {
@@ -151,7 +151,7 @@ public struct SettingsView: View {
             } header: {
                 Text(SettingsSection.sync.title)
             } footer: {
-                Text("iCloud Sync keeps settings and the server list the same on your devices. Handoff lets you continue a snippet on another device.")
+                FooterText("iCloud Sync keeps settings and the server list the same on your devices. Handoff lets you continue a snippet on another device.")
             }
 
             Section {
@@ -163,7 +163,7 @@ public struct SettingsView: View {
             } header: {
                 Text(SettingsSection.data.title)
             } footer: {
-                Text("Export all snippets as files or a backup, or import from GitHub Gists, VS Code and files.")
+                FooterText("Export all snippets as files or a backup, or import from GitHub Gists, VS Code and files.")
             }
 
             if case .signedIn = session.state {
@@ -252,9 +252,9 @@ struct HapticsSettingsView: View {
                 }
             } footer: {
                 #if os(macOS)
-                Text("Gentle taps when you scan code, when a scan works or fails, and when you change a setting. On Mac you feel them on a Force Touch trackpad.")
+                FooterText("Gentle taps when you scan code, when a scan works or fails, and when you change a setting. On Mac you feel them on a Force Touch trackpad.")
                 #else
-                Text("Gentle taps when you scan code, when a scan works or fails, and when you change a setting. Changing the strength plays a sample.")
+                FooterText("Gentle taps when you scan code, when a scan works or fails, and when you change a setting. Changing the strength plays a sample.")
                 #endif
             }
         }
@@ -325,9 +325,9 @@ struct AppearanceSettingsView: View {
                         Text(error).foregroundStyle(.red)
                     } else {
                         #if os(macOS)
-                        Text("Shown in the Dock while ByteCache is open. Finder and Launchpad keep the default icon.")
+                        FooterText("Shown in the Dock while ByteCache is open. Finder and Launchpad keep the default icon.")
                         #else
-                        Text("Each icon has its own look for the Home Screen's Dark, Tinted and Clear styles.")
+                        FooterText("Each icon has its own look for the Home Screen's Dark, Tinted and Clear styles.")
                         #endif
                     }
                 }
@@ -360,7 +360,7 @@ struct AppearanceSettingsView: View {
             } header: {
                 Text("Icon Style")
             } footer: {
-                Text("Changes the icons inside ByteCache. Widgets, Control Center and system menus keep Apple's SF Symbols.")
+                FooterText("Changes the icons inside ByteCache. Widgets, Control Center and system menus keep Apple's SF Symbols.")
             }
             Section {
                 ForEach(LanguageIconStyle.allCases) { style in
@@ -386,7 +386,7 @@ struct AppearanceSettingsView: View {
             } header: {
                 Text("Language Icons")
             } footer: {
-                Text("Shown next to languages in the sidebar, snippet lists, files and the language picker. Logos from Devicon; where a logo is black or missing, Colour uses the language's colour from GitHub Linguist. Trademarks belong to their owners.")
+                FooterText("Shown next to languages in the sidebar, snippet lists, files and the language picker. Logos from Devicon; where a logo is black or missing, Colour uses the language's colour from GitHub Linguist. Trademarks belong to their owners.")
             }
             Section("Accent Color") {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 14) {
@@ -518,7 +518,7 @@ struct PrivacyInfoView: View {
                     Label("Once a day ByteCache asks GitHub whether there's a newer version (turn off in About → Updates).", symbol: .download)
                 }
             } footer: {
-                Text(AboutText.privacy)
+                FooterText(AboutText.privacy)
             }
         }
         .navigationTitle("Privacy")
@@ -545,7 +545,7 @@ struct AboutView: View {
                 Section {
                     LabeledContent("Widgets", value: WidgetSnapshotStore().sharing)
                 } footer: {
-                    Text("How widgets get your snippets on this install.")
+                    FooterText("How widgets get your snippets on this install.")
                 }
             }
             #endif
@@ -570,7 +570,7 @@ struct AboutView: View {
                 } header: {
                     Text("Updates")
                 } footer: {
-                    Text("Once a day, ByteCache checks for a newer version. Nothing about you is sent.")
+                    FooterText("Once a day, ByteCache checks for a newer version. Nothing about you is sent.")
                 }
             }
             Section {
@@ -687,7 +687,7 @@ struct AcknowledgementsView: View {
             } header: {
                 Text("Icons and Colours")
             } footer: {
-                Text("Logos are trademarks of their owners, used only to identify languages. The GitHub mark and the Ko-fi logo are trademarks of GitHub, Inc. and Ko-fi Labs Ltd, used to link to them.")
+                FooterText("Logos are trademarks of their owners, used only to identify languages. The GitHub mark and the Ko-fi logo are trademarks of GitHub, Inc. and Ko-fi Labs Ltd, used to link to them.")
             }
             Section {
                 Text("Dracula, Monokai, Nord, Gruvbox, Night Owl and Catppuccin colour palettes by their respective authors (MIT).")
@@ -751,7 +751,7 @@ struct ICloudSyncSettingsView: View {
             } header: {
                 Text("Stays on this device")
             } footer: {
-                Text("Servers added on another device appear here signed out — sign in once on each device. Removing a server removes it from all your devices.")
+                FooterText("Servers added on another device appear here signed out — sign in once on each device. Removing a server removes it from all your devices.")
             }
         }
         .navigationTitle("iCloud Sync")
@@ -767,7 +767,7 @@ struct HandoffSettingsView: View {
             Section {
                 Toggle("Handoff", isOn: $settings.handoffEnabled)
             } footer: {
-                Text("Pick up the snippet you're viewing on your other iPhone, iPad or Mac. Your devices need the same Apple Account, with Bluetooth and Wi-Fi on. Devices without ByteCache open the snippet in the ByteStash web app. Handoff also needs to be on in the system settings (General → AirPlay & Continuity on iPhone and iPad, General → AirDrop & Handoff on Mac).")
+                FooterText("Pick up the snippet you're viewing on your other iPhone, iPad or Mac. Your devices need the same Apple Account, with Bluetooth and Wi-Fi on. Devices without ByteCache open the snippet in the ByteStash web app. Handoff also needs to be on in the system settings (General → AirPlay & Continuity on iPhone and iPad, General → AirDrop & Handoff on Mac).")
             }
         }
         .navigationTitle("Handoff")
@@ -786,7 +786,7 @@ struct SuggestionsSettingsView: View {
                     .disabled(!available)
             } footer: {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("When you save code, ByteCache suggests a title, a one-line description and categories, and the Explain button describes what a snippet does — all with Apple Intelligence on this device. Your code never leaves it. Suggestions only fill empty fields; what you type always wins.")
+                    FooterText("When you save code, ByteCache suggests a title, a one-line description and categories, and the Explain button describes what a snippet does — all with Apple Intelligence on this device. Your code never leaves it. Suggestions only fill empty fields; what you type always wins.")
                     if !available {
                         Label("Needs Apple Intelligence (iOS 26 or macOS 26 on a supported device, turned on in Settings).",
                               symbol: .warning)

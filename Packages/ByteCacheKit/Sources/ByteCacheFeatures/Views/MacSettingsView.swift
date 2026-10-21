@@ -208,7 +208,7 @@ private struct MacAccountPage: View {
                         session.signOut()
                     }
                 } footer: {
-                    Text("Signing out keeps the server in Servers, so signing in again is one step.")
+                    FooterText("Signing out keeps the server in Servers, so signing in again is one step.")
                 }
             }
         }
@@ -226,7 +226,7 @@ private struct MacSearchPage: View {
             Section {
                 Toggle("Search Inside Code", isOn: $settings.searchInCode)
             } footer: {
-                Text("When on, searching also matches the code in your snippets, not just titles and descriptions.")
+                FooterText("When on, searching also matches the code in your snippets, not just titles and descriptions.")
             }
             Section {
                 Toggle("Show in Menu Bar", isOn: $settings.quickSearchInMenuBar)
@@ -236,7 +236,7 @@ private struct MacSearchPage: View {
             } header: {
                 Text("Quick Search")
             } footer: {
-                Text("Find a snippet from anywhere: press the shortcut or click the menu bar icon, type, then press Return to copy it or ⌘Return to open it.")
+                FooterText("Find a snippet from anywhere: press the shortcut or click the menu bar icon, type, then press Return to copy it or ⌘Return to open it.")
             }
         }
         .navigationTitle("Search")

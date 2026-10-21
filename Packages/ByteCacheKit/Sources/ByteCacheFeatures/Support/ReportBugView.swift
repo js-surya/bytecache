@@ -102,7 +102,7 @@ public struct ReportBugView: View {
             } header: {
                 Text("Sent with the report")
             } footer: {
-                Text("App details are your settings and counts, like the number of servers. The activity lists what ByteCache did recently, like requests and their results, screens and errors. Neither contains your code, searches, server addresses or passwords. Crash reports come from iOS or macOS and contain no personal data.")
+                FooterText("App details are your settings and counts, like the number of servers. The activity lists what ByteCache did recently, like requests and their results, screens and errors. Neither contains your code, searches, server addresses or passwords. Crash reports come from iOS or macOS and contain no personal data.")
             }
             Section {
                 sendButton("Open GitHub Issue", detail: "Needs a GitHub account", symbol: .bug, color: .black) {
@@ -121,7 +121,7 @@ public struct ReportBugView: View {
             } header: {
                 Text("Send")
             } footer: {
-                Text("You see the report before anything is sent: GitHub and Mail open it for you to check and submit.")
+                FooterText("You see the report before anything is sent: GitHub and Mail open it for you to check and submit.")
             }
             if model.needsLogFile, let file = model.logFile() {
                 Section {
@@ -131,7 +131,7 @@ public struct ReportBugView: View {
                 } header: {
                     Text("Log file")
                 } footer: {
-                    Text("For a GitHub issue: the details don't all fit in the link. Save \(BugReport.logFileName), then drag it into the issue. Email attaches it for you.")
+                    FooterText("For a GitHub issue: the details don't all fit in the link. Save \(BugReport.logFileName), then drag it into the issue. Email attaches it for you.")
                 }
             }
         }

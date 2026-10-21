@@ -42,9 +42,7 @@ public struct ServerSetupView: View {
                         }
                     }
                 } footer: {
-                    Text("Logins don't sync, so sign in once on each device.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                    FooterText("Logins don't sync, so sign in once on each device.")
                 }
             } else if checkingICloud {
                 Section {

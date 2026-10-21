@@ -41,7 +41,7 @@ struct SmartGroupEditor: View {
             } header: {
                 Text("Rules")
             } footer: {
-                Text(footer)
+                FooterText(footer)
             }
         }
         .navigationTitle(isNew ? "New Smart Group" : "Edit Smart Group")
