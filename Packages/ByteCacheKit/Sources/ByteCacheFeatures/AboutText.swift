@@ -7,7 +7,7 @@ public enum AboutText {
     /// Says what the app is for, where the tagline alone wouldn't (first launch).
     public static let purpose = "A client for your ByteStash server"
     public static let privacy = "ByteCache collects no data."
-    public static let credit = "Built with ❤️ by SyntaxError and Claude"
+    public static let credit = "By SyntaxError"
     /// The project's source code (the About footer shows no account name).
     public static let sourceCode = URL(string: "https://github.com/js-surya/bytecache")!
 
