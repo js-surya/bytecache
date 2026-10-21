@@ -1,4 +1,5 @@
 import XCTest
+import ByteCacheCore
 @testable import ByteCacheFeatures
 
 final class FakeAuthenticator: Authenticating, @unchecked Sendable {
@@ -50,6 +51,15 @@ final class AppLockTests: XCTestCase {
         let accepted = await lock.setEnabled(true)
         XCTAssertTrue(accepted)
         XCTAssertTrue(model(d).isEnabled)
+    }
+
+    func testWidgetModeDefaultsToTitlesOnlyAndPersists() {
+        let d = defaults()
+        let lock = model(d)
+        XCTAssertEqual(lock.widgetMode, .titlesOnly)
+        lock.widgetMode = .hideAll
+        XCTAssertEqual(model(d).widgetMode, .hideAll)
+        XCTAssertEqual(WidgetLockMode.stored(in: d), .hideAll)
     }
 
     func testTurningOffAlsoNeedsAuthentication() async {
