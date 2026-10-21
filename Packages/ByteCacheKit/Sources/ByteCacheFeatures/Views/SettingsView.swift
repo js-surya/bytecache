@@ -302,8 +302,11 @@ struct AppearanceSettingsView: View {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(style.title).foregroundStyle(.primary)
                                 HStack(spacing: 14) {
+                                    // Same box for both styles: SF Symbols vary in width, so the two rows
+                                    // only line up in columns when every icon gets the same frame.
                                     ForEach([AppSymbol.pin, .star, .copy, .server, .key, .scan, .settings], id: \.self) { symbol in
                                         Icon(symbol, size: 18).font(.system(size: 16))
+                                            .frame(width: 22, height: 22)
                                     }
                                 }
                                 .foregroundStyle(.secondary)
