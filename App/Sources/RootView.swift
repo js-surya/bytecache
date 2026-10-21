@@ -135,7 +135,7 @@ private extension View {
     /// Room for the whole server or sign-in screen without scrolling on the Mac.
     func onboardingWindowSize() -> some View {
         #if os(macOS)
-        frame(minWidth: 480, minHeight: 600)
+        frame(minWidth: 480, minHeight: 700)
         #else
         self
         #endif

@@ -42,6 +42,8 @@ public final class SessionManager {
     @ObservationIgnored private var credentials: Credentials?
     @ObservationIgnored private var lastConfig = AuthConfig()
     @ObservationIgnored private var accountToReturnTo: UUID?
+    /// The server typed in on this visit to the server screen, until it's signed in.
+    @ObservationIgnored private var typedInID: UUID?
 
     /// An MCP client for the current server, using `apiKey` (the key assistants will use).
     public func mcpClient(apiKey: String) -> MCPClient? {
@@ -102,6 +104,7 @@ public final class SessionManager {
         current.username = nil
         current.apiKey = key
         persist(current)
+        typedInID = nil
         AppLog.shared.record("session", "signed in with an API key")
         state = .signedIn(server: server, user: Self.apiKeyUser)
     }
@@ -114,7 +117,14 @@ public final class SessionManager {
     /// Forgets the current server and shows setup; Cancel there returns to another saved server, if any.
     public func changeServer() {
         guard let id = credentials?.id else { return }
-        removeActiveSynchronously(id)
+        if id == typedInID {
+            // Usually a typo: forget it.
+            removeActiveSynchronously(id)
+        } else {
+            // A saved server (maybe from iCloud): keep it listed, here and on other devices.
+            leaveActiveSynchronously()
+        }
+        typedInID = nil
         accountToReturnTo = accounts.first?.id
     }
 
@@ -225,6 +235,14 @@ public final class SessionManager {
 
     private static let apiKeyUser = User(id: 0, username: apiKeyUserName)
 
+    private func leaveActiveSynchronously() {
+        var list = store.loadAll()
+        list.activeID = nil
+        try? store.saveAll(list)
+        credentials = nil
+        state = .needsServer
+    }
+
     private func removeActiveSynchronously(_ id: UUID) {
         guard credentials?.id == id else { return }
         removedAccountIDs.insert(id)
@@ -269,10 +287,12 @@ public final class SessionManager {
     private func beginAccount(on server: ServerURL) {
         let existing = store.loadAll().accounts.first { $0.server == server && !$0.isSignedIn }
         credentials = existing ?? Credentials(server: server)
+        typedInID = existing == nil ? credentials?.id : nil
     }
 
     private func signIn(token: String, user: User) {
         guard var current = credentials else { return }
+        typedInID = nil
         AppLog.shared.record("session", "signed in with a password")
         current.token = token
         current.apiKey = nil
