@@ -498,7 +498,7 @@ struct AboutView: View {
                 Text(AboutText.tagline)
                 Text("ByteCache is not affiliated with the ByteStash project.").foregroundStyle(.secondary)
             }
-            if let updates {
+            if let updates, updates.offersUpdates {
                 Section {
                     Toggle("Check for Updates", isOn: $settings.checkForUpdates)
                     Button {

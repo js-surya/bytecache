@@ -28,7 +28,9 @@ struct ByteCacheApp: App {
             SnippetCommandsMenu()
             #if os(macOS)
             CommandGroup(after: .appInfo) {
-                Button("Check for Updates…") { Task { await services.updates.checkNow() } }
+                if services.updates.offersUpdates {
+                    Button("Check for Updates…") { Task { await services.updates.checkNow() } }
+                }
             }
             #endif
         }

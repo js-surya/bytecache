@@ -14,13 +14,17 @@ public final class UpdateModel {
     /// Result of the last "Check Now", for Settings.
     public private(set) var status: String?
 
+    /// False for App Store and TestFlight copies: Apple updates those, so Settings hides Updates.
+    public let offersUpdates: Bool
+
     @ObservationIgnored private let settings: AppSettings
     @ObservationIgnored private let checker: UpdateChecker
     @ObservationIgnored private var askedWhatsNew = false
 
-    public init(settings: AppSettings, checker: UpdateChecker = UpdateChecker()) {
+    public init(settings: AppSettings, checker: UpdateChecker = UpdateChecker(), source: InstallSource = .current) {
         self.settings = settings
         self.checker = checker
+        offersUpdates = source == .direct
     }
 
     public static var platform: GitHubRelease.Platform {
@@ -39,12 +43,13 @@ public final class UpdateModel {
                 whatsNew = release
             }
         }
-        guard settings.checkForUpdates, offered == nil else { return }
+        guard offersUpdates, settings.checkForUpdates, offered == nil else { return }
         if case .available(let release) = await checker.check(force: false) { offered = release }
     }
 
     /// Settings → Check Now: always asks GitHub and says what it found.
     public func checkNow() async {
+        guard offersUpdates else { return }
         isChecking = true
         defer { isChecking = false }
         switch await checker.check(force: true) {

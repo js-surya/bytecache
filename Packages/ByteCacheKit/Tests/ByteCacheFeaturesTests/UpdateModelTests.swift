@@ -9,13 +9,29 @@ final class UpdateModelTests: XCTestCase {
     private let release = #"{"tag_name":"v1.2.0","name":"ByteCache 1.2.0","html_url":"https://github.com/js-surya/bytecache/releases/tag/v1.2.0","draft":false,"prerelease":false,"body":"Notes","assets":[]}"#
 
     private func make(version: String, replies: [StubTransport.Reply], defaults: UserDefaults? = nil,
-                      checkOn: Bool = true) -> (UpdateModel, StubTransport, AppSettings) {
+                      checkOn: Bool = true, source: InstallSource = .direct) -> (UpdateModel, StubTransport, AppSettings) {
         let d = defaults ?? UserDefaults(suiteName: UUID().uuidString)!
         let settings = AppSettings(defaults: d)
         settings.checkForUpdates = checkOn
         let transport = StubTransport(replies)
-        let model = UpdateModel(settings: settings, checker: UpdateChecker(current: AppVersion(version)!, defaults: d, transport: transport))
+        let model = UpdateModel(settings: settings, checker: UpdateChecker(current: AppVersion(version)!, defaults: d, transport: transport),
+                                source: source)
         return (model, transport, settings)
+    }
+
+    func testStoreInstallNeverChecksGitHubForUpdates() async {
+        let (model, transport, _) = make(version: "1.1.0", replies: [.json(release), .json(release)], source: .appStore)
+        XCTAssertFalse(model.offersUpdates)
+        await model.appBecameActive()
+        await model.checkNow()
+        XCTAssertNil(model.offered)
+        XCTAssertNil(model.status)
+        XCTAssertTrue(transport.requests.isEmpty)
+    }
+
+    func testDirectInstallOffersUpdates() {
+        let (model, _, _) = make(version: "1.1.0", replies: [])
+        XCTAssertTrue(model.offersUpdates)
     }
 
     func testNewerReleaseIsOfferedAndCanBeSkipped() async {
