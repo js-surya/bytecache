@@ -215,7 +215,7 @@ public struct SettingsView: View {
 }
 
 #if DEBUG
-/// Env `BC_SETTINGS_PAGE=about|about-footer|haptics|servers|report|mcp` opens that page, for screenshots.
+/// Env `BC_SETTINGS_PAGE=about|acknowledgements|haptics|servers|report|mcp` opens that page, for screenshots.
 private struct DebugSettingsPage: ViewModifier {
     let session: SessionManager
     @State private var page = ProcessInfo.processInfo.environment["BC_SETTINGS_PAGE"]
@@ -227,15 +227,7 @@ private struct DebugSettingsPage: ViewModifier {
             case "servers": ServersView(session: session)
             case "report": ReportBugView(model: ReportBugModel(session: session))
             case "mcp": MCPSettingsView(model: MCPSettingsModel(session: session))
-            case "about-footer":
-                SettingsList {
-                    Section {
-                        AboutFooter()
-                            .listRowBackground(Color.clear)
-                            .listRowInsets(EdgeInsets(top: 24, leading: 0, bottom: 24, trailing: 0))
-                    }
-                }
-                .navigationTitle("About")
+            case "acknowledgements": AcknowledgementsView()
             default: AboutView()
             }
         }
@@ -534,19 +526,27 @@ struct PrivacyInfoView: View {
 struct AboutView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(UpdateModel.self) private var updates: UpdateModel?
+    @Environment(\.openURL) private var openURL
+    @State private var appIcon = AppIconModel()
 
     var body: some View {
         @Bindable var settings = settings
         SettingsList {
             Section {
-                LabeledContent("Version", value: AboutText.displayVersion)
-                #if os(iOS)
-                // How widgets get the app's snippets: App Group, shared keychain, or not at all.
-                LabeledContent("Widgets", value: WidgetSnapshotStore().sharing)
-                #endif
-                Text(AboutText.tagline)
-                Text("ByteCache is not affiliated with the ByteStash project.").foregroundStyle(.secondary)
+                AboutHeader(icon: appIcon.current)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
             }
+            #if os(iOS)
+            // Only worth showing when widgets can't use the App Group (some sideloaded copies).
+            if WidgetSnapshotStore().sharing != "App Group" {
+                Section {
+                    LabeledContent("Widgets", value: WidgetSnapshotStore().sharing)
+                } footer: {
+                    Text("How widgets get your snippets on this install.")
+                }
+            }
+            #endif
             if let updates, updates.offersUpdates {
                 Section {
                     Toggle("Check for Updates", isOn: $settings.checkForUpdates)
@@ -555,8 +555,8 @@ struct AboutView: View {
                     } label: {
                         HStack {
                             Text("Check Now")
+                            Spacer()
                             if updates.isChecking {
-                                Spacer()
                                 ProgressView().controlSize(.small)
                             }
                         }
@@ -568,96 +568,139 @@ struct AboutView: View {
                 } header: {
                     Text("Updates")
                 } footer: {
-                    Text("ByteCache is installed from GitHub, so it can't update itself. Once a day it asks GitHub whether there's a newer release and tells you; nothing about you is sent.")
+                    Text("Once a day, ByteCache checks GitHub for a newer version. Nothing about you is sent.")
                 }
             }
             Section {
-                Group {
-                    Text("HighlightSwift — MIT License, © 2023 Stefan Britton")
-                    Text("highlight.js — BSD 3-Clause License, © 2006 Ivan Sagalaev")
-                    NavigationLink("Lucide icons — ISC License, © Lucide Icons and Contributors (some icons © Cole Bemis, MIT)") {
-                        ScrollView {
-                            Text(Bundle.module.url(forResource: "LUCIDE-LICENSE", withExtension: "txt")
-                                .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "")
-                                .font(.footnote.monospaced())
-                                .textSelection(.enabled)
-                                .padding()
-                        }
-                        .navigationTitle("Lucide Licence")
+                // Buttons, not Links: a Link tints its whole row like a web link.
+                Button { openURL(AboutText.sourceCode) } label: {
+                    HStack(spacing: 12) {
+                        GitHubSettingsIcon()
+                        Text("Source Code")
+                        Spacer(minLength: 8)
+                        Text("GitHub").foregroundStyle(.secondary)
                     }
-                    NavigationLink("Devicon language logos — MIT License, © konpa and Devicon contributors. Logos are trademarks of their owners, used only to identify languages.") {
-                        ScrollView {
-                            Text(Bundle.module.url(forResource: "DEVICON-LICENSE", withExtension: "txt")
-                                .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "")
-                                .font(.footnote.monospaced())
-                                .textSelection(.enabled)
-                                .padding()
-                        }
-                        .navigationTitle("Devicon Licence")
-                    }
-                    NavigationLink("Language colours from GitHub Linguist — MIT License, © 2017 GitHub, Inc.; brand colours from Simple Icons (CC0).") {
-                        ScrollView {
-                            Text(Bundle.module.url(forResource: "LINGUIST-LICENSE", withExtension: "txt")
-                                .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "")
-                                .font(.footnote.monospaced())
-                                .textSelection(.enabled)
-                                .padding()
-                        }
-                        .navigationTitle("Linguist Licence")
-                    }
-                    Text("Dracula, Monokai, Nord, Gruvbox, Night Owl and Catppuccin colour palettes by their respective authors (MIT).")
-                Text("The GitHub mark is a trademark of GitHub, Inc., used to link to GitHub.")
-                    Text("Language model trained on permissively licensed open-source code.").foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("Opens in your browser")
+                Button { openURL(AboutText.contact) } label: {
+                    SettingsLabel(title: "Contact", symbol: .mail, color: .blue, value: AboutText.contactEmail)
+                        .foregroundStyle(.primary)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("Writes an email")
+                NavigationLink {
+                    AcknowledgementsView()
+                } label: {
+                    SettingsLabel(title: "Acknowledgements", symbol: .acknowledgements, color: .pink)
+                }
+            } footer: {
+                VStack(spacing: 6) {
+                    Text(AboutText.credit)
+                    Text(AboutText.disclaimer)
                 }
                 .font(.footnote)
-            } header: {
-                Text("Acknowledgements")
-            }
-            Section {
-                AboutFooter()
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets(top: 24, leading: 0, bottom: 24, trailing: 0))
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 20)
             }
         }
         .navigationTitle("About")
     }
 }
 
-/// The sign-off at the bottom of About: app icon, name, tagline, credit and a link to the source code.
-private struct AboutFooter: View {
+/// The top of About: the app icon the person picked, name, tagline and version.
+private struct AboutHeader: View {
+    let icon: AppIconChoice
+
     var body: some View {
-        VStack(spacing: 10) {
-            AppIconImage(size: 64)
-            VStack(spacing: 2) {
-                Text(AboutText.appName).font(.headline)
-                Text(AboutText.tagline).font(.subheadline).foregroundStyle(.secondary)
-            }
-            Text(AboutText.credit)
-                .font(.footnote)
+        VStack(spacing: 6) {
+            icon.preview
+                .resizable()
+                .scaledToFit()
+                .frame(width: 96, height: 96)
+                .shadow(color: .black.opacity(0.18), radius: 8, y: 4)
+                .padding(.bottom, 6)
+                .accessibilityHidden(true)
+            Text(AboutText.appName).font(.title2.bold())
+            Text(AboutText.tagline).font(.subheadline).foregroundStyle(.secondary)
+            Text("Version \(AboutText.versionWithBuild)")
+                .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(.fill.tertiary, in: Capsule())
                 .padding(.top, 4)
-            Link(destination: AboutText.sourceCode) {
-                Label {
-                    Text("Source code")
-                } icon: {
-                    Image("brand-github", bundle: .module)
-                        .resizable()
-                        .renderingMode(.template)
-                        .frame(width: 16, height: 16)
-                }
-                .font(.subheadline.weight(.medium))
-                .padding(.horizontal, 14)
-                .padding(.vertical, 7)
-                .background(.tint.opacity(0.12), in: Capsule())
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(.tint)
-            .padding(.top, 2)
-            .accessibilityLabel("Source code on GitHub")
-            .accessibilityHint("Opens in your browser")
+                .textSelection(.enabled)
         }
         .frame(maxWidth: .infinity)
+    }
+}
+
+/// GitHub's mark in a Settings-style tile.
+private struct GitHubSettingsIcon: View {
+    var body: some View {
+        Image("brand-github", bundle: .module)
+            .resizable()
+            .renderingMode(.template)
+            .frame(width: 17, height: 17)
+            .foregroundStyle(.white)
+            .frame(width: 29, height: 29)
+            .background(Color.black.gradient, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+            .accessibilityHidden(true)
+    }
+}
+
+struct AcknowledgementsView: View {
+    var body: some View {
+        SettingsList {
+            Section("Code") {
+                credit("HighlightSwift", detail: "MIT License, © 2023 Stefan Britton")
+                credit("highlight.js", detail: "BSD 3-Clause License, © 2006 Ivan Sagalaev")
+            }
+            Section {
+                licence("Lucide icons", detail: "ISC License, © Lucide Icons and Contributors (some icons © Cole Bemis, MIT)", file: "LUCIDE-LICENSE")
+                licence("Devicon language logos", detail: "MIT License, © konpa and Devicon contributors", file: "DEVICON-LICENSE")
+                licence("GitHub Linguist language colours", detail: "MIT License, © 2017 GitHub, Inc.", file: "LINGUIST-LICENSE")
+                Text("Brand colours and the Rust and Handlebars glyphs from Simple Icons (CC0).")
+            } header: {
+                Text("Icons and Colours")
+            } footer: {
+                Text("Logos are trademarks of their owners, used only to identify languages. The GitHub mark is a trademark of GitHub, Inc., used to link to GitHub.")
+            }
+            Section {
+                Text("Dracula, Monokai, Nord, Gruvbox, Night Owl and Catppuccin colour palettes by their respective authors (MIT).")
+                Text("Language model trained on permissively licensed open-source code.")
+            } header: {
+                Text("Themes and Language Detection")
+            }
+        }
+        .navigationTitle("Acknowledgements")
+    }
+
+    private func credit(_ title: String, detail: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+            Text(detail).font(.footnote).foregroundStyle(.secondary)
+        }
+    }
+
+    private func licence(_ title: String, detail: String, file: String) -> some View {
+        NavigationLink {
+            ScrollView {
+                Text(Bundle.module.url(forResource: file, withExtension: "txt")
+                    .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "")
+                    .font(.footnote.monospaced())
+                    .textSelection(.enabled)
+                    .padding()
+            }
+            .navigationTitle(title)
+        } label: {
+            credit(title, detail: detail)
+        }
     }
 }
 

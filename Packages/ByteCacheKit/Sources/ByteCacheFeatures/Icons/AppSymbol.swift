@@ -73,6 +73,8 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case scan
     case search
     case hideKeyboard
+    case mail
+    case acknowledgements
     case mostUsed
     case globe
     case link
@@ -158,6 +160,8 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .scan: "camera.viewfinder"
         case .search: "magnifyingglass"
         case .hideKeyboard: "keyboard.chevron.compact.down"
+        case .mail: "envelope.fill"
+        case .acknowledgements: "heart.text.square.fill"
         case .mostUsed: "chart.bar"
         case .globe: "globe"
         case .link: "link"
@@ -245,6 +249,8 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .scan: "scan-text"
         case .search: "search"
         case .hideKeyboard: "keyboard-off"
+        case .mail: "mail"
+        case .acknowledgements: "heart-handshake"
         case .mostUsed: "chart-column"
         case .globe: "globe"
         case .link: "link"

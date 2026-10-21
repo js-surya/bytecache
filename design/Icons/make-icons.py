@@ -39,7 +39,7 @@ TABLE = [
     ("privacy", "hand.raised.fill", "hand"), ("settings", "gear", "settings"),
     ("eye", "eye", "eye"), ("eyeOff", "eye.slash", "eye-off"), ("document", "doc.text", "file-text"),
     ("cpu", "cpu", "cpu"), ("chevronsUpDown", "chevron.up.chevron.down", "chevrons-up-down"),
-    ("scan", "camera.viewfinder", "scan-text"), ("search", "magnifyingglass", "search"), ("hideKeyboard", "keyboard.chevron.compact.down", "keyboard-off"), ("mostUsed", "chart.bar", "chart-column"), ("globe", "globe", "globe"), ("link", "link", "link"), ("sort", "arrow.up.arrow.down", "arrow-down-up"),
+    ("scan", "camera.viewfinder", "scan-text"), ("search", "magnifyingglass", "search"), ("hideKeyboard", "keyboard.chevron.compact.down", "keyboard-off"), ("mail", "envelope.fill", "mail"), ("acknowledgements", "heart.text.square.fill", "heart-handshake"), ("mostUsed", "chart.bar", "chart-column"), ("globe", "globe", "globe"), ("link", "link", "link"), ("sort", "arrow.up.arrow.down", "arrow-down-up"),
     ("swap", "arrow.left.arrow.right", "arrow-left-right"), ("faceID", "faceid", "scan-face"),
     ("touchID", "touchid", "fingerprint"), ("opticID", "opticid", "eye"),
     ("circle", "circle", "circle"), ("checkbox", "square", "square"), ("checkboxChecked", "checkmark.square.fill", "square-check"),

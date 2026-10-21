@@ -10,6 +10,9 @@ public enum AboutText {
     public static let credit = "Made with ❤️ by SyntaxError"
     /// The project's source code (the About footer shows no account name).
     public static let sourceCode = URL(string: "https://github.com/js-surya/bytecache")!
+    public static let contactEmail = "hello@suryajs.me"
+    public static let contact = URL(string: "mailto:\(contactEmail)")!
+    public static let disclaimer = "ByteCache is not affiliated with the ByteStash project."
 
     /// What people see: "1.1.0".
     public static var displayVersion: String {
