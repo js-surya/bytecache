@@ -12,8 +12,14 @@ public enum InstallSource: Equatable, Sendable {
 
     public static let current: InstallSource = {
         let bundle = Bundle.main
-        let receipt = FileManager.default.fileExists(
-            atPath: bundle.bundleURL.appending(path: "Contents/_MASReceipt/receipt").path(percentEncoded: false))
+        #if os(macOS)
+        let receipts = [bundle.bundleURL.appending(path: "Contents/_MASReceipt/receipt")]
+        #else
+        // Next to the .app: "receipt" from the App Store, "sandboxReceipt" from TestFlight.
+        let storeKit = bundle.bundleURL.deletingLastPathComponent().appending(path: "StoreKit")
+        let receipts = [storeKit.appending(path: "receipt"), storeKit.appending(path: "sandboxReceipt")]
+        #endif
+        let receipt = receipts.contains { FileManager.default.fileExists(atPath: $0.path(percentEncoded: false)) }
         let profile = bundle.url(forResource: "embedded", withExtension: "mobileprovision") != nil
         #if os(macOS)
         let platform = Platform.macOS
@@ -25,12 +31,13 @@ public enum InstallSource: Equatable, Sendable {
         return detect(platform: platform, hasStoreReceipt: receipt, hasProvisioningProfile: profile)
     }()
 
-    /// A Mac store copy carries a receipt (`_MASReceipt`). On iPhone and iPad, store copies are the
-    /// only ones without `embedded.mobileprovision`: Xcode, ad-hoc and sideloaded copies all have one.
+    /// Store copies carry a receipt (Mac: `_MASReceipt`; iPhone and iPad: `StoreKit/receipt` or, from
+    /// TestFlight, `sandboxReceipt`). On iPhone and iPad they also lack `embedded.mobileprovision`, which
+    /// Xcode, ad-hoc and sideloaded copies all have; either sign is enough.
     static func detect(platform: Platform, hasStoreReceipt: Bool, hasProvisioningProfile: Bool) -> InstallSource {
         switch platform {
         case .macOS: hasStoreReceipt ? .appStore : .direct
-        case .iOSDevice: hasProvisioningProfile ? .direct : .appStore
+        case .iOSDevice: hasStoreReceipt || !hasProvisioningProfile ? .appStore : .direct
         case .iOSSimulator: .direct
         }
     }

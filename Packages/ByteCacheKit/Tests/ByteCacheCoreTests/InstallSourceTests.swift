@@ -20,6 +20,11 @@ final class InstallSourceTests: XCTestCase {
         XCTAssertEqual(InstallSource.detect(platform: .iOSDevice, hasStoreReceipt: false, hasProvisioningProfile: true), .direct)
     }
 
+    func testIOSDeviceWithAStoreReceiptIsAStoreInstallEvenWithAProfile() {
+        // TestFlight and App Store copies carry a receipt; that settles it whatever else is in the bundle.
+        XCTAssertEqual(InstallSource.detect(platform: .iOSDevice, hasStoreReceipt: true, hasProvisioningProfile: true), .appStore)
+    }
+
     func testSimulatorIsNeverAStoreInstall() {
         XCTAssertEqual(InstallSource.detect(platform: .iOSSimulator, hasStoreReceipt: false, hasProvisioningProfile: false), .direct)
     }
