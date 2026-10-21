@@ -59,7 +59,7 @@ public final class UpdateModel {
         case .upToDate:
             status = "ByteCache \(checker.version) is the latest version."
         case .failed, .skippedRecentlyChecked:
-            status = "Couldn't reach GitHub. Try again later."
+            status = "Couldn't check for updates. Try again later."
         }
     }
 

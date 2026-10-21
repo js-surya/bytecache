@@ -568,7 +568,7 @@ struct AboutView: View {
                 } header: {
                     Text("Updates")
                 } footer: {
-                    Text("Once a day, ByteCache checks GitHub for a newer version. Nothing about you is sent.")
+                    Text("Once a day, ByteCache checks for a newer version. Nothing about you is sent.")
                 }
             }
             Section {
@@ -578,7 +578,6 @@ struct AboutView: View {
                         GitHubSettingsIcon()
                         Text("Source Code")
                         Spacer(minLength: 8)
-                        Text("GitHub").foregroundStyle(.secondary)
                     }
                     .foregroundStyle(.primary)
                     .contentShape(Rectangle())
