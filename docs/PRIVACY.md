@@ -25,4 +25,4 @@ ByteCache is an unofficial client for ByteStash, the self-hosted code snippet ma
 - **Update check** (optional, on by default; Settings → About → Updates): once a day ByteCache asks GitHub's public API (`api.github.com`) for the latest ByteCache release, to tell you about new versions. The request carries nothing about you or your snippets; GitHub sees your IP address, as with any web request.
 - **Spotlight:** titles and the first lines of recently viewed snippets are indexed on your device so Spotlight can find them. Signing out removes them from the index.
 
-Questions: open an issue in the ByteCache repository.
+Questions: email hello@suryajs.me or open an issue in the ByteCache repository.
