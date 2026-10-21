@@ -591,7 +591,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.bytecache.ByteCache.Share;
+				PRODUCT_BUNDLE_IDENTIFIER = me.suryajs.bytecache.share;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -607,7 +607,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.bytecache.ByteCacheUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = me.suryajs.bytecache.uitests;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -632,7 +632,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.bytecache.ByteCache;
+				PRODUCT_BUNDLE_IDENTIFIER = me.suryajs.bytecache;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
@@ -654,7 +654,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.bytecache.ByteCache.Widgets;
+				PRODUCT_BUNDLE_IDENTIFIER = me.suryajs.bytecache.widgets;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
@@ -676,7 +676,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.bytecache.ByteCache.ShareMac;
+				PRODUCT_BUNDLE_IDENTIFIER = me.suryajs.bytecache.sharemac;
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -691,7 +691,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.bytecache.ByteCache.Share;
+				PRODUCT_BUNDLE_IDENTIFIER = me.suryajs.bytecache.share;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -711,7 +711,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.bytecache.ByteCache;
+				PRODUCT_BUNDLE_IDENTIFIER = me.suryajs.bytecache;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
@@ -733,7 +733,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.bytecache.ByteCache.ShareMac;
+				PRODUCT_BUNDLE_IDENTIFIER = me.suryajs.bytecache.sharemac;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -743,8 +743,8 @@
 			baseConfigurationReference = EE5E999663647340C4069645 /* Base.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				BC_APP_GROUP_ID = group.app.bytecache;
-				"BC_APP_GROUP_ID[sdk=macosx*]" = "$(TeamIdentifierPrefix)app.bytecache";
+				BC_APP_GROUP_ID = group.me.suryajs.bytecache;
+				"BC_APP_GROUP_ID[sdk=macosx*]" = "$(TeamIdentifierPrefix)me.suryajs.bytecache";
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -809,7 +809,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.bytecache.ByteCacheUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = me.suryajs.bytecache.uitests;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -832,7 +832,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.bytecache.ByteCache.Widgets;
+				PRODUCT_BUNDLE_IDENTIFIER = me.suryajs.bytecache.widgets;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
@@ -847,8 +847,8 @@
 			baseConfigurationReference = EE5E999663647340C4069645 /* Base.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				BC_APP_GROUP_ID = group.app.bytecache;
-				"BC_APP_GROUP_ID[sdk=macosx*]" = "$(TeamIdentifierPrefix)app.bytecache";
+				BC_APP_GROUP_ID = group.me.suryajs.bytecache;
+				"BC_APP_GROUP_ID[sdk=macosx*]" = "$(TeamIdentifierPrefix)me.suryajs.bytecache";
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";

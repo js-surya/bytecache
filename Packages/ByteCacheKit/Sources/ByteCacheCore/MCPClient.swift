@@ -102,7 +102,7 @@ public protocol SecretStore: Sendable {
 public struct KeychainSecretStore: SecretStore {
     private let service: String
 
-    public init(service: String = "app.bytecache.mcp") {
+    public init(service: String = "me.suryajs.bytecache.mcp") {
         self.service = service
     }
 

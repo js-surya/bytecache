@@ -125,7 +125,7 @@ public struct WidgetSnapshotStore: Sendable {
                   let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group) {
             place = .file(container.appending(path: "widget-snapshot.json"))
         } else if let keychainGroup = AppEnvironment.keychainGroup {
-            place = .keychain(KeychainBlob(service: "app.bytecache.widget", account: "snapshot", accessGroup: keychainGroup))
+            place = .keychain(KeychainBlob(service: "me.suryajs.bytecache.widget", account: "snapshot", accessGroup: keychainGroup))
         } else {
             place = .privateFile(URL.applicationSupportDirectory.appending(path: "widget-snapshot.json"))
         }

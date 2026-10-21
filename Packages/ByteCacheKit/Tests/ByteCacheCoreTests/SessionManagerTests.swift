@@ -146,7 +146,7 @@ final class SessionManagerTests: XCTestCase {
 
 final class KeychainCredentialStoreTests: XCTestCase {
     func testRoundTrip() throws {
-        let store = KeychainCredentialStore(accessGroup: nil, service: "app.bytecache.tests.\(UUID().uuidString)")
+        let store = KeychainCredentialStore(accessGroup: nil, service: "me.suryajs.bytecache.tests.\(UUID().uuidString)")
         let creds = Credentials(server: try ServerURL("https://x.io"), token: "t", username: "demo")
         do {
             try store.save(creds)

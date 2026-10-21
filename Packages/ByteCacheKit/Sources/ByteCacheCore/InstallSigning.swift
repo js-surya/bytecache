@@ -47,7 +47,7 @@ public struct InstallSigning: Equatable, Sendable {
     }
 
     /// The shared keychain group with this copy's team prefix. Unsigned builds have no prefix in
-    /// Info.plist ("app.bytecache.shared"), and re-signing changes it.
+    /// Info.plist ("me.suryajs.bytecache.shared"), and re-signing changes it.
     public func keychainGroup(declared: String?) -> String? {
         guard let declared else { return nil }
         guard let teamPrefix else { return declared }

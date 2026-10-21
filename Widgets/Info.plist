@@ -5,7 +5,7 @@
 	<key>BCAppGroupID</key>
 	<string>$(BC_APP_GROUP_ID)</string>
 	<key>BCKeychainGroup</key>
-	<string>$(AppIdentifierPrefix)app.bytecache.shared</string>
+	<string>$(AppIdentifierPrefix)me.suryajs.bytecache.shared</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

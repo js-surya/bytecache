@@ -171,7 +171,7 @@ private var supportedFamilies: [WidgetFamily] {
 
 struct PinnedSnippetsWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "app.bytecache.pinned", provider: SnippetProvider(pinnedOnly: true)) { entry in
+        StaticConfiguration(kind: "me.suryajs.bytecache.pinned", provider: SnippetProvider(pinnedOnly: true)) { entry in
             SnippetWidgetView(entry: entry, title: "Pinned", emptyMessage: "Pin snippets in ByteCache to see them here")
                 .containerBackground(.fill.tertiary, for: .widget)
         }
@@ -183,7 +183,7 @@ struct PinnedSnippetsWidget: Widget {
 
 struct RecentSnippetsWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "app.bytecache.recent", provider: SnippetProvider(pinnedOnly: false)) { entry in
+        StaticConfiguration(kind: "me.suryajs.bytecache.recent", provider: SnippetProvider(pinnedOnly: false)) { entry in
             SnippetWidgetView(entry: entry, title: "Recent", emptyMessage: "No snippets yet")
                 .containerBackground(.fill.tertiary, for: .widget)
         }
@@ -197,7 +197,7 @@ struct RecentSnippetsWidget: Widget {
 @available(iOS 18.0, *)
 struct SaveClipboardControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
-        StaticControlConfiguration(kind: "app.bytecache.saveClipboard") {
+        StaticControlConfiguration(kind: "me.suryajs.bytecache.saveClipboard") {
             ControlWidgetButton(action: SaveClipboardIntent()) {
                 Label("Save Clipboard", systemImage: "doc.on.clipboard")
             }
@@ -212,7 +212,7 @@ struct SaveClipboardControl: ControlWidget {
 @available(iOS 18.0, *)
 struct ScanCodeControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
-        StaticControlConfiguration(kind: "app.bytecache.scanCode") {
+        StaticControlConfiguration(kind: "me.suryajs.bytecache.scanCode") {
             ControlWidgetButton(action: ScanCodeIntent()) {
                 Label("Scan Code", systemImage: "camera.viewfinder")
             }
@@ -277,7 +277,7 @@ struct ConfigurableSnippetProvider: AppIntentTimelineProvider {
 
 struct ConfigurableSnippetsWidget: Widget {
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: "app.bytecache.snippets", intent: SnippetSourceIntent.self,
+        AppIntentConfiguration(kind: "me.suryajs.bytecache.snippets", intent: SnippetSourceIntent.self,
                                provider: ConfigurableSnippetProvider()) { entry in
             SnippetWidgetView(entry: entry, title: entry.title ?? "Snippets", emptyMessage: "Nothing here yet")
                 .containerBackground(.fill.tertiary, for: .widget)

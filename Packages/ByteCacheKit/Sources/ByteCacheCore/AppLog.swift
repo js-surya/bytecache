@@ -15,7 +15,7 @@ public final class AppLog: @unchecked Sendable {
     public let directory: URL
     private let maxEntries: Int
     private let lock = NSLock()
-    private let logger = Logger(subsystem: "app.bytecache", category: "app")
+    private let logger = Logger(subsystem: "me.suryajs.bytecache", category: "app")
     private var file: URL { directory.appending(path: "recent.log") }
 
     public init(directory: URL, maxEntries: Int = 400) {

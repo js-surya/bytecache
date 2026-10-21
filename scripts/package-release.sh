@@ -33,7 +33,7 @@ cat > "$entitlements" <<'PLIST'
 <plist version="1.0">
 <dict>
 	<key>com.apple.security.application-groups</key>
-	<array><string>group.app.bytecache</string></array>
+	<array><string>group.me.suryajs.bytecache</string></array>
 </dict>
 </plist>
 PLIST
@@ -45,7 +45,7 @@ done
 codesign --force --sign - --entitlements "$entitlements" "$ios_app"
 for bundle in "$ios_app" "$ios_app"/PlugIns/*.appex; do
     signed="$(codesign -d --entitlements - "$bundle" 2>/dev/null || true)"
-    [[ "$signed" == *group.app.bytecache* ]] || { echo "error: $bundle has no App Group entitlement" >&2; exit 1; }
+    [[ "$signed" == *group.me.suryajs.bytecache* ]] || { echo "error: $bundle has no App Group entitlement" >&2; exit 1; }
 done
 (cd "$derived/ipa" && zip -qry "../../../$dist/ByteCache-$version-iOS.ipa" Payload)
 
