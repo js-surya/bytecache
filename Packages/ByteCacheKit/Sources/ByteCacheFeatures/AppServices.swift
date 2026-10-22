@@ -13,11 +13,13 @@ public final class AppServices {
     public let detector: LanguageDetector
     public let settings: AppSettings
     public let cloudSync: CloudSyncCoordinator
+    /// Appearance, line numbers and search-inside-code, shared with the web app's settings (CP-74).
+    public let serverSettings: ServerSettingsSync
     public let lock: AppLockModel
     public let widgets: WidgetSnapshotWriter
     /// Uploads snippets saved while offline.
     public let saveQueue: SaveQueueFlusher
-    /// New releases on GitHub, and What's New after an update.
+    /// What's New after an update.
     public let updates: UpdateModel
     /// Quick Search (Mac menu bar and global shortcut) has its own list, so it doesn't disturb the window's.
     public let quickSearch: QuickSearchModel
@@ -44,6 +46,7 @@ public final class AppServices {
         updates = UpdateModel(checker: Self.makeUpdateChecker())
         lock.appDidLaunch()
         cloudSync = CloudSyncCoordinator(settings: settings, session: session, cloud: cloud ?? UbiquitousSyncStore())
+        serverSettings = ServerSettingsSync(settings: settings, session: session)
     }
 }
 

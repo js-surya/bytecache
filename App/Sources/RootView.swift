@@ -60,7 +60,10 @@ struct RootView: View {
         .onChange(of: scenePhase) { _, phase in
             CrashReporting.scenePhaseChanged(phase)
             if phase == .active, let link = PendingCapture.consume() { AppNavigator.shared.handle(link) }
-            if phase == .active { Task { await services.updates.appBecameActive() } }
+            if phase == .active {
+                Task { await services.updates.appBecameActive() }
+                Task { await services.serverSettings.pull() }
+            }
         }
         .alert("ByteCache Closed Unexpectedly", isPresented: $offerCrashReport) {
             Button("Report…") { reportingCrash = true }
@@ -83,6 +86,7 @@ struct RootView: View {
         .onChange(of: services.session.state) {
             // Signing in refreshes too, so a first load that fails shows up in the widget.
             Task { await services.widgets.refresh() }
+            if case .signedIn = services.session.state { Task { await services.serverSettings.pull() } }
         }
         .onContinueUserActivity(SnippetActivity.type) { activity in
             guard services.settings.handoffEnabled, let target = SnippetActivity.parse(activity.userInfo) else { return }

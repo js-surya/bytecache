@@ -33,6 +33,17 @@ public struct APIClient: Sendable {
         return (response.token, user)
     }
 
+    /// The user's preferences stored on the server (ByteStash 1.5.13+), the ones ByteCache shares.
+    public func serverPreferences() async throws(APIError) -> ServerPreferences {
+        let response: ServerPreferencesResponse = try await send(.get, "/api/settings")
+        return response.settings
+    }
+
+    /// Merges these preferences into the stored ones; keys left nil aren't sent, so they're untouched.
+    public func updateServerPreferences(_ preferences: ServerPreferences) async throws(APIError) {
+        let _: ServerPreferencesResponse = try await send(.patch, "/api/settings", body: ServerPreferencesResponse(settings: preferences))
+    }
+
     /// For single-user servers that don't require a login.
     public func anonymousLogin() async throws(APIError) -> (token: String, user: User) {
         let response: LoginResponse = try await send(.post, "/api/auth/anonymous")
