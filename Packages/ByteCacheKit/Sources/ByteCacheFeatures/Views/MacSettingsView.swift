@@ -173,6 +173,9 @@ enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
         case .account, .apiKeys, .password, .assistants:
             if case .signedIn = session.state { return true }
             return false
+        case .suggestions:
+            // Macs that can't run Apple Intelligence (Intel) don't show it at all.
+            return !AIAvailability.current.hidesFeatures
         default:
             return true
         }

@@ -82,11 +82,14 @@ public struct SettingsView: View {
                 Toggle(isOn: Binding(get: { settings.searchInCode }, set: { settings.searchInCode = $0 })) {
                     SettingsLabel(title: "Search Inside Code", symbol: .search, color: .indigo)
                 }
-                NavigationLink {
-                    SuggestionsSettingsView()
-                } label: {
-                    SettingsLabel(title: "Smart Suggestions", symbol: .sparkles, color: .pink,
-                                  value: settings.suggestionsEnabled && SnippetSuggesters.onDevice() != nil ? "On" : "Off")
+                // Devices that can't run Apple Intelligence don't show it at all.
+                if !AIAvailability.current.hidesFeatures {
+                    NavigationLink {
+                        SuggestionsSettingsView()
+                    } label: {
+                        SettingsLabel(title: "Smart Suggestions", symbol: .sparkles, color: .pink,
+                                      value: settings.suggestionsEnabled && AIAvailability.current == .available ? "On" : "Off")
+                    }
                 }
             } header: {
                 Text(SettingsSection.snippets.title)
@@ -175,7 +178,7 @@ public struct SettingsView: View {
 }
 
 #if DEBUG
-/// Env `BC_SETTINGS_PAGE=about|acknowledgements|account|haptics|servers|report|mcp` opens that page, for screenshots.
+/// Env `BC_SETTINGS_PAGE=about|acknowledgements|account|haptics|servers|report|mcp|suggestions` opens that page, for screenshots.
 private struct DebugSettingsPage: ViewModifier {
     let session: SessionManager
     @State private var page = ProcessInfo.processInfo.environment["BC_SETTINGS_PAGE"]
@@ -187,6 +190,7 @@ private struct DebugSettingsPage: ViewModifier {
             case "servers": ServersView(session: session)
             case "report": ReportBugView(model: ReportBugModel(session: session))
             case "mcp": MCPSettingsView(model: MCPSettingsModel(session: session))
+            case "suggestions": SuggestionsSettingsView()
             case "acknowledgements": AcknowledgementsView()
             case "account": AccountSettingsView(session: session)
             default: AboutView()
@@ -696,26 +700,35 @@ struct HandoffSettingsView: View {
 
 struct SuggestionsSettingsView: View {
     @Environment(AppSettings.self) private var settings
+    @Environment(\.scenePhase) private var scenePhase
+    /// Read again on returning to the app: turning Apple Intelligence on, or its download finishing,
+    /// happens outside ByteCache.
+    @State private var availability = AIAvailability.current
 
     var body: some View {
         @Bindable var settings = settings
-        let available = SnippetSuggesters.onDevice() != nil
         SettingsList {
             Section {
-                Toggle("Suggest Titles & Tags", isOn: $settings.suggestionsEnabled)
-                    .disabled(!available)
+                // Shown off while Apple Intelligence can't be used; the choice itself is kept for later.
+                Toggle("Suggest Titles & Tags", isOn: Binding(
+                    get: { settings.suggestionsEnabled && availability == .available },
+                    set: { settings.suggestionsEnabled = $0 }
+                ))
+                .disabled(availability != .available)
             } footer: {
                 VStack(alignment: .leading, spacing: 6) {
                     FooterText("When you save code, ByteCache suggests a title, a one-line description and categories, and the Explain button describes what a snippet does — all with Apple Intelligence on this device. Your code never leaves it. Suggestions only fill empty fields; what you type always wins.")
-                    if !available {
-                        Label("Needs Apple Intelligence (iOS 26 or macOS 26 on a supported device, turned on in Settings).",
-                              symbol: .warning)
+                    if let why = availability.explanation {
+                        Label(why, symbol: .warning)
                             .foregroundStyle(.orange)
                     }
                 }
             }
         }
         .navigationTitle("Smart Suggestions")
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { availability = AIAvailability.current }
+        }
     }
 }
 
