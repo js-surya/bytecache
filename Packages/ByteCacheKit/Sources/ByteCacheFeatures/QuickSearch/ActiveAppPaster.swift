@@ -40,16 +40,9 @@ public final class ActiveAppPaster {
     /// Whether ByteCache may send keystrokes (System Settings → Privacy & Security → Accessibility).
     public var isAllowed: Bool { AXIsProcessTrusted() }
 
-    /// Shows the system's "allow ByteCache to control your computer" prompt (only if not allowed yet).
+    /// Opens the Accessibility settings with a panel to drag ByteCache into the list.
     public func askForPermission() {
-        // The value of kAXTrustedCheckOptionPrompt (a C global Swift 6 won't read from here).
-        _ = AXIsProcessTrustedWithOptions(["AXTrustedCheckOptionPrompt": true] as CFDictionary)
-    }
-
-    public func openAccessibilitySettings() {
-        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
-            NSWorkspace.shared.open(url)
-        }
+        AccessibilityGuide.shared.show()
     }
 
     /// Puts the text on the clipboard, then pastes it into the previous app when allowed.

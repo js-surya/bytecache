@@ -24,6 +24,9 @@ struct ByteCacheApp: App {
                     SystemAppIconSwitcher.shared.apply()
                     ActiveAppPaster.shared.start()
                     applyDockPolicy(menuBarOnly: services.settings.menuBarOnly)
+                    #if DEBUG
+                    if ProcessInfo.processInfo.arguments.contains("-BCAccessibilityGuide") { AccessibilityGuide.shared.show() }
+                    #endif
                 }
                 .onChange(of: services.settings.menuBarOnly) { _, only in
                     applyDockPolicy(menuBarOnly: only)

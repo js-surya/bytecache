@@ -260,7 +260,6 @@ private struct PastePermissionRow: View {
                 Spacer()
                 Button("Allow…") {
                     ActiveAppPaster.shared.askForPermission()
-                    ActiveAppPaster.shared.openAccessibilitySettings()
                 }
             }
         }
