@@ -184,6 +184,10 @@ enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
 private struct MacSearchPage: View {
     @Environment(AppSettings.self) private var settings
 
+    private var usesPaste: Bool {
+        settings.quickSearchReturnAction == .paste || settings.quickSearchOptionReturnAction == .paste
+    }
+
     var body: some View {
         @Bindable var settings = settings
         SettingsList {
@@ -200,10 +204,48 @@ private struct MacSearchPage: View {
             } header: {
                 Text("Quick Search")
             } footer: {
-                FooterText("Find a snippet from anywhere: press the shortcut or click the menu bar icon, type, then press Return to copy it or ⌘Return to open it.")
+                FooterText("Find a snippet from anywhere: press the shortcut or click the menu bar icon, type, then choose a snippet with Return. ⌘Return always opens it in ByteCache.")
+            }
+            Section {
+                Picker("Return", selection: $settings.quickSearchReturnAction) {
+                    ForEach(QuickSearchAction.allCases) { Text($0.title).tag($0) }
+                }
+                Picker("⌥ Return", selection: $settings.quickSearchOptionReturnAction) {
+                    ForEach(QuickSearchAction.allCases) { Text($0.title).tag($0) }
+                }
+                if usesPaste {
+                    PastePermissionRow()
+                }
+            } header: {
+                Text("Choosing a Snippet")
+            } footer: {
+                FooterText("Paste into Active App puts the snippet straight into the app you were using. It needs Accessibility permission to press ⌘V there; without it, the snippet is copied instead.")
             }
         }
         .navigationTitle("Search")
+    }
+}
+/// Whether Paste into Active App can work yet, with a way to allow it. Rechecked when ByteCache
+/// comes back to the front (after a visit to System Settings).
+private struct PastePermissionRow: View {
+    @State private var allowed = ActiveAppPaster.shared.isAllowed
+
+    var body: some View {
+        HStack {
+            if allowed {
+                Label("Accessibility allowed", symbol: .checkCircle).foregroundStyle(.green)
+            } else {
+                Label("Accessibility not allowed yet", symbol: .warning).foregroundStyle(.orange)
+                Spacer()
+                Button("Allow…") {
+                    ActiveAppPaster.shared.askForPermission()
+                    ActiveAppPaster.shared.openAccessibilitySettings()
+                }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            allowed = ActiveAppPaster.shared.isAllowed
+        }
     }
 }
 #endif

@@ -22,6 +22,7 @@ struct ByteCacheApp: App {
                 .task {
                     QuickSearchPanel.shared.configure(services)
                     SystemAppIconSwitcher.shared.apply()
+                    ActiveAppPaster.shared.start()
                 }
                 .onChange(of: services.settings.quickSearchShortcut) { _, shortcut in
                     GlobalHotKey.shared.register(shortcut)

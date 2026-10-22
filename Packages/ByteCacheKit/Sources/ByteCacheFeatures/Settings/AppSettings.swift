@@ -73,6 +73,13 @@ public final class AppSettings {
     public var quickSearchShortcut: QuickSearchShortcut {
         didSet { defaults.set(quickSearchShortcut.rawValue, forKey: Key.quickSearchShortcut) }
     }
+    /// Mac, device-only: what Return and ⌥Return do in Quick Search and the menu bar (⌘Return opens).
+    public var quickSearchReturnAction: QuickSearchAction {
+        didSet { defaults.set(quickSearchReturnAction.rawValue, forKey: Key.quickSearchReturn) }
+    }
+    public var quickSearchOptionReturnAction: QuickSearchAction {
+        didSet { defaults.set(quickSearchOptionReturnAction.rawValue, forKey: Key.quickSearchOptionReturn) }
+    }
     /// When snippets expire (ByteStash doesn't store this), per server and snippet.
     public var snippetExpiries: SnippetExpiries {
         didSet { defaults.set(try? JSONEncoder().encode(snippetExpiries), forKey: Key.snippetExpiries) }
@@ -119,6 +126,7 @@ public final class AppSettings {
         static let languageIconStyle = "languageIconStyle"
         static let fontSize = "codeFontSize", lineNumbers = "showLineNumbers", wrapLines = "wrapLines", smartGroups = "smartGroups"
         static let quickSearchMenuBar = "quickSearchInMenuBar", quickSearchShortcut = "quickSearchShortcut"
+        static let quickSearchReturn = "quickSearchReturnAction", quickSearchOptionReturn = "quickSearchOptionReturnAction"
         static let snippetExpiries = "snippetExpiries"
         static let iCloudSync = "iCloudSyncEnabled", handoff = "handoffEnabled", suggestions = "suggestionsEnabled"
         static let haptics = "hapticsEnabled", hapticStrength = "hapticStrength"
@@ -140,6 +148,8 @@ public final class AppSettings {
         wrapLines = defaults.bool(forKey: Key.wrapLines)
         quickSearchInMenuBar = defaults.object(forKey: Key.quickSearchMenuBar) as? Bool ?? true
         quickSearchShortcut = defaults.string(forKey: Key.quickSearchShortcut).flatMap(QuickSearchShortcut.init) ?? .controlOptionSpace
+        quickSearchReturnAction = defaults.string(forKey: Key.quickSearchReturn).flatMap(QuickSearchAction.init) ?? .copy
+        quickSearchOptionReturnAction = defaults.string(forKey: Key.quickSearchOptionReturn).flatMap(QuickSearchAction.init) ?? .paste
         snippetExpiries = defaults.data(forKey: Key.snippetExpiries)
             .flatMap { try? JSONDecoder().decode(SnippetExpiries.self, from: $0) } ?? SnippetExpiries()
         smartGroups = defaults.data(forKey: Key.smartGroups).flatMap { try? JSONDecoder().decode([SmartGroup].self, from: $0) } ?? []

@@ -63,7 +63,8 @@ public final class QuickSearchModel {
 }
 
 #if os(macOS)
-/// The Quick Search window: search field and results. ↑/↓ move, Return copies, ⌘Return opens, Esc closes.
+/// The Quick Search window: search field and results. ↑/↓ move; Return and ⌥Return copy, paste into the
+/// previous app or open, as chosen in Settings (CP-68); ⌘Return opens; Esc closes.
 public struct QuickSearchView: View {
     @Bindable var model: QuickSearchModel
     let lock: AppLockModel
@@ -86,7 +87,7 @@ public struct QuickSearchView: View {
                     .textFieldStyle(.plain)
                     .font(.title3)
                     .focused($fieldFocused)
-                    .onSubmit { copyHighlighted() }
+                    .onSubmit { choose(option: NSEvent.modifierFlags.contains(.option)) }
                     .disabled(lock.isLocked)
             }
             .padding(12)
@@ -99,8 +100,9 @@ public struct QuickSearchView: View {
         .onKeyPress(.downArrow) { model.move(by: 1); return .handled }
         .onKeyPress(.escape) { onClose(); return .handled }
         .onKeyPress(.return, phases: .down) { press in
-            guard press.modifiers.contains(.command), let snippet = model.highlightedSnippet else { return .ignored }
-            open(snippet)
+            guard press.modifiers.contains(.command) || press.modifiers.contains(.option),
+                  model.highlightedSnippet != nil else { return .ignored }
+            choose(option: press.modifiers.contains(.option), command: press.modifiers.contains(.command))
             return .handled
         }
         .task {
@@ -131,7 +133,10 @@ public struct QuickSearchView: View {
                             .padding(.horizontal, 4)
                             .listRowBackground(index == model.highlighted ? Color.accentColor.opacity(0.18) : Color.clear)
                             .contentShape(Rectangle())
-                            .onTapGesture { model.highlighted = index; copyHighlighted() }
+                            .onTapGesture {
+                                model.highlighted = index
+                                choose(option: NSEvent.modifierFlags.contains(.option))
+                            }
                             .id(snippet.id)
                     }
                 }
@@ -141,17 +146,27 @@ public struct QuickSearchView: View {
                 }
             }
             Divider()
-            Text("Return copies · ⌘Return opens · Esc closes")
+            Text(QuickSearchAction.hint(settings: settings))
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .padding(6)
         }
     }
 
-    private func copyHighlighted() {
+    private func choose(option: Bool, command: Bool = false) {
         guard !lock.isLocked, let snippet = model.highlightedSnippet else { return }
-        model.copy(snippet)
-        onClose()
+        switch QuickSearchAction.forReturn(option: option, command: command, settings: settings) {
+        case .copy:
+            model.copy(snippet)
+            onClose()
+        case .paste:
+            model.list.recordCopy(snippet)
+            // Close first, so the previous app comes back to the front before the paste.
+            onClose()
+            ActiveAppPaster.shared.paste(QuickSearchModel.code(of: snippet))
+        case .open:
+            open(snippet)
+        }
     }
 
     private func open(_ snippet: Snippet) {
