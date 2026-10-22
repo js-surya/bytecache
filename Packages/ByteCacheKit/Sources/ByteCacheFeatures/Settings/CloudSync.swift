@@ -50,21 +50,18 @@ public final class CloudSyncCoordinator {
     @ObservationIgnored private let cloud: any KeyValueSyncStore
     @ObservationIgnored private var observer: NSObjectProtocol?
     @ObservationIgnored private var started = false
-    @ObservationIgnored private let iCloudAvailable: Bool
 
-    public init(settings: AppSettings, session: SessionManager, cloud: any KeyValueSyncStore,
-                iCloudAvailable: Bool = BuildFeatures.iCloud) {
+    public init(settings: AppSettings, session: SessionManager, cloud: any KeyValueSyncStore) {
         self.settings = settings
         self.session = session
         self.cloud = cloud
-        self.iCloudAvailable = iCloudAvailable
     }
 
-    private var enabled: Bool { iCloudAvailable && settings.iCloudSyncEnabled }
+    private var enabled: Bool { settings.iCloudSyncEnabled }
 
     /// Pull what other devices saved, publish ours, then follow changes both ways.
     public func start() async {
-        guard !started, iCloudAvailable else { return }
+        guard !started else { return }
         started = true
         if let name = cloud.externalChangeNotification {
             observer = NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in

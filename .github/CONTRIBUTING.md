@@ -24,6 +24,5 @@ Short, conventional messages such as `fix(scan): …` or `feat(editor): …`, wi
 ## Branches and releases
 - `main` holds released code. `develop` collects work for the next release.
 - Every change goes on its own branch and into **`develop`** through a pull request (several small fixes can share one branch). Run `scripts/test.sh` first; pull requests into `develop` don't use GitHub's build machines.
-- **To release:** on `develop`, set the version with `scripts/set-version.sh X.Y.Z` and commit, then open a pull request from `develop` into `main`. GitHub runs the tests and builds the iPhone/iPad and Mac apps (downloadable from the run). **Merge it with a regular merge, not squash**: GitHub then publishes release `vX.Y.Z` with the builds, the source code and notes listing every change since the previous release.
+- **To release:** on `develop`, set the version with `scripts/set-version.sh X.Y.Z` and commit, then open a pull request from `develop` into `main`. GitHub runs the tests and checks that the iPhone/iPad and Mac apps compile. **Merge it with a regular merge, not squash**: GitHub then publishes release `vX.Y.Z` with the source code and notes listing every change since the previous release. The apps are distributed only through TestFlight and the App Store.
 - Docs-only changes don't start a build.
-- Build the release files locally with `scripts/package-release.sh`.

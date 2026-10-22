@@ -111,13 +111,11 @@ public struct SettingsView: View {
             }
 
             Section {
-                if BuildFeatures.iCloud {
-                    NavigationLink {
-                        ICloudSyncSettingsView()
-                    } label: {
-                        SettingsLabel(title: "iCloud Sync", symbol: .icloud, color: .cyan,
-                                      value: settings.iCloudSyncEnabled ? "On" : "Off")
-                    }
+                NavigationLink {
+                    ICloudSyncSettingsView()
+                } label: {
+                    SettingsLabel(title: "iCloud Sync", symbol: .icloud, color: .cyan,
+                                  value: settings.iCloudSyncEnabled ? "On" : "Off")
                 }
                 NavigationLink {
                     HandoffSettingsView()
@@ -555,23 +553,6 @@ struct AboutView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityHint("Writes an email")
-                // App Store and TestFlight copies may not link to an outside tip page (guideline 3.1.1):
-                // only Debug and GitHub builds contain the row, and even there store copies hide it.
-                #if TIP_LINKS
-                if InstallSource.current == .direct {
-                    Button { openURL(AboutText.support) } label: {
-                        HStack(spacing: 12) {
-                            BrandSettingsIcon(asset: "brand-kofi", color: Color(red: 1, green: 0.392, blue: 0.2))
-                            Text("Support on Ko-fi")
-                            Spacer(minLength: 8)
-                        }
-                        .foregroundStyle(.primary)
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityHint("Opens Ko-fi in your browser")
-                }
-                #endif
                 NavigationLink {
                     AcknowledgementsView()
                 } label: {
@@ -620,7 +601,7 @@ private struct AboutHeader: View {
     }
 }
 
-/// A brand mark (GitHub, Ko-fi) in a Settings-style tile.
+/// A brand mark (GitHub) in a Settings-style tile.
 private struct BrandSettingsIcon: View {
     let asset: String
     let color: Color
@@ -652,11 +633,7 @@ struct AcknowledgementsView: View {
             } header: {
                 Text("Icons and Colours")
             } footer: {
-                #if TIP_LINKS
-                FooterText("Logos are trademarks of their owners, used only to identify languages. The GitHub mark and the Ko-fi logo are trademarks of GitHub, Inc. and Ko-fi Labs Ltd, used to link to them.")
-                #else
                 FooterText("Logos are trademarks of their owners, used only to identify languages. The GitHub mark is a trademark of GitHub, Inc., used to link to GitHub.")
-                #endif
             }
             Section {
                 Text("Dracula, Monokai, Nord, Gruvbox, Night Owl and Catppuccin colour palettes by their respective authors (MIT).")

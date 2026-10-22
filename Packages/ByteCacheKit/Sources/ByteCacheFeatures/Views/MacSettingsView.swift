@@ -173,8 +173,6 @@ enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
         case .account, .apiKeys, .password, .assistants:
             if case .signedIn = session.state { return true }
             return false
-        case .iCloud:
-            return BuildFeatures.iCloud
         default:
             return true
         }

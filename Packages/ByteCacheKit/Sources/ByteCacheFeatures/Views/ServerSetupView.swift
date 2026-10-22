@@ -35,7 +35,7 @@ public struct ServerSetupView: View {
                     HStack {
                         Text("Your Servers")
                         Spacer()
-                        if settings.iCloudSyncEnabled && BuildFeatures.iCloud {
+                        if settings.iCloudSyncEnabled {
                             Label("iCloud", symbol: .icloud)
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
@@ -147,7 +147,7 @@ public struct ServerSetupView: View {
     /// On a new device the list arrives from iCloud a moment after launch: ask now, and show that
     /// we're looking for a few seconds rather than an empty screen.
     private func lookInICloud() async {
-        guard BuildFeatures.iCloud, settings.iCloudSyncEnabled, model.savedServers.isEmpty else { return }
+        guard settings.iCloudSyncEnabled, model.savedServers.isEmpty else { return }
         checkingICloud = true
         await cloudSync.syncNow()
         try? await Task.sleep(for: .seconds(6))

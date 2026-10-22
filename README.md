@@ -64,8 +64,7 @@
 
 ## Download
 
-- **iPhone and iPad:** join the [TestFlight beta](https://testflight.apple.com/join/rpmeVJW6), or sideload the unsigned `.ipa` from [Releases](../../releases) with Sideloadly or AltStore. The sideloaded build has everything except iCloud Sync, which needs the app to be signed by us.
-- **Mac:** download `ByteCache-<version>-macOS.zip` from [Releases](../../releases). It's signed and notarized: unzip it and move it to Applications.
+Join the **[TestFlight beta](https://testflight.apple.com/join/rpmeVJW6)** on your iPhone, iPad or Mac: open the link on the device and follow the steps. ByteCache is distributed only through TestFlight (and later the App Store); [Releases](../../releases) list what changed in each version.
 
 ## Requirements
 

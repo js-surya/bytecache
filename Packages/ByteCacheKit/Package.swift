@@ -21,10 +21,7 @@ let package = Package(
         .target(
             name: "ByteCacheFeatures",
             dependencies: ["ByteCacheCore", "ByteCacheLanguage", "HighlightSwift"],
-            resources: [.process("Resources")],
-            // The Ko-fi link exists only in Debug and GitHub builds (scripts/package-release.sh adds
-            // TIP_LINKS): App Store and TestFlight apps may not link to outside tip pages (3.1.1).
-            swiftSettings: [.define("TIP_LINKS", .when(configuration: .debug))]
+            resources: [.process("Resources")]
         ),
         // Test helpers only; not a product.
         .target(name: "ByteCacheTestSupport", dependencies: ["ByteCacheCore"]),
@@ -34,7 +31,6 @@ let package = Package(
             resources: [.copy("Fixtures")]
         ),
         .testTarget(name: "ByteCacheLanguageTests", dependencies: ["ByteCacheLanguage"], resources: [.copy("Fixtures")]),
-        .testTarget(name: "ByteCacheFeaturesTests", dependencies: ["ByteCacheFeatures", "ByteCacheTestSupport"],
-                    swiftSettings: [.define("TIP_LINKS", .when(configuration: .debug))]),
+        .testTarget(name: "ByteCacheFeaturesTests", dependencies: ["ByteCacheFeatures", "ByteCacheTestSupport"]),
     ]
 )

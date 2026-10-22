@@ -18,22 +18,11 @@ final class CloudSyncTests: XCTestCase {
         return session
     }
 
-    private func setup(cloud: InMemorySyncStore = InMemorySyncStore(), iCloudAvailable: Bool = true) async throws -> (CloudSyncCoordinator, AppSettings, SessionManager, InMemorySyncStore) {
+    private func setup(cloud: InMemorySyncStore = InMemorySyncStore()) async throws -> (CloudSyncCoordinator, AppSettings, SessionManager, InMemorySyncStore) {
         let store = InMemoryCredentialStore(Credentials(server: try ServerURL("https://a.io"), token: "secret-token", username: "demo"))
         let session = await signedIn(store)
         let settings = AppSettings(defaults: defaults())
-        return (CloudSyncCoordinator(settings: settings, session: session, cloud: cloud, iCloudAvailable: iCloudAvailable),
-                settings, session, cloud)
-    }
-
-    /// CP-63: the unsigned GitHub build has no iCloud; even with the setting on, nothing is synced.
-    func testBuildsWithoutICloudNeverSync() async throws {
-        let (sync, settings, _, cloud) = try await setup(iCloudAvailable: false)
-        settings.iCloudSyncEnabled = true
-        await sync.start()
-        await sync.syncNow()
-        XCTAssertNil(cloud.data(forKey: CloudSyncCoordinator.settingsKey))
-        XCTAssertNil(cloud.data(forKey: CloudSyncCoordinator.serversKey))
+        return (CloudSyncCoordinator(settings: settings, session: session, cloud: cloud), settings, session, cloud)
     }
 
     func testPushWritesSettingsAndServersWithoutSecrets() async throws {
