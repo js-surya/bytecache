@@ -16,6 +16,9 @@ struct MainSplitView: View {
     @State private var clipboard = ClipboardWatcher()
     @State private var clipboardEmpty = false
     @State private var scanning = false
+    @State private var history = NavigationHistory(start: .all)
+    /// Going Back/Forward into another section: the snippet to open once that section is loaded.
+    @State private var restoredSnippet: Snippet.ID??
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
@@ -32,7 +35,8 @@ struct MainSplitView: View {
             list.selection = sidebarSelection ?? .all
             // Only a change of section clears the open snippet; the first load must not drop one
             // opened from a widget, Spotlight or Handoff at launch.
-            if loadedSection != nil, loadedSection != sidebarSelection { selectedSnippet = nil }
+            if loadedSection != nil, loadedSection != sidebarSelection { selectedSnippet = restoredSnippet ?? nil }
+            restoredSnippet = nil
             loadedSection = sidebarSelection
             await list.refresh()
             if let id = selectedSnippet, !list.snippets.contains(where: { $0.id == id }) {
@@ -57,6 +61,8 @@ struct MainSplitView: View {
             activity.isEligibleForHandoff = true
         }
         .onAppear { clipboard.check() }
+        .onChange(of: sidebarSelection) { _, section in history.visit(section: section ?? .all) }
+        .onChange(of: selectedSnippet) { _, id in history.visit(snippet: id) }
         .onChange(of: services.settings.smartGroups, initial: true) {
             list.smartGroups = services.settings.smartGroups
             if case .smartGroup = list.selection { Task { await list.refresh() } }
@@ -191,11 +197,24 @@ struct MainSplitView: View {
                     startCapture(text)
                     return true
                 }
-                .toolbar {
-                    ToolbarItem(placement: .primaryAction) {
+                // Right-click the toolbar (Mac) or long-press it (iPad) to customise it.
+                .toolbar(id: "snippet-list") {
+                    ToolbarItem(id: "back", placement: .navigation) {
+                        Button { go(history.back()) } label: { Label("Back", symbol: .back) }
+                            .disabled(!history.canGoBack)
+                            .keyboardShortcut("[", modifiers: .command)
+                            .help("Back (⌘[)")
+                    }
+                    ToolbarItem(id: "forward", placement: .navigation) {
+                        Button { go(history.forward()) } label: { Label("Forward", symbol: .forward) }
+                            .disabled(!history.canGoForward)
+                            .keyboardShortcut("]", modifiers: .command)
+                            .help("Forward (⌘])")
+                    }
+                    ToolbarItem(id: "scan", placement: .primaryAction) {
                         Button { scanning = true } label: { Label("Scan Code", symbol: .scan) }
                     }
-                    ToolbarItem(placement: .primaryAction) {
+                    ToolbarItem(id: "new", placement: .primaryAction) {
                         Button { startEditing(nil) } label: { Label("New Snippet", symbol: .newSnippet) }
                     }
                 }
@@ -237,6 +256,15 @@ struct MainSplitView: View {
             } },
             recycle: snippet.flatMap { s in list.selection == .recycleBin ? nil : { Task { await list.recycle(s) } } }
         )
+    }
+
+    /// Shows a Back/Forward entry. The changes it makes match the history's current entry, so they
+    /// aren't recorded again.
+    private func go(_ entry: NavigationHistory.Entry?) {
+        guard let entry else { return }
+        if entry.section != (sidebarSelection ?? .all) { restoredSnippet = .some(entry.snippet) }
+        sidebarSelection = entry.section
+        selectedSnippet = entry.snippet
     }
 
     private func startCapture(_ text: String) {

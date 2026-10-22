@@ -86,6 +86,8 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case circle
     case checkbox
     case checkboxChecked
+    case back
+    case forward
 
     public var sfName: String {
         switch self {
@@ -173,6 +175,8 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .circle: "circle"
         case .checkbox: "square"
         case .checkboxChecked: "checkmark.square.fill"
+        case .back: "chevron.left"
+        case .forward: "chevron.right"
         }
     }
 
@@ -262,6 +266,8 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .circle: "circle"
         case .checkbox: "square"
         case .checkboxChecked: "square-check"
+        case .back: "chevron-left"
+        case .forward: "chevron-right"
         }
     }
 
