@@ -37,7 +37,8 @@ public struct SidebarView: View {
                 }
                 .onDelete { offsets in offsets.map { settings.smartGroups[$0] }.forEach(delete) }
                 Button { editingGroup = .some(nil) } label: {
-                    Label("New Smart Group…", symbol: .plusCircle)
+                    // A borderless button ignores the list's line limit, so the title sets its own.
+                    Label { Text("New Smart Group…").lineLimit(1) } icon: { Icon(.plusCircle) }
                 }
                 .buttonStyle(.borderless)
             }
@@ -57,6 +58,8 @@ public struct SidebarView: View {
                 }
             }
         }
+        // Sidebar rows stay on one line at any width (long tags, languages, Smart Group names).
+        .lineLimit(1)
         .navigationTitle(AboutText.appName)
         .sheet(item: Binding(get: { editingGroup.map { EditingGroup(group: $0) } }, set: { if $0 == nil { editingGroup = nil } })) { editing in
             NavigationStack {

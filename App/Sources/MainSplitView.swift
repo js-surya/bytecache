@@ -176,7 +176,7 @@ struct MainSplitView: View {
         NavigationSplitView {
             SidebarView(model: sidebar, selection: $sidebarSelection, session: services.session)
                 #if os(macOS)
-                .navigationSplitViewColumnWidth(min: 180, ideal: 220)
+                .navigationSplitViewColumnWidth(min: 180, ideal: 220, max: 320)
                 #endif
         } content: {
             SnippetListView(model: list, selection: $selectedSnippet)
@@ -200,16 +200,23 @@ struct MainSplitView: View {
                     }
                 }
                 #if os(macOS)
-                .navigationSplitViewColumnWidth(min: 260, ideal: 320)
+                // Room for a row's language, tags and date on one line; it grows with the window.
+                .navigationSplitViewColumnWidth(min: 280, ideal: 340, max: 560)
                 #endif
         } detail: {
-            if let id = selectedSnippet {
-                SnippetDestination(id: id, list: list, services: services) { startEditing($0) }
-                    .id(id)
-            } else {
-                ContentUnavailableView("No Snippet Selected", symbol: .braces,
-                                       description: Text("Pick a snippet, or press ⌘N to create one."))
+            Group {
+                if let id = selectedSnippet {
+                    SnippetDestination(id: id, list: list, services: services) { startEditing($0) }
+                        .id(id)
+                } else {
+                    ContentUnavailableView("No Snippet Selected", symbol: .braces,
+                                           description: Text("Pick a snippet, or press ⌘N to create one."))
+                }
             }
+            #if os(macOS)
+            // Keeps the file header and code readable; the window's minimum width follows from it.
+            .navigationSplitViewColumnWidth(min: 380, ideal: 600)
+            #endif
         }
     }
 
