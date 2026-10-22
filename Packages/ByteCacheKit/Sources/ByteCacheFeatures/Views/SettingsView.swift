@@ -597,6 +597,7 @@ struct AcknowledgementsView: View {
             Section("Code") {
                 credit("HighlightSwift", detail: "MIT License, © 2023 Stefan Britton")
                 credit("highlight.js", detail: "BSD 3-Clause License, © 2006 Ivan Sagalaev")
+                licence("Mermaid", detail: "MIT License, © 2014 - 2022 Knut Sveidqvist", file: "MERMAID-LICENSE")
             }
             Section {
                 licence("Lucide icons", detail: "ISC License, © Lucide Icons and Contributors (some icons © Cole Bemis, MIT)", file: "LUCIDE-LICENSE")

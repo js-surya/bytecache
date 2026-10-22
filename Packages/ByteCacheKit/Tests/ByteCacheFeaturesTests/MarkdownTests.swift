@@ -62,3 +62,33 @@ final class MarkdownTests: XCTestCase {
         XCTAssertFalse(MarkdownDocument.isMarkdown(language: "swift"))
     }
 }
+
+/// CP-73: GitHub-style tables, as ByteStash 1.5.12 shows them.
+final class MarkdownTableTests: XCTestCase {
+    func testParsesATableWithAlignment() {
+        let blocks = MarkdownDocument.parse("""
+        Intro
+
+        | Name | Count | Note |
+        |:-----|:-----:|-----:|
+        | a | 1 | x \\| y |
+        | **b** | 22 |
+        Tail
+        """)
+        XCTAssertEqual(blocks, [
+            .paragraph("Intro"),
+            .table(header: ["Name", "Count", "Note"], alignments: [.leading, .center, .trailing],
+                   rows: [["a", "1", "x | y"], ["**b**", "22", ""]]),
+            .paragraph("Tail"),
+        ])
+    }
+
+    func testOuterPipesAreOptional() {
+        let blocks = MarkdownDocument.parse("a | b\n--- | ---\n1 | 2")
+        XCTAssertEqual(blocks, [.table(header: ["a", "b"], alignments: [.leading, .leading], rows: [["1", "2"]])])
+    }
+
+    func testAPipeWithoutADividerIsJustText() {
+        XCTAssertEqual(MarkdownDocument.parse("a | b\nc | d"), [.paragraph("a | b c | d")])
+    }
+}
