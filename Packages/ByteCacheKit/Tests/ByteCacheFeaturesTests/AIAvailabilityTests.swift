@@ -3,10 +3,19 @@ import XCTest
 
 /// Apple Intelligence isn't on every device: unsupported ones hide the features, the rest say what's missing.
 final class AIAvailabilityTests: XCTestCase {
-    func testOnlyUnsupportedHardwareHidesTheFeatures() {
+    /// Hidden wherever Apple doesn't say the device supports it; shown (with what to do) where it does.
+    func testHiddenUnlessAppleSaysTheDeviceSupportsIt() {
         XCTAssertTrue(AIAvailability.deviceNotSupported.hidesFeatures)
-        for state in [AIAvailability.available, .needsNewerSystem, .turnedOff, .notReady] {
+        XCTAssertTrue(AIAvailability.needsNewerSystem.hidesFeatures, "no guessing whether an update would bring it")
+        for state in [AIAvailability.available, .turnedOff, .notReady] {
             XCTAssertFalse(state.hidesFeatures, "\(state)")
+        }
+    }
+
+    func testNoPromisesAboutSupport() {
+        for state in [AIAvailability.needsNewerSystem, .deviceNotSupported] {
+            let text = state.explanation ?? ""
+            XCTAssertFalse(text.contains("26") || text.lowercased().contains("supported"), text)
         }
     }
 

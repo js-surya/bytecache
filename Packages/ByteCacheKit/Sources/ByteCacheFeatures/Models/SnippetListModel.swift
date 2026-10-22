@@ -390,7 +390,8 @@ public final class SnippetListModel {
         if snippets.contains(where: { $0.id == id }) { return true }
         guard let client = session.client else { return false }
         if let snippet = (try? await client.snippet(id: id)) ?? cache?.snippet(id: id, server: client.server) {
-            snippets.insert(snippet, at: 0)
+            // The list may have loaded it meanwhile (opened from a widget or Spotlight at launch).
+            if !snippets.contains(where: { $0.id == id }) { snippets.insert(snippet, at: 0) }
             return true
         }
         return false
@@ -400,6 +401,9 @@ public final class SnippetListModel {
 
     /// Most Used keeps its own order (by copy count). While searching, best matches come first.
     private func arranged(_ list: [Snippet]) -> [Snippet] {
+        // One row per snippet, always: two rows with the same id confuse SwiftUI's list.
+        var seen = Set<Int>()
+        let list = list.filter { seen.insert($0.id).inserted }
         guard selection != .mostUsed else { return list }
         let sorted = SnippetOrdering.arranged(list, by: sort)
         let text = parsedSearch.text

@@ -4,11 +4,13 @@ import FoundationModels
 #endif
 
 /// Whether Apple Intelligence (the on-device model behind Suggest and Explain) can be used here, and
-/// if not, why. Devices that can never run it (older iPhones and iPads, Intel Macs, systems before
-/// iOS / macOS 26) don't show the features at all; on the others Settings says what's missing.
+/// if not, why. Only Apple's own answer counts: ByteCache keeps no list of devices. Where Apple doesn't
+/// say this device supports it (or can't be asked: systems before iOS / macOS 26) the features stay
+/// hidden, with no promises. When Apple supports more devices its answer changes and they appear.
+/// On supported devices that aren't set up yet, Settings says what's missing.
 public enum AIAvailability: Equatable, Sendable {
     case available
-    /// The system is older than iOS / iPadOS / macOS 26: an update would bring it.
+    /// The system is older than iOS / iPadOS / macOS 26, which can't say whether the device supports it.
     case needsNewerSystem
     /// The hardware doesn't support Apple Intelligence.
     case deviceNotSupported
@@ -50,25 +52,16 @@ public enum AIAvailability: Equatable, Sendable {
     }
     #endif
 
-    /// Hide the features: this device will never run them (a system update aside).
-    public var hidesFeatures: Bool { self == .deviceNotSupported }
+    /// Hide the features: Apple doesn't say this device supports them.
+    public var hidesFeatures: Bool { self == .deviceNotSupported || self == .needsNewerSystem }
 
     /// What to tell the person, or nil when it's available.
     public var explanation: String? {
         switch self {
         case .available: nil
-        case .needsNewerSystem:
-            #if os(macOS)
-            "Smart Suggestions use Apple Intelligence, which needs macOS 26 or later on a Mac with Apple silicon."
-            #else
-            "Smart Suggestions use Apple Intelligence, which needs iOS 26 or iPadOS 26 or later on a supported iPhone or iPad."
-            #endif
-        case .deviceNotSupported:
-            #if os(macOS)
-            "This Mac doesn't support Apple Intelligence."
-            #else
-            "This device doesn't support Apple Intelligence."
-            #endif
+        case .needsNewerSystem, .deviceNotSupported:
+            // Hidden anyway; worded without promising support that Apple hasn't announced.
+            "Smart Suggestions aren't available on this device."
         case .turnedOff:
             #if os(macOS)
             "Turn on Apple Intelligence in System Settings → Apple Intelligence & Siri to use Smart Suggestions."
