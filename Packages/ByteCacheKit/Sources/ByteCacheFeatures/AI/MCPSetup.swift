@@ -121,15 +121,24 @@ public final class MCPSettingsModel {
         return all.filter { !$0.runsInCloud } + all.filter(\.runsInCloud)
     }
 
+    /// "ByteCache MCP 2026-10-22": always Western digits and the Gregorian calendar, whatever the
+    /// device's region (a Thai calendar would say 2569).
+    nonisolated static func keyName(on date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.timeZone = .current
+        formatter.dateFormat = "yyyy-MM-dd"
+        return "ByteCache MCP \(formatter.string(from: date))"
+    }
+
     /// Creates a dedicated key on the server, keeps it in the Keychain and checks the connection.
     public func createKey() async {
         guard canCreateKey, let client = session.client, let account else { return }
         isWorking = true
         defer { isWorking = false }
         do {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd"
-            let created = try await client.createAPIKey(name: "ByteCache MCP \(formatter.string(from: .now))")
+            let created = try await client.createAPIKey(name: Self.keyName(on: .now))
             secrets.setSecret(created.key, for: account)
             savedKeyHint = Self.hint(created.key)
             status = await session.mcpClient(apiKey: created.key)?.check()
