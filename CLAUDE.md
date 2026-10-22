@@ -21,7 +21,7 @@ ByteCache ("Cache the bytes"; renamed from ByteCatch in CP-18 because of a name 
 
 ## Branches and releases
 - Feature/fix branches (one per Linear issue, e.g. `cp-14-report-a-bug`) → PR into **`develop`** (no GitHub CI; run tests locally first, then merge).
-- Release: ask the user for the version, `scripts/set-version.sh X.Y.Z` on `develop`, PR `develop` → `main` (CI tests it), then **merge commit, not squash**; the merge publishes GitHub release `vX.Y.Z` (`.github/workflows/release.yml`) with notes from the commit log.
+- Release: ask the user for the version and build, `scripts/set-version.sh X.Y.Z BUILD` on `develop` (match the TestFlight build; TestFlight may keep a version across builds to avoid a full review), PR `develop` → `main` (CI tests it), then **merge commit, not squash**; the merge publishes GitHub release "ByteCache X.Y.Z (BUILD)" (`.github/workflows/release.yml`) with notes from the commit log, tagged `vX.Y.Z` the first time and `vX.Y.Z-BUILD` for later builds of that version.
 - Since 1.3.0 the apps ship only through TestFlight (public link https://testflight.apple.com/join/rpmeVJW6) and the App Store: GitHub releases have notes and source, no app files. Archive in Xcode, Organizer → App Store Connect.
 
 ## Commands

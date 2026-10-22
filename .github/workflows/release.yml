@@ -2,10 +2,10 @@ name: Build and release
 
 # Features are merged into `develop` (no CI run). A release is one pull request from `develop` into `main`:
 # - the pull request checks it: the tests, and a quick unsigned compile of the iPhone/iPad and Mac apps;
-# - merging it (a regular merge, not squash) publishes a release if the version in project.yml is new: the
+# - merging it (a regular merge, not squash) publishes a release if the version and build in project.yml are new: the
 #   source code and notes listing every change since the previous release. The apps themselves are
 #   distributed only through TestFlight and the App Store, so the release has no app files.
-# Change the version with scripts/set-version.sh X.Y.Z. Docs-only changes don't start a run.
+# Change the version with scripts/set-version.sh X.Y.Z [BUILD]. Docs-only changes don't start a run.
 on:
   pull_request:
     branches: [main]
@@ -47,13 +47,23 @@ jobs:
         id: version
         run: |
           version=$(scripts/version.sh)
-          echo "version=$version" >> "$GITHUB_OUTPUT"
+          build=$(scripts/version.sh --build)
+          # A release is a version and build, "ByteCache 1.3.0 (7)". The first release of a version is
+          # tagged vX.Y.Z; later builds of the same version (TestFlight keeps the version) vX.Y.Z-BUILD.
           if git rev-parse -q --verify "refs/tags/v$version" >/dev/null; then
+            tag="v$version-$build"
+          else
+            tag="v$version"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "build=$build" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
             echo "new=false" >> "$GITHUB_OUTPUT"
-            echo "v$version is already released."
+            echo "$version ($build) is already released."
           else
             echo "new=true" >> "$GITHUB_OUTPUT"
-            echo "v$version is not released yet."
+            echo "$version ($build) is not released yet: $tag."
           fi
 
       - name: Tests
@@ -76,6 +86,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
+          BUILD: ${{ steps.version.outputs.build }}
+          TAG: ${{ steps.version.outputs.tag }}
         run: |
           cat > notes.md <<NOTES
           ## Install
@@ -94,7 +106,7 @@ jobs:
               | grep -vE '^Release [0-9]' \
               | perl -pe 's/^[a-z]+(\([^)]*\))?!?: //; s/^(.)/\u$1/; s/^/- /'
           } >> notes.md
-          gh release create "v$VERSION" \
+          gh release create "$TAG" \
             --target "$GITHUB_SHA" \
-            --title "ByteCache $VERSION" \
+            --title "ByteCache $VERSION ($BUILD)" \
             --notes-file notes.md
