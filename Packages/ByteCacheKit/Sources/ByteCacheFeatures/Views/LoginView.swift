@@ -23,7 +23,7 @@ public struct LoginView: View {
                         .frame(width: 64, height: 64)
                         .background(Color.accentColor.gradient, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                         .contentTransition(.symbolEffect(.replace))
-                    Text("Sign In").font(.title.bold())
+                    Text(model.creatingAccount ? "Create Account" : "Sign In").font(.title.bold())
                     Label(host, symbol: .server)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -34,20 +34,22 @@ public struct LoginView: View {
             }
             .listRowBackground(Color.clear)
 
-            Section {
-                Picker("Sign in with", selection: $model.method.animation()) {
-                    ForEach(OnboardingModel.LoginMethod.allCases) { Text($0.title).tag($0) }
+            if !model.creatingAccount {
+                Section {
+                    Picker("Sign in with", selection: $model.method.animation()) {
+                        ForEach(OnboardingModel.LoginMethod.allCases) { Text($0.title).tag($0) }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    #if os(macOS)
+                    // A Mac segmented control keeps its natural width; centre it under the heading.
+                    .fixedSize()
+                    .frame(maxWidth: .infinity)
+                    #endif
                 }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                #if os(macOS)
-                // A Mac segmented control keeps its natural width; centre it under the heading.
-                .fixedSize()
-                .frame(maxWidth: .infinity)
-                #endif
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets())
             }
-            .listRowBackground(Color.clear)
-            .listRowInsets(EdgeInsets())
 
             Section {
                 switch model.method {
@@ -59,8 +61,13 @@ public struct LoginView: View {
                         .textInputAutocapitalization(.never)
                         #endif
                     SecureField("Password", text: $model.password)
-                        .textContentType(.password)
+                        .textContentType(model.creatingAccount ? .newPassword : .password)
                         .onSubmit(signIn)
+                    if model.creatingAccount {
+                        SecureField("Confirm Password", text: $model.confirmPassword)
+                            .textContentType(.newPassword)
+                            .onSubmit(signIn)
+                    }
                 case .apiKey:
                     HStack(spacing: 14) {
                         Group {
@@ -97,6 +104,10 @@ public struct LoginView: View {
                 Group {
                     if let error = model.errorMessage {
                         Text(error).foregroundStyle(.red)
+                    } else if model.passwordsDiffer {
+                        Text("The passwords don't match.").foregroundStyle(.red)
+                    } else if model.creatingAccount {
+                        FooterText("Creates an account on this server and signs you in.")
                     } else if model.session.sessionExpired {
                         Text("Your session expired. Sign in again to continue.").foregroundStyle(.orange)
                     } else if model.method == .apiKey {
@@ -110,7 +121,7 @@ public struct LoginView: View {
                 VStack(spacing: 14) {
                     Button(action: signIn) {
                         ZStack {
-                            Text("Sign In").opacity(model.isWorking ? 0 : 1)
+                            Text(model.creatingAccount ? "Create Account" : "Sign In").opacity(model.isWorking ? 0 : 1)
                             if model.isWorking { ProgressView() }
                         }
                         .font(.headline)
@@ -120,6 +131,15 @@ public struct LoginView: View {
                     .controlSize(.large)
                     .disabled(!model.canLogin)
                     .keyboardShortcut(.defaultAction)
+
+                    if model.canCreateAccount && (model.method == .password || model.creatingAccount) {
+                        Button(model.creatingAccount ? "I Already Have an Account" : "Create Account") {
+                            withAnimation { model.toggleCreatingAccount() }
+                        }
+                        .buttonStyle(.borderless)
+                        .font(.subheadline)
+                        .disabled(model.isWorking)
+                    }
 
                     Button("Use a Different Server") { model.changeServer() }
                         .buttonStyle(.borderless)

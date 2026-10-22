@@ -95,6 +95,21 @@ public final class SessionManager {
         signIn(token: result.token, user: result.user)
     }
 
+    /// Whether the sign-in screen offers Create Account: the server allows new accounts, or has none yet.
+    public var canCreateAccount: Bool {
+        guard case .needsLogin(_, let config) = state else { return false }
+        return !config.disableAccounts && (config.allowNewAccounts || !config.hasUsers)
+    }
+
+    /// Creates an account and signs in with it.
+    public func register(username: String, password: String) async throws(APIError) {
+        guard case .needsLogin(let server, _) = state else { throw .invalidServer }
+        let result = try await APIClient(server: server, token: nil, transport: transport)
+            .register(username: username, password: password)
+        AppLog.shared.record("session", "created an account")
+        signIn(token: result.token, user: result.user)
+    }
+
     /// Signs in with an API key (ByteStash → Settings → API Keys). Checked by loading snippet metadata.
     public func loginWithAPIKey(_ rawKey: String) async throws(APIError) {
         guard case .needsLogin(let server, _) = state, var current = credentials else { throw .invalidServer }

@@ -44,6 +44,14 @@ public struct APIClient: Sendable {
         let _: ServerPreferencesResponse = try await send(.patch, "/api/settings", body: ServerPreferencesResponse(settings: preferences))
     }
 
+    /// Creates an account (when the server allows it) and returns its login, like `login`.
+    public func register(username: String, password: String) async throws(APIError) -> (token: String, user: User) {
+        let response: LoginResponse = try await send(
+            .post, "/api/auth/register", body: LoginBody(username: username, password: password)
+        )
+        return (response.token, response.user ?? User(id: 0, username: username))
+    }
+
     /// For single-user servers that don't require a login.
     public func anonymousLogin() async throws(APIError) -> (token: String, user: User) {
         let response: LoginResponse = try await send(.post, "/api/auth/anonymous")
