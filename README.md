@@ -20,6 +20,11 @@
 </p>
 
 <p align="center">
+  <a href="https://testflight.apple.com/join/rpmeVJW6"><img alt="Join the beta on TestFlight" src="https://img.shields.io/badge/TestFlight-join%20the%20beta-0D96F6?logo=apple&logoColor=white"></a>
+  <a href="https://ko-fi.com/trailingfox"><img alt="Support on Ko-fi" src="https://img.shields.io/badge/Ko--fi-support%20ByteCache-FF5E5B?logo=ko-fi&logoColor=white"></a>
+</p>
+
+<p align="center">
   <img src="docs/screenshots/editor-light.png" width="240" alt="Code editor with syntax colouring and line numbers">
   <img src="docs/screenshots/editor-dark.png" width="240" alt="The same editor in dark mode">
   <img src="docs/screenshots/settings.png" width="240" alt="Settings in the style of the iOS Settings app">
@@ -59,7 +64,8 @@
 
 ## Download
 
-Builds for iPhone, iPad and Mac are on the [Releases](../../releases) page. They're unsigned: on iPhone and iPad, sideload the `.ipa` with Sideloadly or AltStore; on Mac, unzip the app and right-click → Open the first time.
+- **iPhone and iPad:** join the [TestFlight beta](https://testflight.apple.com/join/rpmeVJW6), or sideload the unsigned `.ipa` from [Releases](../../releases) with Sideloadly or AltStore. The sideloaded build has everything except iCloud Sync, which needs the app to be signed by us.
+- **Mac:** download `ByteCache-<version>-macOS.zip` from [Releases](../../releases). It's signed and notarized: unzip it and move it to Applications.
 
 ## Requirements
 
