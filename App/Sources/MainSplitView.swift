@@ -198,7 +198,7 @@ struct MainSplitView: View {
                     return true
                 }
                 // Right-click the toolbar (Mac) or long-press it (iPad) to customise it.
-                .toolbar(id: "snippet-list") {
+                .toolbar(id: "main") {
                     ToolbarItem(id: "back", placement: .navigation) {
                         Button { go(history.back()) } label: { Label("Back", symbol: .back) }
                             .disabled(!history.canGoBack)

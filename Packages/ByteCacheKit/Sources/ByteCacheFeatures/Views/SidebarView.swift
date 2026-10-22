@@ -110,8 +110,8 @@ public struct SidebarView: View {
             .appSettingsStyle(settings)
         }
         #else
-        .toolbar {
-            ToolbarItem(placement: .navigation) {
+        .toolbar(id: "main") {
+            ToolbarItem(id: "server", placement: .navigation) {
                 ServerMenu(session: session)
             }
         }

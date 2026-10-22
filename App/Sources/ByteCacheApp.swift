@@ -39,6 +39,8 @@ struct ByteCacheApp: App {
         .commands {
             SnippetCommandsMenu()
             #if os(macOS)
+            // View → Show/Hide Toolbar and Customize Toolbar… (CP-71).
+            ToolbarCommands()
             CommandGroup(replacing: .help) {
                 ReportBugMenuItem()
             }
@@ -104,6 +106,7 @@ private struct ReportBugMenuItem: View {
     let policy: NSApplication.ActivationPolicy = menuBarOnly ? .accessory : .regular
     guard NSApp.activationPolicy() != policy else { return }
     NSApp.setActivationPolicy(policy)
-    if !menuBarOnly { NSApp.activate() }
+    // Changing the policy sends ByteCache to the back; keep the window you changed it from in front.
+    NSApp.activate()
 }
 #endif

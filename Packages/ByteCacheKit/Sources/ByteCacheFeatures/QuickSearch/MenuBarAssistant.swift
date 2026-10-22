@@ -83,7 +83,8 @@ public struct MenuBarAssistantView: View {
                                    description: Text("Open ByteCache to unlock it."))
         } else if let capture {
             NavigationStack {
-                CaptureSheet(model: capture, onQueued: { finishCreating(nil) }) { saved in finishCreating(saved) }
+                CaptureSheet(model: capture, emptyHint: "Paste or type the code to save.", inlineButtons: true,
+                             onQueued: { finishCreating(nil) }) { saved in finishCreating(saved) }
             }
         } else {
             LoadingMark().task { startCreating() }

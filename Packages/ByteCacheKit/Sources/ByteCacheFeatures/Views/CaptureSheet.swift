@@ -7,12 +7,18 @@ public struct CaptureSheet: View {
     let knownCategories: [String]
     let onDone: (Snippet?) -> Void
     let onQueued: () -> Void
+    let emptyHint: String
+    let inlineButtons: Bool
 
-    /// `onQueued` runs when the save went to the offline queue instead of the server.
-    public init(model: CaptureModel, knownCategories: [String] = [], onQueued: @escaping () -> Void = {},
-                onDone: @escaping (Snippet?) -> Void) {
+    /// `onQueued` runs when the save went to the offline queue instead of the server. `inlineButtons`
+    /// puts Cancel and Save under the form, for places without a toolbar (the menu bar window).
+    public init(model: CaptureModel, knownCategories: [String] = [],
+                emptyHint: String = "Select the code first, then share.", inlineButtons: Bool = false,
+                onQueued: @escaping () -> Void = {}, onDone: @escaping (Snippet?) -> Void) {
         self.model = model
         self.knownCategories = knownCategories
+        self.emptyHint = emptyHint
+        self.inlineButtons = inlineButtons
         self.onQueued = onQueued
         self.onDone = onDone
     }
@@ -34,7 +40,7 @@ public struct CaptureSheet: View {
                     .listRowInsets(EdgeInsets(top: 6, leading: 6, bottom: 6, trailing: 6))
                     .onChange(of: model.text) { model.textChanged() }
                 if !model.text.contains(where: { !$0.isWhitespace }) {
-                    Text("Select the code first, then share.").font(.footnote).foregroundStyle(.secondary)
+                    Text(emptyHint).font(.footnote).foregroundStyle(.secondary)
                 }
             }
             Section {
@@ -72,27 +78,49 @@ public struct CaptureSheet: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") { onDone(nil) }
-            }
-            ToolbarItem(placement: .confirmationAction) {
-                if model.isSaving {
-                    ProgressView()
-                } else {
-                    Button("Save") {
-                        Task {
-                            if let saved = try? await model.save() {
-                                onDone(saved)
-                            } else if model.didQueue {
-                                onQueued()
-                            }
-                        }
-                    }
-                    .disabled(!model.canSave)
-                    .keyboardShortcut("s", modifiers: .command)
+            if !inlineButtons {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { onDone(nil) }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    saveButton
                 }
             }
         }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if inlineButtons {
+                HStack {
+                    Button("Cancel") { onDone(nil) }
+                        .keyboardShortcut(.cancelAction)
+                    Spacer()
+                    saveButton
+                        .buttonStyle(.borderedProminent)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(.bar)
+                .overlay(alignment: .top) { Divider() }
+            }
+        }
         .logScreen("Capture")
+    }
+
+    @ViewBuilder
+    private var saveButton: some View {
+        if model.isSaving {
+            ProgressView().controlSize(.small)
+        } else {
+            Button("Save") {
+                Task {
+                    if let saved = try? await model.save() {
+                        onDone(saved)
+                    } else if model.didQueue {
+                        onQueued()
+                    }
+                }
+            }
+            .disabled(!model.canSave)
+            .keyboardShortcut("s", modifiers: .command)
+        }
     }
 }

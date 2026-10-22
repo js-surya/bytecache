@@ -53,13 +53,14 @@ public struct SnippetListView: View {
         .onChange(of: model.searchText) { model.searchTextChanged() }
         .refreshable { await model.refresh() }
         .navigationTitle(model.title)
-        .toolbar {
+        // One toolbar id for the whole main window, so it can be customised (CP-71).
+        .toolbar(id: "main") {
             if !model.isReadOnly && !model.snippets.isEmpty {
-                ToolbarItem {
+                ToolbarItem(id: "select") {
                     Button(model.isSelecting ? "Done" : "Select") { model.isSelecting.toggle() }
                 }
             }
-            ToolbarItem {
+            ToolbarItem(id: "sort") {
                 Menu {
                     Picker("Sort", selection: $model.sort) {
                         Text("Newest").tag(SnippetSort.newest)

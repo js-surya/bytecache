@@ -198,6 +198,7 @@ public struct QuickSearchView: View {
             ScrollView(.vertical) {
                 CodeView(code: fragment?.code ?? "", language: fragment?.language ?? "plaintext")
                     .padding(.horizontal, 6)
+                    .id(snippet.id)
             }
             .frame(height: 150)
         }
