@@ -6,16 +6,16 @@ import ByteCacheFeatures
 @MainActor
 enum CopyToastWindow {
     static func install() {
-        CopyFeedback.toast.onShow = { show() }
+        CopyFeedback.toast.onShow = { duration in show(for: duration) }
     }
 
     private static var hideTask: Task<Void, Never>?
 
-    /// Hides the window once the toast has animated out.
-    private static func scheduleHide(_ hide: @escaping @MainActor () -> Void) {
+    /// Hides the window once the toast has animated out (it stays as long as the toast does).
+    private static func scheduleHide(after duration: Duration, _ hide: @escaping @MainActor () -> Void) {
         hideTask?.cancel()
         hideTask = Task {
-            try? await Task.sleep(for: .seconds(2.2))
+            try? await Task.sleep(for: duration + .seconds(0.6))
             guard !Task.isCancelled else { return }
             hide()
         }
@@ -24,7 +24,7 @@ enum CopyToastWindow {
     #if os(iOS)
     private static var window: UIWindow?
 
-    private static func show() {
+    private static func show(for duration: Duration) {
         guard let scene = UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene })
             .first(where: { $0.activationState == .foregroundActive }) else { return }
@@ -40,16 +40,18 @@ enum CopyToastWindow {
             self.window = window
         }
         window?.isHidden = false
-        scheduleHide { window?.isHidden = true }
+        scheduleHide(after: duration) { window?.isHidden = true }
     }
     #elseif os(macOS)
     private static var panel: NSPanel?
 
-    private static func show() {
+    private static func show(for duration: Duration) {
         guard let parent = NSApp.keyWindow ?? NSApp.mainWindow else { return }
         let panel = panel ?? makePanel()
         self.panel = panel
-        let size = NSSize(width: 260, height: 90)
+        // Room for longer messages (two lines), never wider than the window.
+        let long = (CopyFeedback.toast.message?.count ?? 0) > 30
+        let size = NSSize(width: min(long ? 460 : 260, parent.frame.width - 40), height: long ? 110 : 90)
         let frame = parent.frame
         panel.setFrame(NSRect(x: frame.midX - size.width / 2, y: frame.minY + 8,
                               width: size.width, height: size.height), display: false)
@@ -58,7 +60,7 @@ enum CopyToastWindow {
             parent.addChildWindow(panel, ordered: .above)
         }
         panel.orderFront(nil)
-        scheduleHide {
+        scheduleHide(after: duration) {
             panel.parent?.removeChildWindow(panel)
             panel.orderOut(nil)
         }

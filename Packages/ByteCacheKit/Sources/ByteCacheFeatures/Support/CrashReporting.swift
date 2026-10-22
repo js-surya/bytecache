@@ -23,6 +23,15 @@ public enum CrashReporting {
         #endif
     }
 
+    /// After a crash: a short toast pointing to Settings → Report a Bug, instead of a prompt that
+    /// stops you at launch. The crash waits there until it's reported or dismissed.
+    public static func announceUnexpectedEnd() {
+        guard CrashWatch.shared.endedUnexpectedly else { return }
+        let message = "ByteCache closed unexpectedly. You can report it in Settings → Report a Bug."
+        AccessibilityNotification.Announcement(message).post()
+        CopyFeedback.toast.show(message, symbol: .warning, for: .seconds(5))
+    }
+
     /// iPhone and iPad: leaving the foreground is a normal way to end. That starts at "inactive":
     /// swiping ByteCache away in the app switcher ends it there, often before it ever reaches
     /// "background", and that mustn't count as a crash. (A Mac app keeps running with no window in

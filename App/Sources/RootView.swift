@@ -19,8 +19,6 @@ struct RootView: View {
     let services: AppServices
     @State private var restored = false
     /// After a crash: offer a report once per launch.
-    @State private var offerCrashReport = CrashWatch.shared.endedUnexpectedly
-    @State private var reportingCrash = false
 
     /// Debug: `-BCLoadingPreview` shows only the loading animation (screenshots).
     private static var previewLoading: Bool {
@@ -65,21 +63,6 @@ struct RootView: View {
                 Task { await services.serverSettings.pull() }
             }
         }
-        .alert("ByteCache Closed Unexpectedly", isPresented: $offerCrashReport) {
-            Button("Report…") { reportingCrash = true }
-            Button("Not Now", role: .cancel) {}
-        } message: {
-            Text("Send a short report so it can be fixed? You'll see everything in it before it's sent.")
-        }
-        .sheet(isPresented: $reportingCrash) {
-            NavigationStack {
-                ReportBugView(model: ReportBugModel(session: services.session, title: "ByteCache closed unexpectedly"),
-                              showsCancel: true)
-            }
-            #if os(macOS)
-            .frame(minWidth: 520, minHeight: 600)
-            #endif
-        }
         .sheet(item: Bindable(services.updates).whatsNew) { release in
             WhatsNewSheet(release: release).appSettingsStyle(services.settings)
         }
@@ -96,6 +79,12 @@ struct RootView: View {
             guard !restored else { return }
             Task { await services.updates.appBecameActive() }
             await services.session.restore()
+            // After a crash, a toast instead of a prompt, once the app is on screen; the report waits
+            // in Settings → Report a Bug.
+            Task {
+                try? await Task.sleep(for: .seconds(1.5))
+                CrashReporting.announceUnexpectedEnd()
+            }
             #if DEBUG
             // `-BCDemoLogin` launch argument: sign in to the public demo (screenshots, quick checks).
             if ProcessInfo.processInfo.arguments.contains("-BCDemoLogin"), case .needsServer = services.session.state {

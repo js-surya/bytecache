@@ -22,7 +22,9 @@ public struct MacSettingsView: View {
                     if !pages.isEmpty {
                         Section(section.title) {
                             ForEach(pages) { page in
-                                SettingsLabel(title: page.title, symbol: page.symbol(lock), color: page.color).tag(page)
+                                SettingsLabel(title: page.title, symbol: page.symbol(lock), color: page.color,
+                                              value: page == .reportBug && UnreportedCrash.shared.date != nil ? "Crash found" : nil,
+                                              valueColor: .orange).tag(page)
                             }
                         }
                     }

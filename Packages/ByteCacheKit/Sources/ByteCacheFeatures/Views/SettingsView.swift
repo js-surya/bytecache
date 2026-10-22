@@ -139,7 +139,8 @@ public struct SettingsView: View {
                 NavigationLink {
                     ReportBugView(model: ReportBugModel(session: session))
                 } label: {
-                    SettingsLabel(title: "Report a Bug", symbol: .bug, color: .red)
+                    SettingsLabel(title: "Report a Bug", symbol: .bug, color: .red,
+                                  value: UnreportedCrash.shared.date == nil ? nil : "Crash found", valueColor: .orange)
                 }
                 NavigationLink {
                     AboutView()

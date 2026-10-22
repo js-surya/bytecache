@@ -19,15 +19,17 @@ public enum CopyFeedback {
 @MainActor @Observable
 public final class CopyToastModel {
     public private(set) var message: String?
-    /// Called on every show, so the app can open its overlay window.
-    @ObservationIgnored public var onShow: (() -> Void)?
+    public private(set) var symbol: AppSymbol = .check
+    /// Called on every show with how long it stays, so the app can open its overlay window for that long.
+    @ObservationIgnored public var onShow: ((Duration) -> Void)?
     private var hideTask: Task<Void, Never>?
 
     public init() {}
 
-    public func show(_ message: String, for duration: Duration = .seconds(1.6)) {
-        onShow?()
+    public func show(_ message: String, symbol: AppSymbol = .check, for duration: Duration = .seconds(1.6)) {
+        self.symbol = symbol
         self.message = message
+        onShow?(duration)
         hideTask?.cancel()
         hideTask = Task {
             try? await Task.sleep(for: duration)
@@ -52,13 +54,16 @@ public struct CopyToastLayer: View {
         VStack {
             if edge == .bottom { Spacer() }
             if let message = model.message {
-                Label(message, symbol: .check)
+                Label(message, symbol: model.symbol)
+                    .multilineTextAlignment(.center)
                     .font(.subheadline.weight(.semibold))
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
                     .background(.regularMaterial, in: Capsule())
                     .overlay(Capsule().strokeBorder(.separator))
                     .shadow(color: .black.opacity(0.15), radius: 8, y: 2)
+                    // Longer messages wrap; keep them off the screen's edges.
+                    .padding(.horizontal, 16)
                     .transition(reduceMotion ? .opacity : .move(edge: edge == .top ? .top : .bottom).combined(with: .opacity))
                     // Already announced by CopyFeedback.
                     .accessibilityHidden(true)

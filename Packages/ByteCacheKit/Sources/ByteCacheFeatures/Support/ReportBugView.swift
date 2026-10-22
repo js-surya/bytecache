@@ -25,13 +25,21 @@ public final class ReportBugModel {
     public let diagnostic: CrashWatch.Diagnostic?
     @ObservationIgnored let session: SessionManager
 
+    /// A crash that hasn't been reported yet; the report starts with it.
+    public var unreportedCrash: Date? { UnreportedCrash.shared.date }
+
     public init(session: SessionManager, log: AppLog = .shared, device: DeviceInfo? = nil, title: String = "") {
-        self.title = title
+        self.title = title.isEmpty && UnreportedCrash.shared.date != nil ? "ByteCache closed unexpectedly" : title
         self.session = session
         self.device = device ?? DeviceInfo.current
         let hosts = session.accounts.compactMap { $0.server.base.host() }
         logs = log.entries().map { LogScrubber.scrub($0, serverHosts: hosts) }
         diagnostic = CrashWatch.shared.latestDiagnostic()
+    }
+
+    /// Reported (or not wanted): stop offering it.
+    public func clearUnreportedCrash() {
+        UnreportedCrash.shared.clear()
     }
 
     func loadContext(settings: AppSettings, session: SessionManager) async {
@@ -78,6 +86,16 @@ public struct ReportBugView: View {
 
     public var body: some View {
         SettingsList {
+            if let crash = model.unreportedCrash {
+                Section {
+                    Label {
+                        Text("ByteCache closed unexpectedly \(crash.formatted(.relative(presentation: .named))). A report helps fix it; the details are included below.")
+                    } icon: {
+                        Icon(.warning).foregroundStyle(.orange)
+                    }
+                    Button("Dismiss", role: .destructive) { withAnimation { model.clearUnreportedCrash() } }
+                }
+            }
             Section {
                 TextField("Short title, e.g. “Scan shows no text”", text: $model.title)
                 TextField("What happened? What did you expect?", text: $model.whatHappened, axis: .vertical)
@@ -108,15 +126,18 @@ public struct ReportBugView: View {
                 sendButton("Open GitHub Issue", detail: "Needs a GitHub account", symbol: .bug, color: .black) {
                     AppLog.shared.record("support", "opened a bug report on GitHub")
                     openURL(model.report.issueURL())
+                    model.clearUnreportedCrash()
                     dismiss()
                 }
                 sendButton("Send by Email", detail: AboutText.contactEmail, symbol: .mail, color: .blue) {
                     AppLog.shared.record("support", "wrote a bug report email")
                     email()
+                    model.clearUnreportedCrash()
                 }
                 sendButton(copied ? "Copied" : "Copy Report", detail: "Paste it anywhere", symbol: .copy, color: .gray) {
                     Pasteboard.copy(model.report.plainText)
                     copied = true
+                    model.clearUnreportedCrash()
                 }
             } header: {
                 Text("Send")

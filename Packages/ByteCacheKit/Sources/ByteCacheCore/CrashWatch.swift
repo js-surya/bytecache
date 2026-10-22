@@ -17,11 +17,15 @@ public final class CrashWatch: @unchecked Sendable {
     }
 
     public private(set) var endedUnexpectedly = false
+    /// When a session ended unexpectedly that hasn't been reported (or dismissed) yet. Kept across
+    /// launches: Settings → Report a Bug offers it instead of a prompt at launch.
+    public private(set) var unreportedCrash: Date?
 
     private let directory: URL
     private let keepDiagnostics: Int
     private let lock = NSLock()
     private var marker: URL { directory.appending(path: "app-session.running") }
+    private var unreported: URL { directory.appending(path: "unreported-crash") }
     private var diagnostics: URL { directory.appending(path: "Diagnostics") }
 
     public init(directory: URL, keepDiagnostics: Int = 5) {
@@ -32,7 +36,21 @@ public final class CrashWatch: @unchecked Sendable {
     /// Call once at launch.
     public func launched() {
         endedUnexpectedly = FileManager.default.fileExists(atPath: marker.path(percentEncoded: false))
+        if endedUnexpectedly {
+            // When it ended is unknown; the marker was last touched when the session started.
+            let started = (try? FileManager.default.attributesOfItem(atPath: marker.path(percentEncoded: false)))?[.modificationDate] as? Date
+            try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            try? Data(String((started ?? Date()).timeIntervalSince1970).utf8).write(to: unreported)
+        }
+        unreportedCrash = (try? String(contentsOf: unreported, encoding: .utf8))
+            .flatMap(TimeInterval.init).map(Date.init(timeIntervalSince1970:))
         enteredForeground()
+    }
+
+    /// The crash was reported, or the person chose not to.
+    public func clearUnreportedCrash() {
+        try? FileManager.default.removeItem(at: unreported)
+        unreportedCrash = nil
     }
 
     public func enteredForeground() {
