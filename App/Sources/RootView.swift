@@ -105,8 +105,10 @@ struct RootView: View {
             }
             // `-BCKeyLogin` with env BC_DEBUG_SERVER and BC_DEBUG_API_KEY: sign in to that server with an API key.
             let env = ProcessInfo.processInfo.environment
-            if ProcessInfo.processInfo.arguments.contains("-BCKeyLogin"), case .needsServer = services.session.state,
+            if ProcessInfo.processInfo.arguments.contains("-BCKeyLogin"), services.session.client == nil,
                let server = env["BC_DEBUG_SERVER"], let key = env["BC_DEBUG_API_KEY"] {
+                // Also from another server's sign-in screen (a simulator that remembers the demo).
+                if case .needsLogin = services.session.state { services.session.changeServer() }
                 try? await services.session.connect(server)
                 try? await services.session.loginWithAPIKey(key)
             }

@@ -23,14 +23,16 @@ public enum CrashReporting {
         #endif
     }
 
-    /// iPhone and iPad: leaving the foreground is a normal way to end. (A Mac app keeps running with
-    /// no window in front, so there only Quit counts.)
+    /// iPhone and iPad: leaving the foreground is a normal way to end. That starts at "inactive":
+    /// swiping ByteCache away in the app switcher ends it there, often before it ever reaches
+    /// "background", and that mustn't count as a crash. (A Mac app keeps running with no window in
+    /// front, so there only Quit counts.)
     public static func scenePhaseChanged(_ phase: ScenePhase) {
         #if os(iOS)
         switch phase {
         case .active: CrashWatch.shared.enteredForeground()
-        case .background: CrashWatch.shared.enteredBackground()
-        default: break
+        case .inactive, .background: CrashWatch.shared.enteredBackground()
+        @unknown default: break
         }
         #endif
     }
