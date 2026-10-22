@@ -28,8 +28,10 @@ public enum CrashReporting {
     public static func announceUnexpectedEnd() {
         guard CrashWatch.shared.endedUnexpectedly else { return }
         let message = "ByteCache closed unexpectedly. You can report it in Settings → Report a Bug."
+        AppLog.shared.record("app", "showed the closed-unexpectedly toast")
         AccessibilityNotification.Announcement(message).post()
-        CopyFeedback.toast.show(message, symbol: .warning, for: .seconds(5))
+        // Long enough to read; gone at the first tap, click or key, so it never stands in the way.
+        CopyFeedback.toast.show(message, symbol: .warning, for: .seconds(4), dismissOnInteraction: true)
     }
 
     /// iPhone and iPad: leaving the foreground is a normal way to end. That starts at "inactive":

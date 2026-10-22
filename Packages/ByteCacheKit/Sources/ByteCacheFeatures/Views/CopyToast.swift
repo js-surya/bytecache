@@ -22,13 +22,18 @@ public final class CopyToastModel {
     public private(set) var symbol: AppSymbol = .check
     /// Called on every show with how long it stays, so the app can open its overlay window for that long.
     @ObservationIgnored public var onShow: ((Duration) -> Void)?
+    /// Whether the toast showing now goes away at the first touch, click, scroll or key press.
+    public private(set) var dismissesOnInteraction = false
     private var hideTask: Task<Void, Never>?
 
     public init() {}
 
-    public func show(_ message: String, symbol: AppSymbol = .check, for duration: Duration = .seconds(1.6)) {
+    /// `dismissOnInteraction`: for a longer message, gone as soon as you carry on using the app.
+    public func show(_ message: String, symbol: AppSymbol = .check, for duration: Duration = .seconds(1.6),
+                     dismissOnInteraction: Bool = false) {
         self.symbol = symbol
         self.message = message
+        dismissesOnInteraction = dismissOnInteraction
         onShow?(duration)
         hideTask?.cancel()
         hideTask = Task {
@@ -36,6 +41,13 @@ public final class CopyToastModel {
             guard !Task.isCancelled else { return }
             self.message = nil
         }
+    }
+
+    /// Ends the toast early (the person started using the app).
+    public func hide() {
+        hideTask?.cancel()
+        message = nil
+        dismissesOnInteraction = false
     }
 }
 

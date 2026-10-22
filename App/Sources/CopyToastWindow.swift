@@ -1,5 +1,8 @@
 import SwiftUI
 import ByteCacheFeatures
+#if os(iOS)
+import UIKit.UIGestureRecognizerSubclass
+#endif
 
 /// Shows `CopyFeedback.toast` in its own click-through window above the active window, so the
 /// "Copied" toast is visible above sheets too (a SwiftUI overlay would sit behind them).
@@ -10,6 +13,20 @@ enum CopyToastWindow {
     }
 
     private static var hideTask: Task<Void, Never>?
+
+    /// The person started using the app: a toast that goes on interaction goes now.
+    private static func interacted() {
+        stopWatchingInteraction()
+        guard CopyFeedback.toast.dismissesOnInteraction else { return }
+        CopyFeedback.toast.hide()
+        // Let it animate out before the window goes.
+        hideTask?.cancel()
+        hideTask = Task {
+            try? await Task.sleep(for: .seconds(0.6))
+            guard !Task.isCancelled else { return }
+            hideWindow()
+        }
+    }
 
     /// Hides the window once the toast has animated out (it stays as long as the toast does).
     private static func scheduleHide(after duration: Duration, _ hide: @escaping @MainActor () -> Void) {
@@ -40,7 +57,46 @@ enum CopyToastWindow {
             self.window = window
         }
         window?.isHidden = false
-        scheduleHide(after: duration) { window?.isHidden = true }
+        scheduleHide(after: duration) { hideWindow() }
+        stopWatchingInteraction()
+        if CopyFeedback.toast.dismissesOnInteraction {
+            // On the app's own windows (the toast's ignores touches); the touch still does its job.
+            for appWindow in scene.windows where appWindow !== window {
+                let watcher = FirstTouch { interacted() }
+                appWindow.addGestureRecognizer(watcher)
+                watchers.append(watcher)
+            }
+        }
+    }
+
+    private static func hideWindow() {
+        window?.isHidden = true
+        stopWatchingInteraction()
+    }
+
+    private static var watchers: [FirstTouch] = []
+
+    private static func stopWatchingInteraction() {
+        for watcher in watchers { watcher.view?.removeGestureRecognizer(watcher) }
+        watchers = []
+    }
+
+    /// Notices the first touch anywhere in a window without taking it from the app.
+    private final class FirstTouch: UIGestureRecognizer {
+        private let onTouch: () -> Void
+
+        init(_ onTouch: @escaping () -> Void) {
+            self.onTouch = onTouch
+            super.init(target: nil, action: nil)
+            cancelsTouchesInView = false
+            delaysTouchesBegan = false
+            delaysTouchesEnded = false
+        }
+
+        override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
+            state = .failed
+            onTouch()
+        }
     }
     #elseif os(macOS)
     private static var panel: NSPanel?
@@ -60,10 +116,29 @@ enum CopyToastWindow {
             parent.addChildWindow(panel, ordered: .above)
         }
         panel.orderFront(nil)
-        scheduleHide(after: duration) {
+        scheduleHide(after: duration) { hideWindow() }
+        stopWatchingInteraction()
+        if CopyFeedback.toast.dismissesOnInteraction {
+            monitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .keyDown, .scrollWheel]) { event in
+                MainActor.assumeIsolated { interacted() }
+                return event
+            }
+        }
+    }
+
+    private static var monitor: Any?
+
+    private static func hideWindow() {
+        if let panel {
             panel.parent?.removeChildWindow(panel)
             panel.orderOut(nil)
         }
+        stopWatchingInteraction()
+    }
+
+    private static func stopWatchingInteraction() {
+        if let monitor { NSEvent.removeMonitor(monitor) }
+        monitor = nil
     }
 
     private static func makePanel() -> NSPanel {
