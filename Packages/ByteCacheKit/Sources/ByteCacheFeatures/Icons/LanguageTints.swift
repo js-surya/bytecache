@@ -4,6 +4,7 @@ extension LanguageIcon {
     /// Colour-mode tints for black logos, by Devicon logo name.
     static let logoTints: [String: Tint] = [
         "ansible": Tint(light: 0xEE0000, dark: 0xFD0000),
+        "bash": Tint(light: 0x458A19, dark: 0x89E051),
         "coffeescript": Tint(light: 0x244776, dark: 0x487EC7),
         "django": Tint(light: 0x092E20, dark: 0x1C9064),
         "handlebars": Tint(light: 0xB86607, dark: 0xF7931E),

@@ -76,6 +76,8 @@ public enum LanguageCatalog {
         "hcl": "terraform", "docker": "dockerfile", "k8s": "kubernetes", "rscript": "r",
         "tex": "latex", "octave": "matlab", "gql": "graphql", "neo4j": "cypher", "viml": "vimscript",
         "vim": "vimscript", "text": "plaintext", "txt": "plaintext", "plain": "plaintext",
+        // ByteStash's names for X3 4GL (Sage X3); its "src" alias is left out, too generic to trust.
+        "x3src": "x3", "sage-x3": "x3", "4gl": "x3", "x3-4gl": "x3",
     ]
 
     static let displayNames: [String: String] = [
