@@ -9,7 +9,6 @@ public struct ReportContext: Equatable, Sendable {
         public var install: InstallSource
         public var language: String
         public var appearance: String
-        public var iconStyle: String
         public var languageIcons: String
         public var appIcon: String
         public var iCloudSync: Bool
@@ -34,7 +33,7 @@ public struct ReportContext: Equatable, Sendable {
         var lines = [
             "Installed from: \(i.install == .appStore ? "App Store or TestFlight" : "GitHub or Xcode")",
             "Language: \(i.language)",
-            "Look: \(i.appearance) · \(i.iconStyle) · \(i.languageIcons) language icons · \(i.appIcon) app icon",
+            "Look: \(i.appearance) · \(i.languageIcons) language icons · \(i.appIcon) app icon",
             "iCloud Sync: \(onOff(i.iCloudSync)) · Handoff: \(onOff(i.handoff)) · App Lock: \(onOff(i.appLock))"
                 + (i.appLock ? " (widgets: \(i.widgetsWhileLocked))" : ""),
             "Servers: \(i.servers) · Signed in with: \(i.signIn)",
@@ -75,7 +74,6 @@ extension ReportContext {
             install: .current,
             language: Locale.preferredLanguages.first ?? Locale.current.identifier,
             appearance: settings.appearance.title,
-            iconStyle: settings.iconStyle.title,
             languageIcons: settings.languageIconStyle.title,
             appIcon: AppIconChoice(iconName: SystemAppIconSwitcher.shared.currentName).title,
             iCloudSync: settings.iCloudSyncEnabled,

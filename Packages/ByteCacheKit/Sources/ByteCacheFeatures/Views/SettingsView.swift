@@ -298,36 +298,6 @@ struct AppearanceSettingsView: View {
                 }
             }
             Section {
-                ForEach(IconStyle.allCases) { style in
-                    Button { settings.iconStyle = style } label: {
-                        HStack(spacing: 14) {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text(style.title).foregroundStyle(.primary)
-                                HStack(spacing: 14) {
-                                    // Same box for both styles: SF Symbols vary in width, so the two rows
-                                    // only line up in columns when every icon gets the same frame.
-                                    ForEach([AppSymbol.pin, .star, .copy, .server, .key, .scan, .settings], id: \.self) { symbol in
-                                        Icon(symbol, size: 18).font(.system(size: 16))
-                                            .frame(width: 22, height: 22)
-                                    }
-                                }
-                                .foregroundStyle(.secondary)
-                                .environment(\.iconStyle, style)
-                            }
-                            Spacer()
-                            if settings.iconStyle == style {
-                                Icon(.check).foregroundStyle(.tint).fontWeight(.semibold)
-                            }
-                        }
-                    }
-                    .accessibilityAddTraits(settings.iconStyle == style ? .isSelected : [])
-                }
-            } header: {
-                Text("Icon Style")
-            } footer: {
-                FooterText("Changes the icons inside ByteCache. Widgets, Control Center and system menus keep Apple's SF Symbols.")
-            }
-            Section {
                 ForEach(LanguageIconStyle.allCases) { style in
                     Button { settings.languageIconStyle = style } label: {
                         HStack(spacing: 14) {
@@ -760,7 +730,7 @@ private struct ProfileCard: View {
                 Text(isAPIKey ? "Signed in with an API key" : (user.username.isEmpty ? "Signed In" : user.username))
                     .font(.title3.weight(.semibold))
                 HStack(spacing: 5) {
-                    Icon(.server, size: 12).font(.caption)
+                    Icon(.server).font(.caption)
                     Text(serverName ?? server.base.host() ?? server.base.absoluteString)
                         .truncationMode(.middle)
                 }

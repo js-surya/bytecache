@@ -1,59 +1,57 @@
 #!/usr/bin/env python3
-"""Generates ByteCache's icon catalogue from one table:
-- Packages/ByteCacheKit/Sources/ByteCacheFeatures/Icons/AppSymbol.swift (SF Symbol ↔ Lucide names)
-- Packages/ByteCacheKit/Sources/ByteCacheFeatures/Resources/Icons.xcassets (Lucide SVGs as template vectors)
+"""Generates Packages/ByteCacheKit/Sources/ByteCacheFeatures/Icons/AppSymbol.swift from one table:
+each icon ByteCache shows and the SF Symbol for it. (Lucide was an alternative icon style until 1.3.)
 
-Usage: design/Icons/make-icons.py <path to lucide-static/icons>   (npm package lucide-static, ISC licence)
+Usage: design/Icons/make-icons.py
 """
-import json, os, re, shutil, sys
+import os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 FEATURES = os.path.join(ROOT, "Packages/ByteCacheKit/Sources/ByteCacheFeatures")
-LUCIDE_VERSION = "1.59.0"
 
-# case name, SF Symbol, Lucide icon ("name:fill" = the outline filled in, for "on" states; Lucide has no filled set)
+# case name, SF Symbol
 TABLE = [
-    ("server", "server.rack", "server"), ("check", "checkmark", "check"),
-    ("trash", "trash", "trash-2"), ("trashForever", "trash.slash", "trash"),
-    ("sparkles", "sparkles", "sparkles"), ("clipboard", "doc.on.clipboard", "clipboard-paste"),
-    ("plus", "plus", "plus"), ("plusCircle", "plus.circle.fill", "circle-plus"),
-    ("minusCircle", "minus.circle", "circle-minus"), ("key", "key.fill", "key-round"),
-    ("keyOff", "key.slash", "key"), ("warning", "exclamationmark.triangle", "triangle-alert"),
-    ("copy", "doc.on.doc", "copy"), ("braces", "curlybraces", "braces"),
-    ("appearance", "circle.lefthalf.filled", "contrast"),
-    ("code", "chevron.left.forwardslash.chevron.right", "code-xml"), ("checkCircle", "checkmark.circle.fill", "circle-check"),
-    ("restore", "arrow.uturn.backward", "undo-2"), ("close", "xmark", "x"),
-    ("closeCircle", "xmark.circle.fill", "circle-x"), ("offline", "wifi.slash", "wifi-off"),
-    ("tray", "tray", "inbox"), ("allSnippets", "tray.full", "library"),
-    ("textSmaller", "textformat.size.smaller", "a-arrow-down"), ("textLarger", "textformat.size.larger", "a-arrow-up"),
-    ("wrapLines", "arrow.turn.down.left", "wrap-text"), ("smartGroup", "folder.badge.gearshape", "folder-cog"), ("image", "photo", "image"), ("timer", "timer", "timer"),
-    ("noText", "text.badge.xmark", "file-x"), ("tag", "tag", "tag"),
-    ("star", "star", "star"), ("starFill", "star.fill", "star:fill"), ("starOff", "star.slash", "star-off"),
-    ("newSnippet", "square.and.pencil", "square-pen"), ("share", "square.and.arrow.up", "share"), ("download", "square.and.arrow.down", "download"),
-    ("pin", "pin", "pin"), ("pinFill", "pin.fill", "pin:fill"), ("pinOff", "pin.slash", "pin-off"),
-    ("signedOut", "person.crop.circle.badge.exclamationmark", "user-x"), ("person", "person.fill", "user"),
-    ("edit", "pencil", "pencil"), ("newWindow", "macwindow.badge.plus", "app-window"),
-    ("handoff", "macbook.and.iphone", "monitor-smartphone"), ("haptics", "iphone.radiowaves.left.and.right", "vibrate"), ("bug", "ladybug", "bug"), ("assistant", "brain.head.profile", "bot"), ("refresh", "arrow.clockwise", "refresh-cw"), ("infoCircle", "info.circle", "info"), ("database", "cylinder.split.1x2", "database"), ("terminal", "terminal", "square-terminal"), ("plainText", "doc.plaintext", "file-text"), ("configFile", "gearshape", "cog"), ("chip", "cpu", "cpu"), ("lockOpen", "lock.slash", "lock-open"),
-    ("changePassword", "lock.rotation", "rotate-ccw-key"), ("lock", "lock.fill", "lock"),
-    ("info", "info", "info"), ("icloud", "icloud.fill", "cloud"), ("icloudWarning", "exclamationmark.icloud", "cloud-alert"),
-    ("privacy", "hand.raised.fill", "hand"), ("settings", "gear", "settings"),
-    ("eye", "eye", "eye"), ("eyeOff", "eye.slash", "eye-off"), ("document", "doc.text", "file-text"),
-    ("cpu", "cpu", "cpu"), ("chevronsUpDown", "chevron.up.chevron.down", "chevrons-up-down"),
-    ("scan", "camera.viewfinder", "scan-text"), ("search", "magnifyingglass", "search"), ("hideKeyboard", "keyboard.chevron.compact.down", "keyboard-off"), ("mail", "envelope.fill", "mail"), ("acknowledgements", "heart.text.square.fill", "heart-handshake"), ("mostUsed", "chart.bar", "chart-column"), ("globe", "globe", "globe"), ("link", "link", "link"), ("sort", "arrow.up.arrow.down", "arrow-down-up"),
-    ("swap", "arrow.left.arrow.right", "arrow-left-right"), ("faceID", "faceid", "scan-face"),
-    ("touchID", "touchid", "fingerprint"), ("opticID", "opticid", "eye"),
-    ("circle", "circle", "circle"), ("checkbox", "square", "square"), ("checkboxChecked", "checkmark.square.fill", "square-check"),
-    ("back", "chevron.left", "chevron-left"), ("forward", "chevron.right", "chevron-right"),
+    ("server", "server.rack"), ("check", "checkmark"),
+    ("trash", "trash"), ("trashForever", "trash.slash"),
+    ("sparkles", "sparkles"), ("clipboard", "doc.on.clipboard"),
+    ("plus", "plus"), ("plusCircle", "plus.circle.fill"),
+    ("minusCircle", "minus.circle"), ("key", "key.fill"),
+    ("keyOff", "key.slash"), ("warning", "exclamationmark.triangle"),
+    ("copy", "doc.on.doc"), ("braces", "curlybraces"),
+    ("appearance", "circle.lefthalf.filled"),
+    ("code", "chevron.left.forwardslash.chevron.right"), ("checkCircle", "checkmark.circle.fill"),
+    ("restore", "arrow.uturn.backward"), ("close", "xmark"),
+    ("closeCircle", "xmark.circle.fill"), ("offline", "wifi.slash"),
+    ("tray", "tray"), ("allSnippets", "tray.full"),
+    ("textSmaller", "textformat.size.smaller"), ("textLarger", "textformat.size.larger"),
+    ("wrapLines", "arrow.turn.down.left"), ("smartGroup", "folder.badge.gearshape"), ("image", "photo"), ("timer", "timer"),
+    ("noText", "text.badge.xmark"), ("tag", "tag"),
+    ("star", "star"), ("starFill", "star.fill"), ("starOff", "star.slash"),
+    ("newSnippet", "square.and.pencil"), ("share", "square.and.arrow.up"), ("download", "square.and.arrow.down"),
+    ("pin", "pin"), ("pinFill", "pin.fill"), ("pinOff", "pin.slash"),
+    ("signedOut", "person.crop.circle.badge.exclamationmark"), ("person", "person.fill"),
+    ("edit", "pencil"), ("newWindow", "macwindow.badge.plus"),
+    ("handoff", "macbook.and.iphone"), ("haptics", "iphone.radiowaves.left.and.right"), ("bug", "ladybug"), ("assistant", "brain.head.profile"), ("refresh", "arrow.clockwise"), ("infoCircle", "info.circle"), ("database", "cylinder.split.1x2"), ("terminal", "terminal"), ("plainText", "doc.plaintext"), ("configFile", "gearshape"), ("chip", "cpu"), ("lockOpen", "lock.slash"),
+    ("changePassword", "lock.rotation"), ("lock", "lock.fill"),
+    ("info", "info"), ("icloud", "icloud.fill"), ("icloudWarning", "exclamationmark.icloud"),
+    ("privacy", "hand.raised.fill"), ("settings", "gear"),
+    ("eye", "eye"), ("eyeOff", "eye.slash"), ("document", "doc.text"),
+    ("cpu", "cpu"), ("chevronsUpDown", "chevron.up.chevron.down"),
+    ("scan", "camera.viewfinder"), ("search", "magnifyingglass"), ("hideKeyboard", "keyboard.chevron.compact.down"), ("mail", "envelope.fill"), ("acknowledgements", "heart.text.square.fill"), ("mostUsed", "chart.bar"), ("globe", "globe"), ("link", "link"), ("sort", "arrow.up.arrow.down"),
+    ("swap", "arrow.left.arrow.right"), ("faceID", "faceid"),
+    ("touchID", "touchid"), ("opticID", "opticid"),
+    ("circle", "circle"), ("checkbox", "square"), ("checkboxChecked", "checkmark.square.fill"),
+    ("back", "chevron.left"), ("forward", "chevron.right"),
 ]
 
 
 def write_swift():
-    cases = "\n".join(f"    case {c}" for c, _, _ in TABLE)
-    sf = "\n".join(f'        case .{c}: "{s}"' for c, s, _ in TABLE)
-    lu = "\n".join(f'        case .{c}: "{l.replace(":fill", "-fill")}"' for c, _, l in TABLE)
+    cases = "\n".join(f"    case {c}" for c, _ in TABLE)
+    sf = "\n".join(f'        case .{c}: "{s}"' for c, s in TABLE)
     swift = f"""// Generated by design/Icons/make-icons.py — edit the table there, not this file.
 
-/// Every icon ByteCache shows, as an SF Symbol and as its Lucide (v{LUCIDE_VERSION}) counterpart.
+/// Every icon ByteCache shows, as its SF Symbol. (Lucide icons were offered as an alternative style
+/// until 1.3; Acknowledgements still credits Lucide for earlier builds.)
 public enum AppSymbol: String, CaseIterable, Sendable {{
 {cases}
 
@@ -62,51 +60,11 @@ public enum AppSymbol: String, CaseIterable, Sendable {{
 {sf}
         }}
     }}
-
-    var lucideName: String {{
-        switch self {{
-{lu}
-        }}
-    }}
-
-    public var lucideAsset: String {{ "lucide-" + lucideName }}
 }}
 """
     os.makedirs(os.path.join(FEATURES, "Icons"), exist_ok=True)
     open(os.path.join(FEATURES, "Icons/AppSymbol.swift"), "w").write(swift)
 
 
-def write_assets(icons_dir):
-    catalog = os.path.join(FEATURES, "Resources/Icons.xcassets")
-    # Only replace this script's own icons; language logos and other assets come from other scripts.
-    os.makedirs(catalog, exist_ok=True)
-    for old in os.listdir(catalog):
-        if old.startswith("lucide-") and old.endswith(".imageset"):
-            shutil.rmtree(os.path.join(catalog, old))
-    json.dump({"info": {"author": "xcode", "version": 1}}, open(os.path.join(catalog, "Contents.json"), "w"), indent=2)
-    for entry in sorted({l for _, _, l in TABLE}):
-        name, _, variant = entry.partition(":")
-        svg = open(os.path.join(icons_dir, f"{name}.svg")).read()
-        if variant == "fill":
-            svg = svg.replace('fill="none"', 'fill="#000000"', 1)
-            name = f"{name}-fill"
-        svg = re.sub(r"<!--.*?-->\s*", "", svg, flags=re.S)
-        svg = svg.replace('stroke="currentColor"', 'stroke="#000000"')
-        svg = re.sub(r'\s*class="[^"]*"', "", svg)
-        # 20 pt natural size (close to SF Symbols in menus and toolbars); the 24-unit grid stays.
-        svg = svg.replace('width="24"', 'width="20"', 1).replace('height="24"', 'height="20"', 1)
-        folder = os.path.join(catalog, f"lucide-{name}.imageset")
-        os.makedirs(folder)
-        open(os.path.join(folder, f"{name}.svg"), "w").write(svg)
-        json.dump({
-            "images": [{"filename": f"{name}.svg", "idiom": "universal"}],
-            "info": {"author": "xcode", "version": 1},
-            "properties": {"preserves-vector-representation": True, "template-rendering-intent": "template"},
-        }, open(os.path.join(folder, "Contents.json"), "w"), indent=2)
-
-
 if __name__ == "__main__":
     write_swift()
-    write_assets(sys.argv[1])
-    shutil.copy(os.path.join(os.path.dirname(sys.argv[1].rstrip("/")), "LICENSE"), os.path.join(FEATURES, "Resources/LUCIDE-LICENSE.txt"))
-    print(f"{len(TABLE)} symbols, {len({l for _, _, l in TABLE})} Lucide icons")

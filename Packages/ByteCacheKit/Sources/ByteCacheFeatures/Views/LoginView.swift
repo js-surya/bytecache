@@ -18,7 +18,7 @@ public struct LoginView: View {
         OnboardingForm {
             Section {
                 VStack(spacing: 8) {
-                    Icon(model.method == .apiKey ? .key : .person, size: 28)
+                    Icon(model.method == .apiKey ? .key : .person)
                         .font(.system(size: 28, weight: .semibold))
                         .foregroundStyle(.white)
                         .frame(width: 64, height: 64)

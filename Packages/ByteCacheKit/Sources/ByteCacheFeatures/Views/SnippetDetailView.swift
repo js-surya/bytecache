@@ -228,7 +228,7 @@ struct StatusChip: View {
     let color: Color
 
     var body: some View {
-        Label { Text(title) } icon: { Icon(symbol, size: 12) }
+        Label { Text(title) } icon: { Icon(symbol) }
             .font(.caption.weight(.semibold))
             .foregroundStyle(color)
             .padding(.horizontal, 8).padding(.vertical, 3)

@@ -46,7 +46,6 @@ struct PhoneTabsView: View {
     @State private var libraryItem: SidebarItem?
     @State private var showingSettings = false
     @State private var searchPresented = false
-    @Environment(\.iconStyle) private var iconStyle
 
     init(services: AppServices, all: SnippetListModel, sidebar: SidebarModel, clipboard: ClipboardWatcher,
          allSelection: Binding<Snippet.ID?>, onNew: @escaping () -> Void, onScan: @escaping () -> Void,
@@ -184,7 +183,7 @@ struct PhoneTabsView: View {
 
     /// Tab bar items take a plain image, so build it from the chosen icon style.
     private func tabLabel(_ title: String, _ symbol: AppSymbol) -> some View {
-        Label { Text(title) } icon: { symbol.image(iconStyle) }
+        Label { Text(title) } icon: { symbol.image() }
     }
 
     private func stack(_ model: SnippetListModel, selection: Binding<Snippet.ID?>) -> some View {

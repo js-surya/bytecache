@@ -23,12 +23,6 @@ public enum AppAppearance: String, CaseIterable, Identifiable, Codable, Sendable
     }
 }
 
-public enum IconStyle: String, CaseIterable, Identifiable, Codable, Sendable {
-    case sfSymbols, lucide
-    public var id: String { rawValue }
-    public var title: String { self == .sfSymbols ? "SF Symbols" : "Lucide" }
-}
-
 public enum AccentChoice: String, CaseIterable, Identifiable, Codable, Sendable {
     case blue, purple, pink, red, orange, yellow, green, teal, indigo, graphite
     public var id: String { rawValue }
@@ -58,7 +52,6 @@ public final class AppSettings {
     public var appearance: AppAppearance { didSet { defaults.set(appearance.rawValue, forKey: Key.appearance) } }
     public var accent: AccentChoice { didSet { defaults.set(accent.rawValue, forKey: Key.accent) } }
     public var codeThemeID: String { didSet { defaults.set(codeThemeID, forKey: Key.codeThemeID) } }
-    public var iconStyle: IconStyle { didSet { defaults.set(iconStyle.rawValue, forKey: Key.iconStyle) } }
     /// Language logos in their brand colours or tinted like the other icons.
     public var languageIconStyle: LanguageIconStyle {
         didSet { defaults.set(languageIconStyle.rawValue, forKey: Key.languageIconStyle) }
@@ -137,7 +130,7 @@ public final class AppSettings {
     @ObservationIgnored private let defaults: UserDefaults
 
     private enum Key {
-        static let appearance = "appearance", accent = "accent", codeThemeID = "codeThemeID", iconStyle = "iconStyle", searchInCode = "searchInCode"
+        static let appearance = "appearance", accent = "accent", codeThemeID = "codeThemeID", searchInCode = "searchInCode"
         static let languageIconStyle = "languageIconStyle"
         static let fontSize = "codeFontSize", lineNumbers = "showLineNumbers", wrapLines = "wrapLines", smartGroups = "smartGroups"
         static let quickSearchMenuBar = "quickSearchInMenuBar", quickSearchShortcut = "quickSearchShortcut"
@@ -153,7 +146,6 @@ public final class AppSettings {
         self.defaults = defaults
         appearance = defaults.string(forKey: Key.appearance).flatMap(AppAppearance.init) ?? .system
         accent = defaults.string(forKey: Key.accent).flatMap(AccentChoice.init) ?? .blue
-        iconStyle = defaults.string(forKey: Key.iconStyle).flatMap(IconStyle.init) ?? .sfSymbols
         languageIconStyle = defaults.string(forKey: Key.languageIconStyle).flatMap(LanguageIconStyle.init) ?? .color
         searchInCode = defaults.bool(forKey: Key.searchInCode)
         let storedTheme = defaults.string(forKey: Key.codeThemeID) ?? CodeTheme.defaultID
@@ -189,7 +181,7 @@ public final class AppSettings {
     /// The preferences shared through iCloud.
     public var synced: SyncedSettings {
         SyncedSettings(appearance: appearance, accent: accent, codeThemeID: codeThemeID,
-                       codeFontSize: codeFontSize, showLineNumbers: showLineNumbers, iconStyle: iconStyle,
+                       codeFontSize: codeFontSize, showLineNumbers: showLineNumbers,
                        searchInCode: searchInCode, languageIconStyle: languageIconStyle, wrapLines: wrapLines,
                        smartGroups: smartGroups, snippetExpiries: snippetExpiries)
     }
@@ -200,7 +192,6 @@ public final class AppSettings {
         if codeThemeID != remote.codeThemeID, CodeTheme.named(remote.codeThemeID) != nil { codeThemeID = remote.codeThemeID }
         if codeFontSize != remote.codeFontSize { codeFontSize = remote.codeFontSize }
         if showLineNumbers != remote.showLineNumbers { showLineNumbers = remote.showLineNumbers }
-        if let style = remote.iconStyle, iconStyle != style { iconStyle = style }
         if let code = remote.searchInCode, searchInCode != code { searchInCode = code }
         if let style = remote.languageIconStyle, languageIconStyle != style { languageIconStyle = style }
         if let wrap = remote.wrapLines, wrapLines != wrap { wrapLines = wrap }
@@ -213,7 +204,6 @@ extension View {
     /// Applies the user's appearance and accent colour.
     public func appSettingsStyle(_ settings: AppSettings) -> some View {
         environment(settings)
-            .environment(\.iconStyle, settings.iconStyle)
             .preferredColorScheme(settings.appearance.colorScheme)
             .tint(settings.accent.color)
             #if os(iOS)
@@ -228,8 +218,8 @@ public struct SyncedSettings: Codable, Equatable, Sendable {
     public var codeThemeID: String
     public var codeFontSize: Double
     public var showLineNumbers: Bool
-    /// Optional: absent in settings synced by earlier versions.
-    public var iconStyle: IconStyle?
+    /// Optional: absent in settings synced by earlier versions. (Versions before 1.3 also synced an
+    /// icon style; it's ignored.)
     public var searchInCode: Bool?
     public var languageIconStyle: LanguageIconStyle?
     public var wrapLines: Bool?
@@ -237,7 +227,7 @@ public struct SyncedSettings: Codable, Equatable, Sendable {
     public var snippetExpiries: SnippetExpiries?
 
     public init(appearance: AppAppearance, accent: AccentChoice, codeThemeID: String, codeFontSize: Double,
-                showLineNumbers: Bool, iconStyle: IconStyle? = nil, searchInCode: Bool? = nil,
+                showLineNumbers: Bool, searchInCode: Bool? = nil,
                 languageIconStyle: LanguageIconStyle? = nil, wrapLines: Bool? = nil,
                 smartGroups: [SmartGroup]? = nil, snippetExpiries: SnippetExpiries? = nil) {
         self.appearance = appearance
@@ -245,7 +235,6 @@ public struct SyncedSettings: Codable, Equatable, Sendable {
         self.codeThemeID = codeThemeID
         self.codeFontSize = codeFontSize
         self.showLineNumbers = showLineNumbers
-        self.iconStyle = iconStyle
         self.searchInCode = searchInCode
         self.languageIconStyle = languageIconStyle
         self.wrapLines = wrapLines

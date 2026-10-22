@@ -5,35 +5,25 @@ import AppKit
 #endif
 
 final class IconTests: XCTestCase {
-    func testEverySymbolExistsInBothStyles() {
+    /// Every icon is a real SF Symbol on this system (a typo would show nothing).
+    func testEverySymbolExists() {
         XCTAssertGreaterThan(AppSymbol.allCases.count, 50)
         for symbol in AppSymbol.allCases {
             #if canImport(AppKit)
             XCTAssertNotNil(NSImage(systemSymbolName: symbol.sfName, accessibilityDescription: nil), "SF Symbol \(symbol.sfName)")
-            XCTAssertNotNil(Bundle.module.image(forResource: symbol.lucideAsset), "Lucide asset \(symbol.lucideAsset)")
             #endif
         }
     }
 
-    @MainActor
-    func testIconStyleIsSyncedAndDefaultsToSFSymbols() {
-        let name = "bytecache.icons.\(UUID().uuidString)"
-        let defaults = UserDefaults(suiteName: name)!
-        addTeardownBlock { UserDefaults(suiteName: name)?.removePersistentDomain(forName: name) }
-        let settings = AppSettings(defaults: defaults)
-        XCTAssertEqual(settings.iconStyle, .sfSymbols)
-        settings.iconStyle = .lucide
-        XCTAssertEqual(AppSettings(defaults: defaults).iconStyle, .lucide)
-        XCTAssertEqual(settings.synced.iconStyle, .lucide)
-    }
-
-    func testOlderSyncedSettingsWithoutIconStyleStillDecode() throws {
-        let old = #"{"appearance":"dark","accent":"blue","codeThemeID":"xcode","codeFontSize":14,"showLineNumbers":true}"#
+    /// Versions before 1.3 synced an icon style (SF Symbols or Lucide); it's ignored now.
+    func testSettingsSyncedByOlderVersionsStillDecode() throws {
+        let old = #"{"appearance":"dark","accent":"blue","codeThemeID":"xcode","codeFontSize":14,"showLineNumbers":true,"iconStyle":"lucide"}"#
         let decoded = try JSONDecoder().decode(SyncedSettings.self, from: Data(old.utf8))
-        XCTAssertNil(decoded.iconStyle)
+        XCTAssertEqual(decoded.appearance, .dark)
     }
 }
 
+/// Lucide was an icon style until 1.3; Acknowledgements keeps crediting it.
 final class LucideLicenceTests: XCTestCase {
     func testFullLicenceShipsWithTheApp() throws {
         let url = try XCTUnwrap(Bundle.module.url(forResource: "LUCIDE-LICENSE", withExtension: "txt"))
