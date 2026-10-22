@@ -18,6 +18,9 @@ struct RootView: View {
 
     let services: AppServices
     @State private var restored = false
+    /// After a crash: offer a report once per launch.
+    @State private var offerCrashReport = CrashWatch.shared.endedUnexpectedly
+    @State private var reportingCrash = false
 
     /// Debug: `-BCLoadingPreview` shows only the loading animation (screenshots).
     private static var previewLoading: Bool {
@@ -39,8 +42,10 @@ struct RootView: View {
                 switch services.session.state {
                 case .needsServer:
                     NavigationStack { ServerSetupView(model: services.onboarding) }
+                        .onboardingWindowSize()
                 case .needsLogin(let server, _):
                     NavigationStack { LoginView(model: services.onboarding, server: server) }
+                        .onboardingWindowSize()
                 case .signedIn:
                     // A fresh list, sidebar and selection for each server.
                     MainSplitView(services: services)
@@ -53,20 +58,27 @@ struct RootView: View {
             if let link = DeepLink(url: url) { AppNavigator.shared.handle(link) }
         }
         .onChange(of: scenePhase) { _, phase in
+            CrashReporting.scenePhaseChanged(phase)
             if phase == .active, let link = PendingCapture.consume() { AppNavigator.shared.handle(link) }
             if phase == .active { Task { await services.updates.appBecameActive() } }
         }
-        .sheet(item: Bindable(services.updates).offered) { release in
-            UpdateSheet(release: release, kind: .update, current: services.updates.runningVersion) {
-                services.updates.skipOffered()
-            }
-            .appSettingsStyle(services.settings)
+        .alert("ByteCache Closed Unexpectedly", isPresented: $offerCrashReport) {
+            Button("Report…") { reportingCrash = true }
+            Button("Not Now", role: .cancel) {}
+        } message: {
+            Text("Send a short report so it can be fixed? You'll see everything in it before it's sent.")
         }
-        .background {
-            // A second sheet needs its own anchor view.
-            Color.clear.sheet(item: Bindable(services.updates).whatsNew) { release in
-                UpdateSheet(release: release, kind: .whatsNew).appSettingsStyle(services.settings)
+        .sheet(isPresented: $reportingCrash) {
+            NavigationStack {
+                ReportBugView(model: ReportBugModel(session: services.session, title: "ByteCache closed unexpectedly"),
+                              showsCancel: true)
             }
+            #if os(macOS)
+            .frame(minWidth: 520, minHeight: 600)
+            #endif
+        }
+        .sheet(item: Bindable(services.updates).whatsNew) { release in
+            WhatsNewSheet(release: release).appSettingsStyle(services.settings)
         }
         .onChange(of: services.session.state) {
             // Signing in refreshes too, so a first load that fails shows up in the widget.
@@ -126,5 +138,16 @@ struct RootView: View {
             if let link = PendingCapture.consume() { AppNavigator.shared.handle(link) }
             await services.cloudSync.start()
         }
+    }
+}
+
+private extension View {
+    /// Room for the whole server or sign-in screen without scrolling on the Mac.
+    func onboardingWindowSize() -> some View {
+        #if os(macOS)
+        frame(minWidth: 480, minHeight: 700)
+        #else
+        self
+        #endif
     }
 }

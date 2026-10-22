@@ -9,12 +9,15 @@ struct SnippetEntry: TimelineEntry {
     let content: Content
     /// The configurable widget's heading (the chosen source); nil for the fixed widgets.
     var title: String?
+    /// Titles only while App Lock is on (Settings → App Lock → Widgets).
+    var visibility: WidgetVisibility = .everything
 }
 
 /// Builds an entry for one source from the shared snapshot.
 enum SnippetEntries {
     static func entry(for source: WidgetSource) -> SnippetEntry {
-        guard !AppEnvironment.isAppLockEnabled else { return SnippetEntry(date: .now, content: .locked, title: source.title) }
+        let visibility = WidgetVisibility.current()
+        guard visibility != .hidden else { return SnippetEntry(date: .now, content: .locked, title: source.title) }
         let snapshot: WidgetSnapshot
         switch WidgetSnapshotStore().state() {
         case .snapshot(let shared): snapshot = shared
@@ -25,7 +28,7 @@ enum SnippetEntries {
             return SnippetEntry(date: .now, content: .problem(problem), title: source.title)
         }
         return SnippetEntry(date: .now, content: .snippets(snapshot.list(for: source), server: snapshot.serverName),
-                            title: source.title)
+                            title: source.title, visibility: visibility)
     }
 }
 
@@ -33,7 +36,8 @@ struct SnippetProvider: TimelineProvider {
     let pinnedOnly: Bool
 
     private func entry() -> SnippetEntry {
-        guard !AppEnvironment.isAppLockEnabled else { return SnippetEntry(date: .now, content: .locked) }
+        let visibility = WidgetVisibility.current()
+        guard visibility != .hidden else { return SnippetEntry(date: .now, content: .locked) }
         let snapshot: WidgetSnapshot
         switch WidgetSnapshotStore().state() {
         case .snapshot(let shared): snapshot = shared
@@ -44,7 +48,8 @@ struct SnippetProvider: TimelineProvider {
         if let problem = snapshot.problem, snapshot.pinned.isEmpty, snapshot.recent.isEmpty {
             return SnippetEntry(date: .now, content: .problem(problem))
         }
-        return SnippetEntry(date: .now, content: .snippets(pinnedOnly ? snapshot.pinned : snapshot.recent, server: snapshot.serverName))
+        return SnippetEntry(date: .now, content: .snippets(pinnedOnly ? snapshot.pinned : snapshot.recent, server: snapshot.serverName),
+                            visibility: visibility)
     }
 
     func placeholder(in context: Context) -> SnippetEntry {
@@ -72,7 +77,7 @@ struct SnippetWidgetView: View {
     var body: some View {
         switch entry.content {
         case .locked:
-            message("ByteCache is Locked", systemImage: "lock.fill")
+            locked
         case .signedOut:
             message("Open ByteCache to sign in", systemImage: "curlybraces")
         case .problem(let problem):
@@ -87,15 +92,51 @@ struct SnippetWidgetView: View {
         }
     }
 
+    private var showsCode: Bool { entry.visibility == .everything }
+
+    /// App Lock with "Hide Everything": the widget's usual shape with blank rows and a lock.
+    /// Tapping opens ByteCache, which asks to unlock.
+    @ViewBuilder
+    private var locked: some View {
+        switch family {
+        case .accessoryInline, .accessoryRectangular:
+            Label("ByteCache is Locked", systemImage: "lock.fill")
+        default:
+            VStack(alignment: .leading, spacing: 6) {
+                if family != .systemSmall {
+                    Label(title, systemImage: "curlybraces").font(.caption.weight(.semibold)).foregroundStyle(.tint)
+                }
+                ForEach(0..<(family == .systemLarge ? 7 : 3), id: \.self) { _ in
+                    VStack(alignment: .leading, spacing: 3) {
+                        Capsule().frame(width: 110, height: 8)
+                        Capsule().frame(width: 160, height: 6).opacity(0.6)
+                    }
+                    .foregroundStyle(.quaternary)
+                }
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .overlay {
+                VStack(spacing: 4) {
+                    Image(systemName: "lock.fill").font(.title3).foregroundStyle(.tint)
+                    Text("Tap to Unlock").font(.caption.weight(.medium))
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+        }
+    }
+
     @ViewBuilder
     private func content(_ snippets: [WidgetSnippet]) -> some View {
         switch family {
         case .accessoryInline:
-            Text(snippets[0].title)
+            Text(snippets[0].title).privacySensitive()
         case .accessoryRectangular:
             VStack(alignment: .leading, spacing: 1) {
                 ForEach(snippets.prefix(3)) { snippet in
-                    Text(snippet.title).font(.caption).lineLimit(1)
+                    Text(snippet.title).font(.caption).lineLimit(1).privacySensitive()
                 }
             }
             .widgetURL(DeepLink.snippet(snippets[0].id).url)
@@ -115,14 +156,19 @@ struct SnippetWidgetView: View {
     private func single(_ snippet: WidgetSnippet) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text(snippet.title).font(.caption.weight(.semibold)).lineLimit(1)
+                Text(snippet.title).font(.caption.weight(.semibold)).lineLimit(1).privacySensitive()
                 Spacer(minLength: 0)
-                copyButton(snippet)
+                if showsCode { copyButton(snippet) }
             }
-            Text(snippet.preview)
-                .font(.system(size: 10, design: .monospaced))
-                .foregroundStyle(.secondary)
-                .lineLimit(6)
+            if showsCode {
+                Text(snippet.preview)
+                    .font(.system(size: 10, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(6)
+                    .privacySensitive()
+            } else {
+                codeHidden
+            }
             Spacer(minLength: 0)
         }
         .widgetURL(DeepLink.snippet(snippet.id).url)
@@ -132,16 +178,25 @@ struct SnippetWidgetView: View {
         HStack(spacing: 8) {
             Link(destination: DeepLink.snippet(snippet.id).url) {
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(snippet.title).font(.subheadline.weight(.medium)).lineLimit(1)
-                    Text(snippet.preview.split(separator: "\n").first.map(String.init) ?? "")
-                        .font(.system(size: 10, design: .monospaced))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                    Text(snippet.title).font(.subheadline.weight(.medium)).lineLimit(1).privacySensitive()
+                    if showsCode {
+                        Text(snippet.preview.split(separator: "\n").first.map(String.init) ?? "")
+                            .font(.system(size: 10, design: .monospaced))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .privacySensitive()
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            copyButton(snippet)
+            if showsCode { copyButton(snippet) }
         }
+    }
+
+    private var codeHidden: some View {
+        Label("Code hidden while locked", systemImage: "lock.fill")
+            .font(.caption2)
+            .foregroundStyle(.secondary)
     }
 
     private func copyButton(_ snippet: WidgetSnippet) -> some View {
@@ -171,7 +226,7 @@ private var supportedFamilies: [WidgetFamily] {
 
 struct PinnedSnippetsWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "app.bytecache.pinned", provider: SnippetProvider(pinnedOnly: true)) { entry in
+        StaticConfiguration(kind: "me.suryajs.bytecache.pinned", provider: SnippetProvider(pinnedOnly: true)) { entry in
             SnippetWidgetView(entry: entry, title: "Pinned", emptyMessage: "Pin snippets in ByteCache to see them here")
                 .containerBackground(.fill.tertiary, for: .widget)
         }
@@ -183,7 +238,7 @@ struct PinnedSnippetsWidget: Widget {
 
 struct RecentSnippetsWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "app.bytecache.recent", provider: SnippetProvider(pinnedOnly: false)) { entry in
+        StaticConfiguration(kind: "me.suryajs.bytecache.recent", provider: SnippetProvider(pinnedOnly: false)) { entry in
             SnippetWidgetView(entry: entry, title: "Recent", emptyMessage: "No snippets yet")
                 .containerBackground(.fill.tertiary, for: .widget)
         }
@@ -197,7 +252,7 @@ struct RecentSnippetsWidget: Widget {
 @available(iOS 18.0, *)
 struct SaveClipboardControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
-        StaticControlConfiguration(kind: "app.bytecache.saveClipboard") {
+        StaticControlConfiguration(kind: "me.suryajs.bytecache.saveClipboard") {
             ControlWidgetButton(action: SaveClipboardIntent()) {
                 Label("Save Clipboard", systemImage: "doc.on.clipboard")
             }
@@ -212,7 +267,7 @@ struct SaveClipboardControl: ControlWidget {
 @available(iOS 18.0, *)
 struct ScanCodeControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
-        StaticControlConfiguration(kind: "app.bytecache.scanCode") {
+        StaticControlConfiguration(kind: "me.suryajs.bytecache.scanCode") {
             ControlWidgetButton(action: ScanCodeIntent()) {
                 Label("Scan Code", systemImage: "camera.viewfinder")
             }
@@ -277,7 +332,7 @@ struct ConfigurableSnippetProvider: AppIntentTimelineProvider {
 
 struct ConfigurableSnippetsWidget: Widget {
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: "app.bytecache.snippets", intent: SnippetSourceIntent.self,
+        AppIntentConfiguration(kind: "me.suryajs.bytecache.snippets", intent: SnippetSourceIntent.self,
                                provider: ConfigurableSnippetProvider()) { entry in
             SnippetWidgetView(entry: entry, title: entry.title ?? "Snippets", emptyMessage: "Nothing here yet")
                 .containerBackground(.fill.tertiary, for: .widget)

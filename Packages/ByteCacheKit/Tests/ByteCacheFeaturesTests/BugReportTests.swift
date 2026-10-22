@@ -50,6 +50,31 @@ final class BugReportTests: XCTestCase {
         XCTAssertTrue(report.logFileText.contains("iOS 26.1"))
     }
 
+    func testAppDetailsAndCrashDetailsTravelWithTheReport() throws {
+        let report = BugReport(title: "Crash", whatHappened: "It closed", steps: "", device: device,
+                               logs: ["12:00 [api] GET /api/snippets → 200 in 80 ms"],
+                               context: ["Installed from: GitHub or Xcode", "Servers: 1 · Signed in with: password"],
+                               diagnostic: "{\"crash\":true}")
+        let text = report.plainText
+        XCTAssertTrue(text.contains("It closed"))
+        XCTAssertTrue(text.contains("Servers: 1 · Signed in with: password"))
+        XCTAssertTrue(text.contains("GET /api/snippets"))
+        XCTAssertTrue(report.logFileText.contains("Installed from: GitHub or Xcode"))
+        XCTAssertTrue(report.logFileText.contains("{\"crash\":true}"), "the system's crash details go in the file")
+        let link = try XCTUnwrap(URLComponents(url: report.issueURL(), resolvingAgainstBaseURL: false))
+        let logs = try XCTUnwrap(link.queryItems?.first { $0.name == "logs" }?.value)
+        XCTAssertTrue(logs.contains("Servers: 1"), "app details go with the GitHub issue too")
+    }
+
+    func testEmailGoesToTheContactAddressWithTheReport() throws {
+        let report = BugReport(title: "Slow", whatHappened: "Takes long", steps: "", device: device, logs: [])
+        let mail = try XCTUnwrap(URLComponents(url: report.mailURL(), resolvingAgainstBaseURL: false))
+        XCTAssertEqual(mail.scheme, "mailto")
+        XCTAssertEqual(mail.path, "hello@suryajs.me")
+        XCTAssertEqual(mail.queryItems?.first { $0.name == "subject" }?.value, "ByteCache bug: Slow")
+        XCTAssertTrue(mail.queryItems?.first { $0.name == "body" }?.value?.contains("Takes long") == true)
+    }
+
     func testEmptyTitleFallsBack() {
         let report = BugReport(title: "  ", whatHappened: "x", steps: "", device: device, logs: [])
         XCTAssertEqual(report.issueTitle, "Bug report")

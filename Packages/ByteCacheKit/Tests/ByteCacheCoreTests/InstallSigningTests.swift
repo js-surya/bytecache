@@ -18,8 +18,8 @@ final class InstallSigningTests: XCTestCase {
     }
 
     func testReadsGroupsAndTeamFromTheProfile() {
-        let signing = InstallSigning.profile(profileData(groups: ["group.app.bytecache.ABCDE12345", "group.*"], prefix: "ABCDE12345"))
-        XCTAssertEqual(signing, InstallSigning(appGroups: ["group.app.bytecache.ABCDE12345"], teamPrefix: "ABCDE12345"))
+        let signing = InstallSigning.profile(profileData(groups: ["group.me.suryajs.bytecache.ABCDE12345", "group.*"], prefix: "ABCDE12345"))
+        XCTAssertEqual(signing, InstallSigning(appGroups: ["group.me.suryajs.bytecache.ABCDE12345"], teamPrefix: "ABCDE12345"))
     }
 
     func testNotAProfile() {
@@ -27,24 +27,24 @@ final class InstallSigningTests: XCTestCase {
     }
 
     func testDeclaredGroupWinsWhenItWorks() {
-        let signing = InstallSigning(appGroups: ["group.app.bytecache.ABCDE12345"])
-        XCTAssertEqual(signing.appGroup(declared: "group.app.bytecache") { _ in true }, "group.app.bytecache")
+        let signing = InstallSigning(appGroups: ["group.me.suryajs.bytecache.ABCDE12345"])
+        XCTAssertEqual(signing.appGroup(declared: "group.me.suryajs.bytecache") { _ in true }, "group.me.suryajs.bytecache")
     }
 
     func testFallsBackToTheGroupThisCopyWasGiven() {
-        let signing = InstallSigning(appGroups: ["group.other", "group.app.bytecache.ABCDE12345"])
-        XCTAssertEqual(signing.appGroup(declared: "group.app.bytecache") { $0 != "group.app.bytecache" },
-                       "group.app.bytecache.ABCDE12345")
+        let signing = InstallSigning(appGroups: ["group.other", "group.me.suryajs.bytecache.ABCDE12345"])
+        XCTAssertEqual(signing.appGroup(declared: "group.me.suryajs.bytecache") { $0 != "group.me.suryajs.bytecache" },
+                       "group.me.suryajs.bytecache.ABCDE12345")
     }
 
     func testNoUsableGroup() {
-        XCTAssertNil(InstallSigning().appGroup(declared: "group.app.bytecache") { _ in false })
+        XCTAssertNil(InstallSigning().appGroup(declared: "group.me.suryajs.bytecache") { _ in false })
     }
 
     func testKeychainGroupGetsThisCopysTeamPrefix() {
         let signing = InstallSigning(teamPrefix: "ABCDE12345")
-        XCTAssertEqual(signing.keychainGroup(declared: "app.bytecache.shared"), "ABCDE12345.app.bytecache.shared")
-        XCTAssertEqual(signing.keychainGroup(declared: "ZZZZZ99999.app.bytecache.shared"), "ABCDE12345.app.bytecache.shared")
-        XCTAssertEqual(InstallSigning().keychainGroup(declared: "ZZZZZ99999.app.bytecache.shared"), "ZZZZZ99999.app.bytecache.shared")
+        XCTAssertEqual(signing.keychainGroup(declared: "me.suryajs.bytecache.shared"), "ABCDE12345.me.suryajs.bytecache.shared")
+        XCTAssertEqual(signing.keychainGroup(declared: "ZZZZZ99999.me.suryajs.bytecache.shared"), "ABCDE12345.me.suryajs.bytecache.shared")
+        XCTAssertEqual(InstallSigning().keychainGroup(declared: "ZZZZZ99999.me.suryajs.bytecache.shared"), "ZZZZZ99999.me.suryajs.bytecache.shared")
     }
 }

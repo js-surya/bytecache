@@ -58,7 +58,7 @@ struct ShareLinksView: View {
                     Text("Create")
                 } footer: {
                     if let error = model.error { Text(error).foregroundStyle(.red) }
-                    else { Text("Anyone with the link can view “\(title)” until it expires or you revoke it.") }
+                    else { FooterText("Anyone with the link can view “\(title)” until it expires or you revoke it.") }
                 }
 
                 if !model.links.isEmpty {

@@ -124,7 +124,7 @@ struct BackupView: View {
             } header: {
                 Text("Export")
             } footer: {
-                Text("ZIP: every snippet as files, named like Save. JSON: a full backup ByteCache can import again, including categories, pins and favourites.")
+                FooterText("ZIP: every snippet as files, named like Save. JSON: a full backup ByteCache can import again, including categories, pins and favourites.")
             }
 
             Section {
@@ -134,7 +134,7 @@ struct BackupView: View {
             } header: {
                 Text("Restore")
             } footer: {
-                Text("Snippets you already have (same title and code) are skipped.")
+                FooterText("Snippets you already have (same title and code) are skipped.")
             }
 
             Section {
@@ -150,7 +150,7 @@ struct BackupView: View {
             } header: {
                 Text("Import From")
             } footer: {
-                Text("You'll see what will be imported before anything is created. Languages are detected automatically.")
+                FooterText("You'll see what will be imported before anything is created. Languages are detected automatically.")
             }
         }
         .foregroundStyle(.primary)

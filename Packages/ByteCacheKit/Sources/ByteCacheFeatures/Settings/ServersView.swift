@@ -69,7 +69,7 @@ struct ServersView: View {
                     Task { for id in ids { await session.removeAccount(id) } }
                 }
             } footer: {
-                Text("Tap ⓘ to rename a server or change its address. Swipe or right-click a server to remove it. Removing a server forgets its login on this device; nothing is deleted on the server.")
+                FooterText("Tap ⓘ to rename a server or change its address. Swipe or right-click a server to remove it. Removing a server forgets its login on this device; nothing is deleted on the server.")
             }
             Section {
                 Button {

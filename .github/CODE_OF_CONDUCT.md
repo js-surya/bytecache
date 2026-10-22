@@ -6,5 +6,5 @@ In short: be kind and respectful, assume good intent, welcome newcomers, and kee
 work. Harassment, insults and personal attacks aren't tolerated in issues, pull requests or anywhere
 else in the project.
 
-To report unacceptable behaviour, contact the maintainer privately through
+To report unacceptable behaviour, email the maintainer at hello@suryajs.me or contact them privately through
 [GitHub](https://github.com/js-surya). Reports are kept confidential.

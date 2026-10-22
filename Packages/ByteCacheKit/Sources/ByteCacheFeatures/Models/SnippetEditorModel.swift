@@ -113,12 +113,15 @@ public final class SnippetEditorModel {
         defer { isSaving = false }
         let outgoing = normalized(draft)
         do {
-            if let id = existingID {
-                return try await client.update(id: id, outgoing)
+            let saved = if let id = existingID {
+                try await client.update(id: id, outgoing)
             } else {
-                return try await client.create(outgoing)
+                try await client.create(outgoing)
             }
+            AppLog.shared.record("snippet", "saved \(existingID == nil ? "a new" : "an edited") snippet: \(FragmentDraft.logSummary(outgoing.fragments))")
+            return saved
         } catch {
+            AppLog.shared.record("snippet", "save failed: \(error.logName)")
             if error == .unauthorized { session.handleUnauthorized() }
             self.error = ErrorText.message(for: error)
             throw error

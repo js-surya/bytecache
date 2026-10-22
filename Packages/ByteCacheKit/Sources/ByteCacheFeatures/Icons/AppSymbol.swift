@@ -16,7 +16,6 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case warning
     case copy
     case braces
-    case appMark
     case appearance
     case code
     case checkCircle
@@ -73,6 +72,9 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case chevronsUpDown
     case scan
     case search
+    case hideKeyboard
+    case mail
+    case acknowledgements
     case mostUsed
     case globe
     case link
@@ -84,6 +86,8 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case circle
     case checkbox
     case checkboxChecked
+    case back
+    case forward
 
     public var sfName: String {
         switch self {
@@ -101,7 +105,6 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .warning: "exclamationmark.triangle"
         case .copy: "doc.on.doc"
         case .braces: "curlybraces"
-        case .appMark: "curlybraces.square.fill"
         case .appearance: "circle.lefthalf.filled"
         case .code: "chevron.left.forwardslash.chevron.right"
         case .checkCircle: "checkmark.circle.fill"
@@ -158,6 +161,9 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .chevronsUpDown: "chevron.up.chevron.down"
         case .scan: "camera.viewfinder"
         case .search: "magnifyingglass"
+        case .hideKeyboard: "keyboard.chevron.compact.down"
+        case .mail: "envelope.fill"
+        case .acknowledgements: "heart.text.square.fill"
         case .mostUsed: "chart.bar"
         case .globe: "globe"
         case .link: "link"
@@ -169,6 +175,8 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .circle: "circle"
         case .checkbox: "square"
         case .checkboxChecked: "checkmark.square.fill"
+        case .back: "chevron.left"
+        case .forward: "chevron.right"
         }
     }
 
@@ -188,7 +196,6 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .warning: "triangle-alert"
         case .copy: "copy"
         case .braces: "braces"
-        case .appMark: "braces"
         case .appearance: "contrast"
         case .code: "code-xml"
         case .checkCircle: "circle-check"
@@ -245,6 +252,9 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .chevronsUpDown: "chevrons-up-down"
         case .scan: "scan-text"
         case .search: "search"
+        case .hideKeyboard: "keyboard-off"
+        case .mail: "mail"
+        case .acknowledgements: "heart-handshake"
         case .mostUsed: "chart-column"
         case .globe: "globe"
         case .link: "link"
@@ -256,6 +266,8 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .circle: "circle"
         case .checkbox: "square"
         case .checkboxChecked: "square-check"
+        case .back: "chevron-left"
+        case .forward: "chevron-right"
         }
     }
 

@@ -91,6 +91,8 @@ private struct WrappedCodeLines: View {
             lines = nil
             guard let result = try? await Self.highlighter.request(code, mode: HighlightAlias.mode(for: language),
                                                                     colors: palette.colors) else { return }
+            // The code changed while this ran: a newer task shows the new code; don't overwrite it.
+            guard !Task.isCancelled else { return }
             lines = CodeLines.split(result.attributedText, original: code)
         }
     }

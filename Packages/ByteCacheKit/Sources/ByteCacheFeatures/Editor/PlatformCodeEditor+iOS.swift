@@ -30,7 +30,7 @@ struct PlatformCodeEditor: UIViewRepresentable {
         view.alwaysBounceVertical = true
         view.keyboardDismissMode = .interactive
         view.textContainerInset = UIEdgeInsets(top: 10, left: 8, bottom: 10, right: 8)
-        view.inputAccessoryView = EditorKeyBar.make(for: view)
+        view.inputAccessoryView = EditorKeyBar.make(for: view, iconStyle: context.environment.iconStyle)
         coordinator.textView = view
         coordinator.redrawGutter = { [weak view] in view?.layoutGutter() }
         coordinator.restyle(style)
@@ -120,7 +120,7 @@ final class LineNumberGutter: UIView {
 /// Keys that are awkward on a phone keyboard, plus Find & Replace.
 @MainActor
 enum EditorKeyBar {
-    static func make(for view: CodeUITextView) -> UIView {
+    static func make(for view: CodeUITextView, iconStyle: IconStyle) -> UIView {
         let keys = ["⇥", "{", "}", "(", ")", "[", "]", "\"", "'", "=", ";", ":", "<", ">", "/", "|", "$", "_"]
         var buttons: [UIButton] = keys.map { key in
             var config = UIButton.Configuration.gray()
@@ -134,13 +134,13 @@ enum EditorKeyBar {
             return button
         }
         var find = UIButton.Configuration.gray()
-        find.image = UIImage(systemName: "magnifyingglass")
+        find.image = AppSymbol.search.uiImage(iconStyle)
         buttons.insert(UIButton(configuration: find, primaryAction: UIAction { [weak view] _ in
             view?.findInteraction?.presentFindNavigator(showingReplace: true)
         }), at: 0)
         buttons[0].accessibilityLabel = "Find and Replace"
         var done = UIButton.Configuration.gray()
-        done.image = UIImage(systemName: "keyboard.chevron.compact.down")
+        done.image = AppSymbol.hideKeyboard.uiImage(iconStyle)
         let doneButton = UIButton(configuration: done, primaryAction: UIAction { [weak view] _ in _ = view?.resignFirstResponder() })
         doneButton.accessibilityLabel = "Hide Keyboard"
 
@@ -171,6 +171,16 @@ enum EditorKeyBar {
             stack.heightAnchor.constraint(equalToConstant: 36),
         ])
         return bar
+    }
+}
+
+extension AppSymbol {
+    /// The icon for UIKit controls, in the chosen style.
+    func uiImage(_ style: IconStyle) -> UIImage? {
+        switch style {
+        case .sfSymbols: UIImage(systemName: sfName)
+        case .lucide: UIImage(named: lucideAsset, in: .module, compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
+        }
     }
 }
 #endif

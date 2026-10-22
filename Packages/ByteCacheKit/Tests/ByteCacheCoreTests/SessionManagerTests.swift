@@ -146,7 +146,7 @@ final class SessionManagerTests: XCTestCase {
 
 final class KeychainCredentialStoreTests: XCTestCase {
     func testRoundTrip() throws {
-        let store = KeychainCredentialStore(accessGroup: nil, service: "app.bytecache.tests.\(UUID().uuidString)")
+        let store = KeychainCredentialStore(accessGroup: nil, service: "me.suryajs.bytecache.tests.\(UUID().uuidString)")
         let creds = Credentials(server: try ServerURL("https://x.io"), token: "t", username: "demo")
         do {
             try store.save(creds)
@@ -167,7 +167,9 @@ final class KeychainCredentialStoreTests: XCTestCase {
 
 @MainActor
 final class SessionChangeServerTests: XCTestCase {
-    func testChangeServerForgetsEverything() async throws {
+    /// A saved server (here, or from iCloud) is kept: the server screen lists it, and removing it
+    /// would also remove it from the user's other devices.
+    func testChangeServerKeepsASavedServer() async throws {
         let server = try ServerURL("https://x.io")
         let store = InMemoryCredentialStore(Credentials(server: server, token: nil, username: "demo"))
         let config = #"{"authRequired":true}"#
@@ -177,7 +179,21 @@ final class SessionChangeServerTests: XCTestCase {
 
         session.changeServer()
         XCTAssertEqual(session.state, .needsServer)
-        XCTAssertNil(store.load())
+        XCTAssertNil(store.load(), "no longer the active server")
+        XCTAssertEqual(session.accounts.map(\.server), [server])
+        XCTAssertTrue(session.removedAccountIDs.isEmpty)
+    }
+
+    /// A server typed in just now is dropped: "Use a Different Server" usually means a typo.
+    func testChangeServerForgetsAServerJustTypedIn() async throws {
+        let config = #"{"authRequired":true}"#
+        let session = SessionManager(store: InMemoryCredentialStore(), transport: StubTransport(body: config))
+        try await session.connect("https://typo.example")
+        guard case .needsLogin = session.state else { return XCTFail("\(session.state)") }
+
+        session.changeServer()
+        XCTAssertEqual(session.state, .needsServer)
+        XCTAssertTrue(session.accounts.isEmpty)
     }
 }
 

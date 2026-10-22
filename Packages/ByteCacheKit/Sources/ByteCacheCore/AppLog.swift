@@ -15,7 +15,7 @@ public final class AppLog: @unchecked Sendable {
     public let directory: URL
     private let maxEntries: Int
     private let lock = NSLock()
-    private let logger = Logger(subsystem: "app.bytecache", category: "app")
+    private let logger = Logger(subsystem: "me.suryajs.bytecache", category: "app")
     private var file: URL { directory.appending(path: "recent.log") }
 
     public init(directory: URL, maxEntries: Int = 400) {
@@ -61,5 +61,34 @@ public final class AppLog: @unchecked Sendable {
 
     private static func timestamp() -> String {
         ISO8601DateFormatter().string(from: .now)
+    }
+}
+
+extension AppLog {
+    /// A size for the log, rounded so it says roughly how big something was, never what it was.
+    public static func size(_ bytes: Int) -> String {
+        if bytes == 0 { return "0 KB" }
+        if bytes >= 1_000_000 {
+            return String(format: "%.1f MB", Double(bytes) / 1_048_576)
+        }
+        let kb = Double(bytes) / 1024
+        return kb < 10 ? String(format: "%g KB", (kb * 10).rounded() / 10) : "\(Int(kb.rounded())) KB"
+    }
+}
+
+extension APIError {
+    /// The kind of error, for the log: server messages and decoding details can quote content.
+    public var logName: String {
+        switch self {
+        case .invalidServer: "invalid server"
+        case .unauthorized: "unauthorized"
+        case .forbidden: "forbidden"
+        case .notFound: "not found"
+        case .server(let status, _): "server error \(status)"
+        case .offline: "offline"
+        case .decoding: "unreadable response"
+        case .notByteStash: "not a ByteStash server"
+        case .duplicateServer: "duplicate server"
+        }
     }
 }

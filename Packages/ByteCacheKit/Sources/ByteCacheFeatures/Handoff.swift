@@ -4,7 +4,7 @@ import Foundation
 /// Handoff for "viewing a snippet": the server address and snippet id, plus a web fallback
 /// (`<server>/snippets/<id>` in the ByteStash web app) for devices without ByteCache.
 public enum SnippetActivity {
-    public static let type = "app.bytecache.ByteCache.snippet"
+    public static let type = "me.suryajs.bytecache.snippet"
     private static let serverKey = "server", idKey = "snippetID"
 
     public static func userInfo(server: ServerURL, snippetID: Int) -> [String: Any] {

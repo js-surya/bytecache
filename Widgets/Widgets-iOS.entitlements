@@ -3,8 +3,8 @@
 <plist version="1.0">
 <dict>
 	<key>com.apple.security.application-groups</key>
-	<array><string>group.app.bytecache</string></array>
+	<array><string>group.me.suryajs.bytecache</string></array>
 	<key>keychain-access-groups</key>
-	<array><string>$(AppIdentifierPrefix)app.bytecache.shared</string></array>
+	<array><string>$(AppIdentifierPrefix)me.suryajs.bytecache.shared</string></array>
 </dict>
 </plist>

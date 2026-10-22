@@ -26,11 +26,16 @@ public struct FragmentCard: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Pick the first header layout that fits: one line with a "Copy" label, one line with an
-            // icon-only Copy, or the Preview/Source switch on its own line.
+            // Pick the first header layout that fits without cutting the file name: one line with a
+            // "Copy" label, one line with an icon-only Copy, the Preview/Source switch on its own line,
+            // and only then a truncated name.
             ViewThatFits(in: .horizontal) {
-                HStack { title; Spacer(minLength: 8); viewSwitch; imageButton; copyButton(iconOnly: false) }
-                HStack { title; Spacer(minLength: 8); viewSwitch; imageButton; copyButton(iconOnly: true) }
+                HStack { title.fixedSize(); Spacer(minLength: 8); viewSwitch; imageButton; copyButton(iconOnly: false) }
+                HStack { title.fixedSize(); Spacer(minLength: 8); viewSwitch; imageButton; copyButton(iconOnly: true) }
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack { title.fixedSize(); Spacer(minLength: 8); imageButton; copyButton(iconOnly: true) }
+                    viewSwitch
+                }
                 VStack(alignment: .leading, spacing: 8) {
                     HStack { title; Spacer(minLength: 8); imageButton; copyButton(iconOnly: true) }
                     viewSwitch

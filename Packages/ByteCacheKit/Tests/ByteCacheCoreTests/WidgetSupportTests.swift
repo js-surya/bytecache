@@ -59,7 +59,7 @@ final class PendingCaptureTests: XCTestCase {
 /// CP-49: installs without an App Group share the widget snapshot through the keychain.
 final class WidgetKeychainFallbackTests: XCTestCase {
     private func store() -> (WidgetSnapshotStore, KeychainBlob) {
-        let blob = KeychainBlob(service: "app.bytecache.tests.\(UUID().uuidString)", account: "snapshot", accessGroup: nil)
+        let blob = KeychainBlob(service: "me.suryajs.bytecache.tests.\(UUID().uuidString)", account: "snapshot", accessGroup: nil)
         addTeardownBlock { blob.delete() }
         return (WidgetSnapshotStore(keychain: blob), blob)
     }

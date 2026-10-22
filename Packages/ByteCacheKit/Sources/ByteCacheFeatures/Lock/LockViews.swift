@@ -1,3 +1,4 @@
+import ByteCacheCore
 import SwiftUI
 
 /// Covers a window while the app is locked (and hides it in the app switcher).
@@ -40,7 +41,7 @@ private struct PrivacyCover: View {
     var body: some View {
         ZStack {
             Rectangle().fill(.background)
-            Icon(.appMark, size: 64).font(.system(size: 64)).foregroundStyle(.tint)
+            AppIconImage(size: 64)
         }
         .ignoresSafeArea()
     }
@@ -103,10 +104,29 @@ struct AppLockSettingsView: View {
             } footer: {
                 VStack(alignment: .leading, spacing: 6) {
                     if let message { Text(message).foregroundStyle(.red) }
-                    Text("ByteCache asks for \(lock.biometry.name) (or your passcode) when it opens and when you come back after the chosen time. While locked, widgets hide your snippets. Saving from the share sheet and Shortcuts still works, so capturing stays one step.")
+                    FooterText("ByteCache asks for \(lock.biometry.name) (or your passcode) when it opens and when you come back after the chosen time. Saving from the share sheet and Shortcuts still works, so capturing stays one step.")
+                }
+            }
+            if lock.isEnabled {
+                Section {
+                    Picker("Widgets", selection: $lock.widgetMode) {
+                        ForEach(WidgetLockMode.allCases) { Text($0.title).tag($0) }
+                    }
+                } footer: {
+                    FooterText(lock.widgetMode.footer)
                 }
             }
         }
         .navigationTitle("App Lock")
+    }
+}
+
+private extension WidgetLockMode {
+    var footer: String {
+        switch self {
+        case .hideAll: "Widgets show only that ByteCache is locked."
+        case .titlesOnly: "Widgets show snippet titles but no code, and can't copy. Tapping a snippet opens ByteCache, which asks to unlock first."
+        case .showAll: "Widgets show titles and code and can copy, as if App Lock were off."
+        }
     }
 }

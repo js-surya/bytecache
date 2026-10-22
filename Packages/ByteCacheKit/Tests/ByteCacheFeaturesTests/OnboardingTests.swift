@@ -44,6 +44,25 @@ final class OnboardingTests: XCTestCase {
         XCTAssertFalse(m.isWorking)
     }
 
+    func testServersFromICloudAreOfferedOnTheServerScreen() async throws {
+        let (m, session) = model([])
+        XCTAssertTrue(m.savedServers.isEmpty)
+        let synced = Credentials(server: try ServerURL("https://stash.example.com"), name: "Home")
+        await session.applySyncedServers(ServerListPayload(accounts: [synced], removed: []))
+        guard case .needsServer = session.state else { return XCTFail("\(session.state)") }
+        XCTAssertEqual(m.savedServers.map(\.displayName), ["Home"])
+    }
+
+    func testPickingASavedServerOpensItsSignIn() async throws {
+        let (m, session) = model([ok(config)])
+        let synced = Credentials(server: try ServerURL("https://stash.example.com"))
+        await session.applySyncedServers(ServerListPayload(accounts: [synced], removed: []))
+        await m.useSavedServer(synced.id)
+        guard case .needsLogin(let server, _) = session.state else { return XCTFail("\(session.state)") }
+        XCTAssertEqual(server.base.host(), "stash.example.com")
+        XCTAssertNil(m.errorMessage)
+    }
+
     func testLoginDisabledWithEmptyUsernameOrPassword() {
         let (m, _) = model([])
         m.username = ""; m.password = "x"
