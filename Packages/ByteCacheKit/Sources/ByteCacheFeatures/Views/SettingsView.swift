@@ -3,7 +3,7 @@ import SwiftUI
 
 /// The groups on the Settings screen, in order.
 enum SettingsSection: CaseIterable {
-    case account, lookAndFeel, snippets, privacy, sync, data, about
+    case account, lookAndFeel, snippets, privacy, sync, support
 
     var title: String {
         switch self {
@@ -11,9 +11,8 @@ enum SettingsSection: CaseIterable {
         case .lookAndFeel: "Look & Feel"
         case .snippets: "Snippets"
         case .privacy: "Privacy & Security"
-        case .sync: "Sync"
-        case .data: "Data"
-        case .about: "About"
+        case .sync: "Sync & Backup"
+        case .support: "Support"
         }
     }
 }
@@ -30,52 +29,30 @@ public struct SettingsView: View {
 
     public var body: some View {
         SettingsList {
+            if case .signedIn(let server, let user) = session.state {
+                Section {
+                    NavigationLink {
+                        AccountSettingsView(session: session)
+                    } label: {
+                        ProfileCard(user: user, server: server, serverName: activeServerName)
+                    }
+                }
+            }
+
             Section {
-                if case .signedIn(let server, let user) = session.state {
-                    HStack(spacing: 14) {
-                        Group {
-                            if user.username == SessionManager.apiKeyUserName {
-                                Icon(.key)
-                            } else {
-                                Text(String(user.username.prefix(1)).uppercased())
-                            }
-                        }
-                            .font(.title2.weight(.semibold))
-                            .foregroundStyle(.white)
-                            .frame(width: 56, height: 56)
-                            .background(settings.accent.color.gradient, in: Circle())
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(user.username.isEmpty ? "Signed In" : user.username).font(.title3.weight(.semibold))
-                                .accessibilityLabel(user.username == SessionManager.apiKeyUserName ? "Signed in with an API key" : user.username)
-                            Text(server.base.host() ?? server.base.absoluteString)
-                                .font(.subheadline).foregroundStyle(.secondary)
-                        }
-                    }
-                    .padding(.vertical, 4)
-                    NavigationLink {
-                        APIKeysView(model: AccountModel(session: session))
-                    } label: {
-                        SettingsLabel(title: "API Keys", symbol: .key, color: .orange)
-                    }
-                    NavigationLink {
-                        ChangePasswordView(model: AccountModel(session: session))
-                    } label: {
-                        SettingsLabel(title: "Change Password", symbol: .changePassword, color: .gray)
-                    }
-                }
-                NavigationLink {
-                    MCPSettingsView(model: MCPSettingsModel(session: session))
-                } label: {
-                    SettingsLabel(title: "AI Assistants (MCP)", symbol: .assistant, color: .indigo)
-                }
                 NavigationLink {
                     ServersView(session: session)
                 } label: {
                     SettingsLabel(title: "Servers", symbol: .server, color: .green,
-                                  value: session.accounts.count > 1 ? "\(session.accounts.count)" : session.accounts.first?.name)
+                                  value: session.accounts.count > 1 ? "\(session.accounts.count)" : nil)
                 }
-            } header: {
-                Text(SettingsSection.account.title)
+                if case .signedIn = session.state {
+                    NavigationLink {
+                        MCPSettingsView(model: MCPSettingsModel(session: session))
+                    } label: {
+                        SettingsLabel(title: "AI Assistants", symbol: .assistant, color: .indigo)
+                    }
+                }
             }
 
             Section {
@@ -99,8 +76,6 @@ public struct SettingsView: View {
                 }
             } header: {
                 Text(SettingsSection.lookAndFeel.title)
-            } footer: {
-                Text("Theme and accent colour, how code looks, and gentle taps on scans and changes.")
             }
 
             Section {
@@ -116,7 +91,7 @@ public struct SettingsView: View {
             } header: {
                 Text(SettingsSection.snippets.title)
             } footer: {
-                Text("Search Inside Code also matches the code itself, not just titles and descriptions. Smart Suggestions propose titles and tags on this device.")
+                FooterText("Search Inside Code also matches the code itself, not just titles and descriptions.")
             }
 
             Section {
@@ -148,32 +123,13 @@ public struct SettingsView: View {
                     SettingsLabel(title: "Handoff", symbol: .handoff, color: .blue,
                                   value: settings.handoffEnabled ? "On" : "Off")
                 }
-            } header: {
-                Text(SettingsSection.sync.title)
-            } footer: {
-                Text("iCloud Sync keeps settings and the server list the same on your devices. Handoff lets you continue a snippet on another device.")
-            }
-
-            Section {
                 NavigationLink {
                     BackupView(model: BackupModel(session: session))
                 } label: {
                     SettingsLabel(title: "Backup & Import", symbol: .download, color: .teal)
                 }
             } header: {
-                Text(SettingsSection.data.title)
-            } footer: {
-                Text("Export all snippets as files or a backup, or import from GitHub Gists, VS Code and files.")
-            }
-
-            if case .signedIn = session.state {
-                Section {
-                    Button("Sign Out", role: .destructive) {
-                        SpotlightIndexer.removeAll()
-                        session.signOut()
-                    }
-                    .frame(maxWidth: .infinity)
-                }
+                Text(SettingsSection.sync.title)
             }
 
             Section {
@@ -188,11 +144,9 @@ public struct SettingsView: View {
                     SettingsLabel(title: "About", symbol: .info, color: .gray, value: AboutText.displayVersion)
                 }
             } header: {
-                Text(SettingsSection.about.title)
+                Text(SettingsSection.support.title)
             } footer: {
-                Text("\(AboutText.appName) — \(AboutText.tagline)")
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 8)
+                SettingsSignOff()
             }
         }
         .navigationTitle("Settings")
@@ -201,6 +155,12 @@ public struct SettingsView: View {
         #if DEBUG
         .modifier(DebugSettingsPage(session: session))
         #endif
+        .logScreen("Settings")
+    }
+
+    /// The server's own name if it has one, else its address.
+    private var activeServerName: String? {
+        session.accounts.first { $0.id == session.activeAccountID }?.displayName
     }
 
     private struct ChangeSignature: Equatable {
@@ -215,7 +175,7 @@ public struct SettingsView: View {
 }
 
 #if DEBUG
-/// Env `BC_SETTINGS_PAGE=about|about-footer|haptics|servers|report|mcp` opens that page, for screenshots.
+/// Env `BC_SETTINGS_PAGE=about|acknowledgements|account|haptics|servers|report|mcp` opens that page, for screenshots.
 private struct DebugSettingsPage: ViewModifier {
     let session: SessionManager
     @State private var page = ProcessInfo.processInfo.environment["BC_SETTINGS_PAGE"]
@@ -227,15 +187,8 @@ private struct DebugSettingsPage: ViewModifier {
             case "servers": ServersView(session: session)
             case "report": ReportBugView(model: ReportBugModel(session: session))
             case "mcp": MCPSettingsView(model: MCPSettingsModel(session: session))
-            case "about-footer":
-                SettingsList {
-                    Section {
-                        AboutFooter()
-                            .listRowBackground(Color.clear)
-                            .listRowInsets(EdgeInsets(top: 24, leading: 0, bottom: 24, trailing: 0))
-                    }
-                }
-                .navigationTitle("About")
+            case "acknowledgements": AcknowledgementsView()
+            case "account": AccountSettingsView(session: session)
             default: AboutView()
             }
         }
@@ -259,9 +212,9 @@ struct HapticsSettingsView: View {
                 }
             } footer: {
                 #if os(macOS)
-                Text("Gentle taps when you scan code, when a scan works or fails, and when you change a setting. On Mac you feel them on a Force Touch trackpad.")
+                FooterText("Gentle taps when you scan code, when a scan works or fails, and when you change a setting. On Mac you feel them on a Force Touch trackpad.")
                 #else
-                Text("Gentle taps when you scan code, when a scan works or fails, and when you change a setting. Changing the strength plays a sample.")
+                FooterText("Gentle taps when you scan code, when a scan works or fails, and when you change a setting. Changing the strength plays a sample.")
                 #endif
             }
         }
@@ -272,6 +225,7 @@ struct HapticsSettingsView: View {
 
 struct AppearanceSettingsView: View {
     @Environment(AppSettings.self) private var settings
+    @State private var appIcon = AppIconModel()
 
     var body: some View {
         @Bindable var settings = settings
@@ -295,6 +249,49 @@ struct AppearanceSettingsView: View {
                 }
                 .padding(.vertical, 8)
             }
+            if appIcon.isAvailable {
+                Section {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 72), spacing: 12)], spacing: 14) {
+                        ForEach(AppIconChoice.allCases) { choice in
+                            Button { Task { await appIcon.choose(choice) } } label: {
+                                VStack(spacing: 6) {
+                                    choice.preview
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 60, height: 60)
+                                        .padding(3)
+                                        .overlay {
+                                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                                .strokeBorder(settings.accent.color, lineWidth: 2.5)
+                                                .opacity(appIcon.current == choice ? 1 : 0)
+                                        }
+                                    Text(choice.title)
+                                        .font(.caption)
+                                        .foregroundStyle(appIcon.current == choice ? .primary : .secondary)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("\(choice.title) icon")
+                            .accessibilityAddTraits(appIcon.current == choice ? .isSelected : [])
+                        }
+                    }
+                    .padding(.vertical, 8)
+                } header: {
+                    Text("App Icon")
+                } footer: {
+                    if let error = appIcon.errorMessage {
+                        Text(error).foregroundStyle(.red)
+                    } else {
+                        #if os(macOS)
+                        FooterText("Shown in the Dock while ByteCache is open. Finder and Launchpad keep the default icon.")
+                        #else
+                        FooterText("Each icon has its own look for the Home Screen's Dark, Tinted and Clear styles.")
+                        #endif
+                    }
+                }
+            }
             Section {
                 ForEach(IconStyle.allCases) { style in
                     Button { settings.iconStyle = style } label: {
@@ -302,8 +299,11 @@ struct AppearanceSettingsView: View {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(style.title).foregroundStyle(.primary)
                                 HStack(spacing: 14) {
+                                    // Same box for both styles: SF Symbols vary in width, so the two rows
+                                    // only line up in columns when every icon gets the same frame.
                                     ForEach([AppSymbol.pin, .star, .copy, .server, .key, .scan, .settings], id: \.self) { symbol in
                                         Icon(symbol, size: 18).font(.system(size: 16))
+                                            .frame(width: 22, height: 22)
                                     }
                                 }
                                 .foregroundStyle(.secondary)
@@ -320,7 +320,7 @@ struct AppearanceSettingsView: View {
             } header: {
                 Text("Icon Style")
             } footer: {
-                Text("Changes the icons inside ByteCache. Widgets, Control Center and system menus keep Apple's SF Symbols.")
+                FooterText("Changes the icons inside ByteCache. Widgets, Control Center and system menus keep Apple's SF Symbols.")
             }
             Section {
                 ForEach(LanguageIconStyle.allCases) { style in
@@ -346,7 +346,7 @@ struct AppearanceSettingsView: View {
             } header: {
                 Text("Language Icons")
             } footer: {
-                Text("Shown next to languages in the sidebar, snippet lists, files and the language picker. Logos from Devicon; trademarks belong to their owners.")
+                FooterText("Shown next to languages in the sidebar, snippet lists, files and the language picker. Logos from Devicon; where a logo is black or missing, Colour uses the language's colour from GitHub Linguist. Trademarks belong to their owners.")
             }
             Section("Accent Color") {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 14) {
@@ -473,9 +473,10 @@ struct PrivacyInfoView: View {
                 Label("Your login is kept in the Keychain; your password is never stored.", symbol: .key)
                 Label("Copied text is read only when you tap Paste.", symbol: .clipboard)
                 Label("Language detection runs on this device.", symbol: .cpu)
-                Label("Once a day ByteCache asks GitHub whether there's a newer version (turn off in About → Updates).", symbol: .download)
+                Label("Bug reports leave the device only when you send one, after you've seen what's in it.", symbol: .bug)
+                Label("After an update, What's New loads that version's notes from GitHub.", symbol: .download)
             } footer: {
-                Text(AboutText.privacy)
+                FooterText(AboutText.privacy)
             }
         }
         .navigationTitle("Privacy")
@@ -484,126 +485,159 @@ struct PrivacyInfoView: View {
 
 struct AboutView: View {
     @Environment(AppSettings.self) private var settings
-    @Environment(UpdateModel.self) private var updates: UpdateModel?
+    @Environment(\.openURL) private var openURL
+    @State private var appIcon = AppIconModel()
 
     var body: some View {
         @Bindable var settings = settings
         SettingsList {
             Section {
-                LabeledContent("Version", value: AboutText.displayVersion)
-                #if os(iOS)
-                // How widgets get the app's snippets: App Group, shared keychain, or not at all.
-                LabeledContent("Widgets", value: WidgetSnapshotStore().sharing)
-                #endif
-                Text(AboutText.tagline)
-                Text("ByteCache is not affiliated with the ByteStash project.").foregroundStyle(.secondary)
+                AboutHeader(icon: appIcon.current)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
             }
-            if let updates {
+            #if os(iOS)
+            // Only worth showing when widgets can't use the App Group (some sideloaded copies).
+            if WidgetSnapshotStore().sharing != "App Group" {
                 Section {
-                    Toggle("Check for Updates", isOn: $settings.checkForUpdates)
-                    Button {
-                        Task { await updates.checkNow() }
-                    } label: {
-                        HStack {
-                            Text("Check Now")
-                            if updates.isChecking {
-                                Spacer()
-                                ProgressView().controlSize(.small)
-                            }
-                        }
-                    }
-                    .disabled(updates.isChecking)
-                    if let status = updates.status {
-                        Text(status).foregroundStyle(.secondary)
-                    }
-                } header: {
-                    Text("Updates")
+                    LabeledContent("Widgets", value: WidgetSnapshotStore().sharing)
                 } footer: {
-                    Text("ByteCache is installed from GitHub, so it can't update itself. Once a day it asks GitHub whether there's a newer release and tells you; nothing about you is sent.")
+                    FooterText("How widgets get your snippets on this install.")
                 }
             }
+            #endif
             Section {
-                Group {
-                    Text("HighlightSwift — MIT License, © 2023 Stefan Britton")
-                    Text("highlight.js — BSD 3-Clause License, © 2006 Ivan Sagalaev")
-                    NavigationLink("Lucide icons — ISC License, © Lucide Icons and Contributors (some icons © Cole Bemis, MIT)") {
-                        ScrollView {
-                            Text(Bundle.module.url(forResource: "LUCIDE-LICENSE", withExtension: "txt")
-                                .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "")
-                                .font(.footnote.monospaced())
-                                .textSelection(.enabled)
-                                .padding()
-                        }
-                        .navigationTitle("Lucide Licence")
+                // Buttons, not Links: a Link tints its whole row like a web link.
+                Button { openURL(AboutText.sourceCode) } label: {
+                    HStack(spacing: 12) {
+                        BrandSettingsIcon(asset: "brand-github", color: .black)
+                        Text("Source Code")
+                        Spacer(minLength: 8)
                     }
-                    NavigationLink("Devicon language logos — MIT License, © konpa and Devicon contributors. Logos are trademarks of their owners, used only to identify languages.") {
-                        ScrollView {
-                            Text(Bundle.module.url(forResource: "DEVICON-LICENSE", withExtension: "txt")
-                                .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "")
-                                .font(.footnote.monospaced())
-                                .textSelection(.enabled)
-                                .padding()
-                        }
-                        .navigationTitle("Devicon Licence")
-                    }
-                    Text("Dracula, Monokai, Nord, Gruvbox, Night Owl and Catppuccin colour palettes by their respective authors (MIT).")
-                Text("The GitHub mark is a trademark of GitHub, Inc., used to link to GitHub.")
-                    Text("Language model trained on permissively licensed open-source code.").foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("Opens in your browser")
+                Button { openURL(AboutText.contact) } label: {
+                    SettingsLabel(title: "Contact", symbol: .mail, color: .blue, value: AboutText.contactEmail)
+                        .foregroundStyle(.primary)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("Writes an email")
+                NavigationLink {
+                    AcknowledgementsView()
+                } label: {
+                    SettingsLabel(title: "Acknowledgements", symbol: .acknowledgements, color: .pink)
+                }
+            } footer: {
+                VStack(spacing: 6) {
+                    Text(AboutText.credit)
+                    Text(AboutText.disclaimer)
                 }
                 .font(.footnote)
-            } header: {
-                Text("Acknowledgements")
-            }
-            Section {
-                AboutFooter()
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets(top: 24, leading: 0, bottom: 24, trailing: 0))
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 20)
             }
         }
         .navigationTitle("About")
     }
 }
 
-/// The sign-off at the bottom of About: app icon, name, tagline, credit and a link to the source code.
-private struct AboutFooter: View {
+/// The top of About: the app icon the person picked, name, tagline and version.
+private struct AboutHeader: View {
+    let icon: AppIconChoice
+
     var body: some View {
-        VStack(spacing: 10) {
-            Image("about-app-icon", bundle: .module)
+        VStack(spacing: 6) {
+            icon.preview
                 .resizable()
-                .frame(width: 64, height: 64)
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
+                .scaledToFit()
+                .frame(width: 96, height: 96)
+                .shadow(color: .black.opacity(0.18), radius: 8, y: 4)
+                .padding(.bottom, 6)
                 .accessibilityHidden(true)
-            VStack(spacing: 2) {
-                Text(AboutText.appName).font(.headline)
-                Text(AboutText.tagline).font(.subheadline).foregroundStyle(.secondary)
-            }
-            Text(AboutText.credit)
-                .font(.footnote)
+            Text(AboutText.appName).font(.title2.bold())
+            Text(AboutText.tagline).font(.subheadline).foregroundStyle(.secondary)
+            Text("Version \(AboutText.versionWithBuild)")
+                .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(.fill.tertiary, in: Capsule())
                 .padding(.top, 4)
-            Link(destination: AboutText.sourceCode) {
-                Label {
-                    Text("Source code")
-                } icon: {
-                    Image("brand-github", bundle: .module)
-                        .resizable()
-                        .renderingMode(.template)
-                        .frame(width: 16, height: 16)
-                }
-                .font(.subheadline.weight(.medium))
-                .padding(.horizontal, 14)
-                .padding(.vertical, 7)
-                .background(.tint.opacity(0.12), in: Capsule())
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(.tint)
-            .padding(.top, 2)
-            .accessibilityLabel("Source code on GitHub")
-            .accessibilityHint("Opens in your browser")
+                .textSelection(.enabled)
         }
         .frame(maxWidth: .infinity)
+    }
+}
+
+/// A brand mark (GitHub) in a Settings-style tile.
+private struct BrandSettingsIcon: View {
+    let asset: String
+    let color: Color
+
+    var body: some View {
+        Image(asset, bundle: .module)
+            .resizable()
+            .renderingMode(.template)
+            .frame(width: 17, height: 17)
+            .foregroundStyle(.white)
+            .frame(width: 29, height: 29)
+            .background(color.gradient, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+            .accessibilityHidden(true)
+    }
+}
+
+struct AcknowledgementsView: View {
+    var body: some View {
+        SettingsList {
+            Section("Code") {
+                credit("HighlightSwift", detail: "MIT License, © 2023 Stefan Britton")
+                credit("highlight.js", detail: "BSD 3-Clause License, © 2006 Ivan Sagalaev")
+            }
+            Section {
+                licence("Lucide icons", detail: "ISC License, © Lucide Icons and Contributors (some icons © Cole Bemis, MIT)", file: "LUCIDE-LICENSE")
+                licence("Devicon language logos", detail: "MIT License, © konpa and Devicon contributors", file: "DEVICON-LICENSE")
+                licence("GitHub Linguist language colours", detail: "MIT License, © 2017 GitHub, Inc.", file: "LINGUIST-LICENSE")
+                Text("Brand colours and the Rust and Handlebars glyphs from Simple Icons (CC0).")
+            } header: {
+                Text("Icons and Colours")
+            } footer: {
+                FooterText("Logos are trademarks of their owners, used only to identify languages. The GitHub mark is a trademark of GitHub, Inc., used to link to GitHub.")
+            }
+            Section {
+                Text("Dracula, Monokai, Nord, Gruvbox, Night Owl and Catppuccin colour palettes by their respective authors (MIT).")
+                Text("Language model trained on permissively licensed open-source code.")
+            } header: {
+                Text("Themes and Language Detection")
+            }
+        }
+        .navigationTitle("Acknowledgements")
+    }
+
+    private func credit(_ title: String, detail: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+            Text(detail).font(.footnote).foregroundStyle(.secondary)
+        }
+    }
+
+    private func licence(_ title: String, detail: String, file: String) -> some View {
+        NavigationLink {
+            ScrollView {
+                Text(Bundle.module.url(forResource: file, withExtension: "txt")
+                    .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "")
+                    .font(.footnote.monospaced())
+                    .textSelection(.enabled)
+                    .padding()
+            }
+            .navigationTitle(title)
+        } label: {
+            credit(title, detail: detail)
+        }
     }
 }
 
@@ -636,7 +670,7 @@ struct ICloudSyncSettingsView: View {
             } header: {
                 Text("Stays on this device")
             } footer: {
-                Text("Servers added on another device appear here signed out — sign in once on each device. Removing a server removes it from all your devices.")
+                FooterText("Servers added on another device appear here signed out — sign in once on each device. Removing a server removes it from all your devices.")
             }
         }
         .navigationTitle("iCloud Sync")
@@ -652,7 +686,7 @@ struct HandoffSettingsView: View {
             Section {
                 Toggle("Handoff", isOn: $settings.handoffEnabled)
             } footer: {
-                Text("Pick up the snippet you're viewing on your other iPhone, iPad or Mac. Your devices need the same Apple Account, with Bluetooth and Wi-Fi on. Devices without ByteCache open the snippet in the ByteStash web app. Handoff also needs to be on in the system settings (General → AirPlay & Continuity on iPhone and iPad, General → AirDrop & Handoff on Mac).")
+                FooterText("Pick up the snippet you're viewing on your other iPhone, iPad or Mac. Your devices need the same Apple Account, with Bluetooth and Wi-Fi on. Devices without ByteCache open the snippet in the ByteStash web app. Handoff also needs to be on in the system settings (General → AirPlay & Continuity on iPhone and iPad, General → AirDrop & Handoff on Mac).")
             }
         }
         .navigationTitle("Handoff")
@@ -671,7 +705,7 @@ struct SuggestionsSettingsView: View {
                     .disabled(!available)
             } footer: {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("When you save code, ByteCache suggests a title, a one-line description and categories, and the Explain button describes what a snippet does — all with Apple Intelligence on this device. Your code never leaves it. Suggestions only fill empty fields; what you type always wins.")
+                    FooterText("When you save code, ByteCache suggests a title, a one-line description and categories, and the Explain button describes what a snippet does — all with Apple Intelligence on this device. Your code never leaves it. Suggestions only fill empty fields; what you type always wins.")
                     if !available {
                         Label("Needs Apple Intelligence (iOS 26 or macOS 26 on a supported device, turned on in Settings).",
                               symbol: .warning)
@@ -681,5 +715,107 @@ struct SuggestionsSettingsView: View {
             }
         }
         .navigationTitle("Smart Suggestions")
+    }
+}
+
+/// The top of Settings: who is signed in, and where. Opens the Account page.
+private struct ProfileCard: View {
+    let user: User
+    let server: ServerURL
+    let serverName: String?
+    @Environment(AppSettings.self) private var settings
+
+    private var isAPIKey: Bool { user.username == SessionManager.apiKeyUserName }
+
+    var body: some View {
+        HStack(spacing: 14) {
+            Group {
+                if isAPIKey {
+                    Icon(.key)
+                } else {
+                    Text(String(user.username.prefix(1)).uppercased())
+                }
+            }
+            .font(.title2.weight(.semibold))
+            .foregroundStyle(.white)
+            .frame(width: 58, height: 58)
+            .background(settings.accent.color.gradient, in: Circle())
+            .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(isAPIKey ? "Signed in with an API key" : (user.username.isEmpty ? "Signed In" : user.username))
+                    .font(.title3.weight(.semibold))
+                HStack(spacing: 5) {
+                    Icon(.server, size: 12).font(.caption)
+                    Text(serverName ?? server.base.host() ?? server.base.absoluteString)
+                        .truncationMode(.middle)
+                }
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+            }
+        }
+        .padding(.vertical, 6)
+    }
+}
+
+/// The bottom of Settings: the app icon in use, name and version.
+private struct SettingsSignOff: View {
+    @State private var appIcon = AppIconModel()
+
+    var body: some View {
+        VStack(spacing: 6) {
+            appIcon.current.preview
+                .resizable()
+                .scaledToFit()
+                .frame(width: 34, height: 34)
+                .accessibilityHidden(true)
+            Text("\(AboutText.appName) \(AboutText.displayVersion) · \(AboutText.tagline)")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 20)
+    }
+}
+
+/// Settings → Account: the login on this server and what can be done with it. On the Mac, API Keys
+/// and Change Password are separate pages in the sidebar, so they're left out here.
+struct AccountSettingsView: View {
+    let session: SessionManager
+    var showsAccountPages = true
+
+    var body: some View {
+        SettingsList {
+            if case .signedIn(let server, let user) = session.state {
+                Section {
+                    ProfileCard(user: user, server: server,
+                                serverName: session.accounts.first { $0.id == session.activeAccountID }?.displayName)
+                }
+                if showsAccountPages {
+                    Section {
+                        NavigationLink {
+                            APIKeysView(model: AccountModel(session: session))
+                        } label: {
+                            SettingsLabel(title: "API Keys", symbol: .key, color: .orange)
+                        }
+                        NavigationLink {
+                            ChangePasswordView(model: AccountModel(session: session))
+                        } label: {
+                            SettingsLabel(title: "Change Password", symbol: .changePassword, color: .gray)
+                        }
+                    }
+                }
+                Section {
+                    Button("Sign Out", role: .destructive) {
+                        SpotlightIndexer.removeAll()
+                        session.signOut()
+                    }
+                    .frame(maxWidth: .infinity)
+                } footer: {
+                    FooterText("Signing out keeps the server in Servers, so signing in again is one step.")
+                }
+            }
+        }
+        .navigationTitle("Account")
     }
 }

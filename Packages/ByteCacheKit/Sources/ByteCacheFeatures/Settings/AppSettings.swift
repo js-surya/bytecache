@@ -73,6 +73,30 @@ public final class AppSettings {
     public var quickSearchShortcut: QuickSearchShortcut {
         didSet { defaults.set(quickSearchShortcut.rawValue, forKey: Key.quickSearchShortcut) }
     }
+    /// Mac, device-only: what Return and ⌥Return do in Quick Search and the menu bar (⌘Return opens).
+    public var quickSearchReturnAction: QuickSearchAction {
+        didSet { defaults.set(quickSearchReturnAction.rawValue, forKey: Key.quickSearchReturn) }
+    }
+    public var quickSearchOptionReturnAction: QuickSearchAction {
+        didSet { defaults.set(quickSearchOptionReturnAction.rawValue, forKey: Key.quickSearchOptionReturn) }
+    }
+    /// Mac, device-only (CP-69): what the menu bar and Quick Search list before anything is typed.
+    public var quickSearchStart: QuickSearchStart {
+        didSet { defaults.set(quickSearchStart.rawValue, forKey: Key.quickSearchStart) }
+    }
+    public var quickSearchClearsOnOpen: Bool {
+        didSet { defaults.set(quickSearchClearsOnOpen, forKey: Key.quickSearchClears) }
+    }
+    public var menuBarPanelSize: MenuBarPanelSize {
+        didSet { defaults.set(menuBarPanelSize.rawValue, forKey: Key.menuBarPanelSize) }
+    }
+    /// No Dock icon or menu bar: ByteCache lives in the menu bar icon, which therefore stays on.
+    public var menuBarOnly: Bool {
+        didSet {
+            defaults.set(menuBarOnly, forKey: Key.menuBarOnly)
+            if menuBarOnly && !quickSearchInMenuBar { quickSearchInMenuBar = true }
+        }
+    }
     /// When snippets expire (ByteStash doesn't store this), per server and snippet.
     public var snippetExpiries: SnippetExpiries {
         didSet { defaults.set(try? JSONEncoder().encode(snippetExpiries), forKey: Key.snippetExpiries) }
@@ -85,8 +109,6 @@ public final class AppSettings {
     public var iCloudSyncEnabled: Bool { didSet { defaults.set(iCloudSyncEnabled, forKey: Key.iCloudSync) } }
     public var handoffEnabled: Bool { didSet { defaults.set(handoffEnabled, forKey: Key.handoff) } }
     public var suggestionsEnabled: Bool { didSet { defaults.set(suggestionsEnabled, forKey: Key.suggestions) } }
-    /// Device-only: whether to look for new releases on GitHub once a day.
-    public var checkForUpdates: Bool { didSet { defaults.set(checkForUpdates, forKey: Key.checkForUpdates) } }
     /// Device-only: phones differ, so haptics aren't synced.
     public var hapticsEnabled: Bool {
         didSet {
@@ -119,10 +141,12 @@ public final class AppSettings {
         static let languageIconStyle = "languageIconStyle"
         static let fontSize = "codeFontSize", lineNumbers = "showLineNumbers", wrapLines = "wrapLines", smartGroups = "smartGroups"
         static let quickSearchMenuBar = "quickSearchInMenuBar", quickSearchShortcut = "quickSearchShortcut"
+        static let quickSearchReturn = "quickSearchReturnAction", quickSearchOptionReturn = "quickSearchOptionReturnAction"
+        static let quickSearchStart = "quickSearchStart", quickSearchClears = "quickSearchClearsOnOpen"
+        static let menuBarPanelSize = "menuBarPanelSize", menuBarOnly = "menuBarOnly"
         static let snippetExpiries = "snippetExpiries"
         static let iCloudSync = "iCloudSyncEnabled", handoff = "handoffEnabled", suggestions = "suggestionsEnabled"
         static let haptics = "hapticsEnabled", hapticStrength = "hapticStrength"
-        static let checkForUpdates = "checkForUpdates"
     }
 
     public init(defaults: UserDefaults = AppEnvironment.sharedDefaults) {
@@ -140,13 +164,18 @@ public final class AppSettings {
         wrapLines = defaults.bool(forKey: Key.wrapLines)
         quickSearchInMenuBar = defaults.object(forKey: Key.quickSearchMenuBar) as? Bool ?? true
         quickSearchShortcut = defaults.string(forKey: Key.quickSearchShortcut).flatMap(QuickSearchShortcut.init) ?? .controlOptionSpace
+        quickSearchReturnAction = defaults.string(forKey: Key.quickSearchReturn).flatMap(QuickSearchAction.init) ?? .copy
+        quickSearchOptionReturnAction = defaults.string(forKey: Key.quickSearchOptionReturn).flatMap(QuickSearchAction.init) ?? .paste
+        quickSearchStart = defaults.string(forKey: Key.quickSearchStart).flatMap(QuickSearchStart.init) ?? .recent
+        quickSearchClearsOnOpen = defaults.object(forKey: Key.quickSearchClears) as? Bool ?? true
+        menuBarPanelSize = defaults.string(forKey: Key.menuBarPanelSize).flatMap(MenuBarPanelSize.init) ?? .medium
+        menuBarOnly = defaults.bool(forKey: Key.menuBarOnly)
         snippetExpiries = defaults.data(forKey: Key.snippetExpiries)
             .flatMap { try? JSONDecoder().decode(SnippetExpiries.self, from: $0) } ?? SnippetExpiries()
         smartGroups = defaults.data(forKey: Key.smartGroups).flatMap { try? JSONDecoder().decode([SmartGroup].self, from: $0) } ?? []
         iCloudSyncEnabled = defaults.object(forKey: Key.iCloudSync) as? Bool ?? true
         handoffEnabled = defaults.object(forKey: Key.handoff) as? Bool ?? true
         suggestionsEnabled = defaults.object(forKey: Key.suggestions) as? Bool ?? true
-        checkForUpdates = defaults.object(forKey: Key.checkForUpdates) as? Bool ?? true
         hapticsEnabled = defaults.object(forKey: Key.haptics) as? Bool ?? true
         hapticStrength = defaults.string(forKey: Key.hapticStrength).flatMap(HapticStrength.init) ?? .medium
         Haptics.configure(enabled: hapticsEnabled, strength: hapticStrength)

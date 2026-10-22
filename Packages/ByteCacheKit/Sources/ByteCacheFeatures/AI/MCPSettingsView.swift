@@ -39,7 +39,7 @@ struct MCPSettingsView: View {
             } header: {
                 Text("Your MCP endpoint")
             } footer: {
-                Text("Your ByteStash server has an MCP endpoint. AI assistants use it to search, read, create and edit your snippets with an API key. They talk to your server directly, not through ByteCache.")
+                FooterText("Your ByteStash server has an MCP endpoint. AI assistants use it to search, read, create and edit your snippets with an API key. They talk to your server directly, not through ByteCache.")
             }
 
             Section {
@@ -73,7 +73,7 @@ struct MCPSettingsView: View {
             } header: {
                 Text("API key")
             } footer: {
-                Text("The key is kept in this device's Keychain and never shown in full again. To revoke it, delete it in Settings → API Keys. Anyone with the key can read and change your snippets.")
+                FooterText("The key is kept in this device's Keychain and never shown in full again. To revoke it, delete it in Settings → API Keys. Anyone with the key can read and change your snippets.")
             }
 
             Section {
@@ -105,7 +105,7 @@ struct MCPSettingsView: View {
             } header: {
                 Text("Set up an assistant")
             } footer: {
-                Text(model.insertKey ? "The setup includes your key; share it only with your own devices."
+                FooterText(model.insertKey ? "The setup includes your key; share it only with your own devices."
                                      : "Replace YOUR_API_KEY with your key, or turn on “Put the key in the setup below”.")
             }
         }

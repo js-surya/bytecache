@@ -20,6 +20,10 @@
 </p>
 
 <p align="center">
+  <a href="https://testflight.apple.com/join/rpmeVJW6"><img alt="Join the beta on TestFlight" src="https://img.shields.io/badge/TestFlight-join%20the%20beta-0D96F6?logo=apple&logoColor=white"></a>
+</p>
+
+<p align="center">
   <img src="docs/screenshots/editor-light.png" width="240" alt="Code editor with syntax colouring and line numbers">
   <img src="docs/screenshots/editor-dark.png" width="240" alt="The same editor in dark mode">
   <img src="docs/screenshots/settings.png" width="240" alt="Settings in the style of the iOS Settings app">
@@ -59,7 +63,7 @@
 
 ## Download
 
-Builds for iPhone, iPad and Mac are on the [Releases](../../releases) page. They're unsigned: on iPhone and iPad, sideload the `.ipa` with Sideloadly or AltStore; on Mac, unzip the app and right-click → Open the first time.
+Join the **[TestFlight beta](https://testflight.apple.com/join/rpmeVJW6)** on your iPhone, iPad or Mac: open the link on the device and follow the steps. ByteCache is distributed only through TestFlight (and later the App Store); [Releases](../../releases) list what changed in each version.
 
 ## Requirements
 
@@ -105,7 +109,7 @@ Bug reports and ideas are welcome. Please use the [issue forms](../../issues/new
 
 ## Credits
 
-Built with ❤️ by [SyntaxError](https://github.com/js-surya) and Claude.
+Made with ❤️ by [SyntaxError](https://github.com/js-surya).
 
 Uses [HighlightSwift](https://github.com/appstefan/HighlightSwift) (MIT), [highlight.js](https://highlightjs.org) (BSD-3-Clause), [Lucide](https://lucide.dev) icons (ISC) and [Devicon](https://devicon.dev) language logos (MIT; the logos are trademarks of their owners). The colour palettes belong to their authors. The language model was trained on permissively licensed open-source code, and the test set contains short excerpts from it; [DATA.md](Packages/ByteCacheKit/Sources/ByteCacheLanguage/DATA.md) lists every source with its licence.
 

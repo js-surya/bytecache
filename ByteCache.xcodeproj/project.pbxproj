@@ -11,20 +11,27 @@
 		02C163AFA231E42769F4A047 /* CaptureIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ACD1D351BD1F41237F48DAC /* CaptureIntents.swift */; };
 		1958BB0CE61B13776B541F1D /* ByteCacheFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = 1C3D801724261DD8EDBAE705 /* ByteCacheFeatures */; };
 		1AF367A991215BA6C08F6CA7 /* ByteCacheLanguage in Frameworks */ = {isa = PBXBuildFile; productRef = 854079A88D4FEFD76751B044 /* ByteCacheLanguage */; };
+		20A0B9B0CB0F687A1B0F6145 /* AppIcon-Sunset.icon in Resources */ = {isa = PBXBuildFile; fileRef = C4B93F2F02D875C5485C3BA1 /* AppIcon-Sunset.icon */; };
 		20F29759BEC565975A361286 /* SnippetWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9410E8194624BCFCB3E8120D /* SnippetWidgets.swift */; };
+		29005D864E5BD54505658F6C /* AppIcon-Midnight.icon in Resources */ = {isa = PBXBuildFile; fileRef = E5653C3A0D84638FD2D5627F /* AppIcon-Midnight.icon */; };
 		3636E772D4D90508809CCC1D /* ByteCacheFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = 0E7FFD3C3DCB9854880651BD /* ByteCacheFeatures */; };
 		3B03DD7B3CBF1E2309E14C32 /* SnippetDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = D132C6DCD693053E8D76A755 /* SnippetDestination.swift */; };
 		475B31822917A21ABE1CCD5E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 48B08E0D98346BBDFA3CD218 /* Assets.xcassets */; };
 		4B1C615C616406BD8E39044E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 88519509BC45ABBCD838A62C /* PrivacyInfo.xcprivacy */; };
 		4E82696E2F18C5526EB84467 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = DF52031A767D75BC19B35E48 /* PrivacyInfo.xcprivacy */; };
 		558BC689343ABD15C48F899A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BFEEE9045F51F9585F2E0CA6 /* PrivacyInfo.xcprivacy */; };
+		586B58EBBB3E8252B7980AC3 /* AppIcon-Mint.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8AC788C5E57184B005571A08 /* AppIcon-Mint.icon */; };
 		5EB3AFAD3041F834E14F1478 /* CopySnippetIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94EFFAB61EEFDFCC00528068 /* CopySnippetIntent.swift */; };
 		65D75583AB366EBAB7D1BDDD /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = C670EAA82E45A829A5652A5E /* AppIcon.icon */; };
 		6688C473BE7F774D2A5ED5BC /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA8448700FF7E78640F04C5 /* ShareViewController.swift */; };
+		6AD5F31D791485AC9D7088F0 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 7F31B6298B2F885456681F97 /* PrivacyInfo.xcprivacy */; };
 		70370D6431E5981CA063004B /* MainSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F147A1AC4A5FDB504FD181E5 /* MainSplitView.swift */; };
+		7637E659E42895B203C1C6DA /* AppIcon-Graphite.icon in Resources */ = {isa = PBXBuildFile; fileRef = 20D86019D48D7AED0BA6B61E /* AppIcon-Graphite.icon */; };
+		76EEA4B72286905F3BDD53B8 /* AppIcon-Light.icon in Resources */ = {isa = PBXBuildFile; fileRef = 03401717225BAA21AF23AEC1 /* AppIcon-Light.icon */; };
 		7793B779B8F7A06381211C92 /* ByteCacheFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = F4CD42BA44998DB5090517A0 /* ByteCacheFeatures */; };
 		7C57527CDB440E6F2C77A227 /* ByteCacheApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33E4BE438EFEE3536D9B0D57 /* ByteCacheApp.swift */; };
 		838D7990A10020E460A1F012 /* ByteCacheCore in Frameworks */ = {isa = PBXBuildFile; productRef = DB75F2A9876D6084F5BA45C4 /* ByteCacheCore */; };
+		8D2DFB1B5511E8C1DBF4A636 /* AppIcon-Black.icon in Resources */ = {isa = PBXBuildFile; fileRef = 6AABF55D6CFA352ED7A1E896 /* AppIcon-Black.icon */; };
 		90B3576DDC493CF4CF9D955F /* QuickSearchMac.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21BB7A9CA0A0B9DC59C39FF5 /* QuickSearchMac.swift */; };
 		9E027E1A2EF50BA795BB18AA /* ShareExtension-macOS.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3C4D6B6B9A17D93D3850B091 /* ShareExtension-macOS.appex */; platformFilters = (macos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9ECFC35132FB64E0F996AFF3 /* AppNavigator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9726FF73B6C1194388EF5567 /* AppNavigator.swift */; };
@@ -36,6 +43,7 @@
 		D80FEA4CBC5047637FB9CE0D /* PhoneTabsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B2FE666D74E00213F8F8F0F /* PhoneTabsView.swift */; };
 		DB0123D84B4AB35CA2E35B82 /* ByteCacheCore in Frameworks */ = {isa = PBXBuildFile; productRef = 5157DE38484B368C54F0C6C5 /* ByteCacheCore */; };
 		DE8B871FB5B494A5F222B67D /* ShareExtension-iOS.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FA65964B188F61278D423938 /* ShareExtension-iOS.appex */; platformFilters = (ios, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E05282BB50E27C4F500409D7 /* AppIcon-Grape.icon in Resources */ = {isa = PBXBuildFile; fileRef = 1F72D4D3518C70E8A4CEA0C1 /* AppIcon-Grape.icon */; };
 		E8123D5FE9E7532AE8F9C9B0 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9367137F32B48ABE54F0F9E /* RootView.swift */; };
 		ED4B7E6F8FFAC5B65E8CD0B6 /* SnippetEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2916894A87EE30D3ECB999BA /* SnippetEntity.swift */; };
 		EEB53A8A46FA5FAFAE09BCE9 /* SnippetWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F7D1F71F99D1948602B698 /* SnippetWindow.swift */; };
@@ -89,10 +97,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		03401717225BAA21AF23AEC1 /* AppIcon-Light.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = "AppIcon-Light.icon"; sourceTree = "<group>"; };
 		0B2FE666D74E00213F8F8F0F /* PhoneTabsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneTabsView.swift; sourceTree = "<group>"; };
 		0D11EA80B5ABFC06BFF1431E /* ShareExtension-macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ShareExtension-macOS.entitlements"; sourceTree = "<group>"; };
 		15E8BFD449445009A3F63239 /* ByteCacheKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ByteCacheKit; path = Packages/ByteCacheKit; sourceTree = SOURCE_ROOT; };
 		17972E61B4760BDAF57D8C17 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
+		1F72D4D3518C70E8A4CEA0C1 /* AppIcon-Grape.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = "AppIcon-Grape.icon"; sourceTree = "<group>"; };
+		20D86019D48D7AED0BA6B61E /* AppIcon-Graphite.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = "AppIcon-Graphite.icon"; sourceTree = "<group>"; };
 		21BB7A9CA0A0B9DC59C39FF5 /* QuickSearchMac.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickSearchMac.swift; sourceTree = "<group>"; };
 		2916894A87EE30D3ECB999BA /* SnippetEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetEntity.swift; sourceTree = "<group>"; };
 		31B029EDF2F3CF30E816DE4A /* SnippetIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetIntents.swift; sourceTree = "<group>"; };
@@ -106,8 +117,11 @@
 		554D8BBFA7DFD04CF8A582DB /* ShareExtension-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ShareExtension-iOS.entitlements"; sourceTree = "<group>"; };
 		5C2EB5A5AAF63D1087909E0F /* ByteCacheUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ByteCacheUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		66F44EE4730BF764EBBB8DDD /* Widgets-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Widgets-iOS.entitlements"; sourceTree = "<group>"; };
+		6AABF55D6CFA352ED7A1E896 /* AppIcon-Black.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = "AppIcon-Black.icon"; sourceTree = "<group>"; };
+		7F31B6298B2F885456681F97 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		88519509BC45ABBCD838A62C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		88BB3269C865DB06121B67A3 /* ByteCache-macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ByteCache-macOS.entitlements"; sourceTree = "<group>"; };
+		8AC788C5E57184B005571A08 /* AppIcon-Mint.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = "AppIcon-Mint.icon"; sourceTree = "<group>"; };
 		902C7392FB9E4C154F9BDCE9 /* Widgets-macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Widgets-macOS.entitlements"; sourceTree = "<group>"; };
 		9410E8194624BCFCB3E8120D /* SnippetWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetWidgets.swift; sourceTree = "<group>"; };
 		94EFFAB61EEFDFCC00528068 /* CopySnippetIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopySnippetIntent.swift; sourceTree = "<group>"; };
@@ -115,6 +129,7 @@
 		974E4426B7B9E81027EA16BF /* Widgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = Widgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9ACD1D351BD1F41237F48DAC /* CaptureIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureIntents.swift; sourceTree = "<group>"; };
 		BFEEE9045F51F9585F2E0CA6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		C4B93F2F02D875C5485C3BA1 /* AppIcon-Sunset.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = "AppIcon-Sunset.icon"; sourceTree = "<group>"; };
 		C55C34FAB5D6C2E966CA6C48 /* ByteCache-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ByteCache-iOS.entitlements"; sourceTree = "<group>"; };
 		C670EAA82E45A829A5652A5E /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		C8C8EFCD0268D6C0B45AFC0C /* CopyToastWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopyToastWindow.swift; sourceTree = "<group>"; };
@@ -123,6 +138,7 @@
 		DF52031A767D75BC19B35E48 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		E0B859730DEF950140513559 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E36EE23461C8F99AE8BA83AB /* ByteCacheUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ByteCacheUITests.swift; sourceTree = "<group>"; };
+		E5653C3A0D84638FD2D5627F /* AppIcon-Midnight.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = "AppIcon-Midnight.icon"; sourceTree = "<group>"; };
 		EE5E999663647340C4069645 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
 		F147A1AC4A5FDB504FD181E5 /* MainSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainSplitView.swift; sourceTree = "<group>"; };
 		F9367137F32B48ABE54F0F9E /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -223,6 +239,13 @@
 		935549FE79C0807A0212EA21 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				6AABF55D6CFA352ED7A1E896 /* AppIcon-Black.icon */,
+				1F72D4D3518C70E8A4CEA0C1 /* AppIcon-Grape.icon */,
+				20D86019D48D7AED0BA6B61E /* AppIcon-Graphite.icon */,
+				03401717225BAA21AF23AEC1 /* AppIcon-Light.icon */,
+				E5653C3A0D84638FD2D5627F /* AppIcon-Midnight.icon */,
+				8AC788C5E57184B005571A08 /* AppIcon-Mint.icon */,
+				C4B93F2F02D875C5485C3BA1 /* AppIcon-Sunset.icon */,
 				C670EAA82E45A829A5652A5E /* AppIcon.icon */,
 				48B08E0D98346BBDFA3CD218 /* Assets.xcassets */,
 				C55C34FAB5D6C2E966CA6C48 /* ByteCache-iOS.entitlements */,
@@ -272,6 +295,7 @@
 			children = (
 				94EFFAB61EEFDFCC00528068 /* CopySnippetIntent.swift */,
 				4E4B60EE3C1DF4C3460F0580 /* Info.plist */,
+				7F31B6298B2F885456681F97 /* PrivacyInfo.xcprivacy */,
 				9410E8194624BCFCB3E8120D /* SnippetWidgets.swift */,
 				66F44EE4730BF764EBBB8DDD /* Widgets-iOS.entitlements */,
 				902C7392FB9E4C154F9BDCE9 /* Widgets-macOS.entitlements */,
@@ -315,6 +339,7 @@
 			buildConfigurationList = 159E7238D9EE44FDB594ED6B /* Build configuration list for PBXNativeTarget "Widgets" */;
 			buildPhases = (
 				DBFB76C4DBAC40097F84AC01 /* Sources */,
+				1BB2EF0E9E367BC322BA6D66 /* Resources */,
 				FAF44475C9C63D1F71721CF0 /* Frameworks */,
 			);
 			buildRules = (
@@ -467,10 +492,25 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		1BB2EF0E9E367BC322BA6D66 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6AD5F31D791485AC9D7088F0 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A5AB2CE876EE8A9CA148F985 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8D2DFB1B5511E8C1DBF4A636 /* AppIcon-Black.icon in Resources */,
+				E05282BB50E27C4F500409D7 /* AppIcon-Grape.icon in Resources */,
+				7637E659E42895B203C1C6DA /* AppIcon-Graphite.icon in Resources */,
+				76EEA4B72286905F3BDD53B8 /* AppIcon-Light.icon in Resources */,
+				29005D864E5BD54505658F6C /* AppIcon-Midnight.icon in Resources */,
+				586B58EBBB3E8252B7980AC3 /* AppIcon-Mint.icon in Resources */,
+				20A0B9B0CB0F687A1B0F6145 /* AppIcon-Sunset.icon in Resources */,
 				65D75583AB366EBAB7D1BDDD /* AppIcon.icon in Resources */,
 				475B31822917A21ABE1CCD5E /* Assets.xcassets in Resources */,
 				4B1C615C616406BD8E39044E /* PrivacyInfo.xcprivacy in Resources */,
@@ -591,7 +631,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.bytecache.ByteCache.Share;
+				PRODUCT_BUNDLE_IDENTIFIER = me.suryajs.bytecache.share;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -607,7 +647,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.bytecache.ByteCacheUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = me.suryajs.bytecache.uitests;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -621,6 +661,7 @@
 		45245CA8AE9CE2321C8B24E8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon-Black AppIcon-Midnight AppIcon-Mint AppIcon-Grape AppIcon-Sunset AppIcon-Graphite AppIcon-Light";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "App/Resources/ByteCache-iOS.entitlements";
@@ -632,7 +673,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.bytecache.ByteCache;
+				PRODUCT_BUNDLE_IDENTIFIER = me.suryajs.bytecache;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
@@ -654,7 +695,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.bytecache.ByteCache.Widgets;
+				PRODUCT_BUNDLE_IDENTIFIER = me.suryajs.bytecache.widgets;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
@@ -676,7 +717,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.bytecache.ByteCache.ShareMac;
+				PRODUCT_BUNDLE_IDENTIFIER = me.suryajs.bytecache.sharemac;
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -691,7 +732,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.bytecache.ByteCache.Share;
+				PRODUCT_BUNDLE_IDENTIFIER = me.suryajs.bytecache.share;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -700,6 +741,7 @@
 		BE3C6DE1F39364ABCBCA0C44 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon-Black AppIcon-Midnight AppIcon-Mint AppIcon-Grape AppIcon-Sunset AppIcon-Graphite AppIcon-Light";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "App/Resources/ByteCache-iOS.entitlements";
@@ -711,7 +753,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.bytecache.ByteCache;
+				PRODUCT_BUNDLE_IDENTIFIER = me.suryajs.bytecache;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
@@ -733,7 +775,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.bytecache.ByteCache.ShareMac;
+				PRODUCT_BUNDLE_IDENTIFIER = me.suryajs.bytecache.sharemac;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -743,8 +785,8 @@
 			baseConfigurationReference = EE5E999663647340C4069645 /* Base.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				BC_APP_GROUP_ID = group.app.bytecache;
-				"BC_APP_GROUP_ID[sdk=macosx*]" = "$(TeamIdentifierPrefix)app.bytecache";
+				BC_APP_GROUP_ID = group.me.suryajs.bytecache;
+				"BC_APP_GROUP_ID[sdk=macosx*]" = "$(TeamIdentifierPrefix)me.suryajs.bytecache";
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -775,7 +817,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 6;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -789,7 +831,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.2.5;
+				MARKETING_VERSION = 1.3.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -809,7 +851,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.bytecache.ByteCacheUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = me.suryajs.bytecache.uitests;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -832,7 +874,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.bytecache.ByteCache.Widgets;
+				PRODUCT_BUNDLE_IDENTIFIER = me.suryajs.bytecache.widgets;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
@@ -847,8 +889,8 @@
 			baseConfigurationReference = EE5E999663647340C4069645 /* Base.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				BC_APP_GROUP_ID = group.app.bytecache;
-				"BC_APP_GROUP_ID[sdk=macosx*]" = "$(TeamIdentifierPrefix)app.bytecache";
+				BC_APP_GROUP_ID = group.me.suryajs.bytecache;
+				"BC_APP_GROUP_ID[sdk=macosx*]" = "$(TeamIdentifierPrefix)me.suryajs.bytecache";
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -879,7 +921,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 6;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -899,7 +941,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.2.5;
+				MARKETING_VERSION = 1.3.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;

@@ -7,6 +7,7 @@ struct ByteCacheApp: App {
 
     init() {
         CopyToastWindow.install()
+        CrashReporting.appLaunched()
     }
 
     var body: some Scene {
@@ -18,7 +19,18 @@ struct ByteCacheApp: App {
                 .environment(services.updates)
                 .appLockCover(services.lock)
                 #if os(macOS)
-                .task { QuickSearchPanel.shared.configure(services) }
+                .task {
+                    QuickSearchPanel.shared.configure(services)
+                    SystemAppIconSwitcher.shared.apply()
+                    ActiveAppPaster.shared.start()
+                    applyDockPolicy(menuBarOnly: services.settings.menuBarOnly)
+                    #if DEBUG
+                    if ProcessInfo.processInfo.arguments.contains("-BCAccessibilityGuide") { AccessibilityGuide.shared.show() }
+                    #endif
+                }
+                .onChange(of: services.settings.menuBarOnly) { _, only in
+                    applyDockPolicy(menuBarOnly: only)
+                }
                 .onChange(of: services.settings.quickSearchShortcut) { _, shortcut in
                     GlobalHotKey.shared.register(shortcut)
                 }
@@ -27,8 +39,10 @@ struct ByteCacheApp: App {
         .commands {
             SnippetCommandsMenu()
             #if os(macOS)
-            CommandGroup(after: .appInfo) {
-                Button("Check for Updates…") { Task { await services.updates.checkNow() } }
+            // View → Show/Hide Toolbar and Customize Toolbar… (CP-71).
+            ToolbarCommands()
+            CommandGroup(replacing: .help) {
+                ReportBugMenuItem()
             }
             #endif
         }
@@ -42,6 +56,14 @@ struct ByteCacheApp: App {
             }
         }
         #if os(macOS)
+        Window("Report a Bug", id: "report-bug") {
+            NavigationStack {
+                ReportBugView(model: ReportBugModel(session: services.session), showsCancel: true)
+            }
+            .appSettingsStyle(services.settings)
+            .frame(minWidth: 520, idealWidth: 560, minHeight: 600)
+        }
+        .windowResizability(.contentMinSize)
         Settings {
             MacSettingsView(session: services.session)
             .appSettingsStyle(services.settings)
@@ -60,3 +82,26 @@ struct ByteCacheApp: App {
         #endif
     }
 }
+
+#if os(macOS)
+/// Help → Report a Bug…
+private struct ReportBugMenuItem: View {
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some View {
+        Button("Report a Bug…") { openWindow(id: "report-bug") }
+    }
+
+}
+#endif
+
+#if os(macOS)
+/// Menu Bar Only (CP-69): no Dock icon or app switcher entry; the menu bar icon stays.
+@MainActor private func applyDockPolicy(menuBarOnly: Bool) {
+    let policy: NSApplication.ActivationPolicy = menuBarOnly ? .accessory : .regular
+    guard NSApp.activationPolicy() != policy else { return }
+    NSApp.setActivationPolicy(policy)
+    // Changing the policy sends ByteCache to the back; keep the window you changed it from in front.
+    NSApp.activate()
+}
+#endif

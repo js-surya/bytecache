@@ -7,9 +7,12 @@ public enum AboutText {
     /// Says what the app is for, where the tagline alone wouldn't (first launch).
     public static let purpose = "A client for your ByteStash server"
     public static let privacy = "ByteCache collects no data."
-    public static let credit = "Built with ❤️ by SyntaxError and Claude"
+    public static let credit = "Made with ❤️ by SyntaxError"
     /// The project's source code (the About footer shows no account name).
     public static let sourceCode = URL(string: "https://github.com/js-surya/bytecache")!
+    public static let contactEmail = "hello@suryajs.me"
+    public static let contact = URL(string: "mailto:\(contactEmail)")!
+    public static let disclaimer = "ByteCache is not affiliated with the ByteStash project."
 
     /// What people see: "1.1.0".
     public static var displayVersion: String {

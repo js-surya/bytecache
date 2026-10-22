@@ -111,6 +111,6 @@ final class HandoffTests: XCTestCase {
         XCTAssertEqual(parsed.snippetID, 42)
         XCTAssertEqual(SnippetActivity.webURL(server: server, snippetID: 42).absoluteString, "https://x.io/bytestash/snippets/42")
         XCTAssertNil(SnippetActivity.parse(["nonsense": 1]))
-        XCTAssertEqual(SnippetActivity.type, "app.bytecache.ByteCache.snippet")
+        XCTAssertEqual(SnippetActivity.type, "me.suryajs.bytecache.snippet")
     }
 }

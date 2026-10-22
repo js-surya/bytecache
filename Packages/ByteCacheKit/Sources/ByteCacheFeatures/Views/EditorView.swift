@@ -108,6 +108,7 @@ public struct EditorView: View {
                 }
             }
         }
+        .logScreen("Editor")
     }
 
     /// Bounds-checked binding: a field may briefly outlive its fragment while a removal animates.

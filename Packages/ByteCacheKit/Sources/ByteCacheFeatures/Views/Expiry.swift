@@ -56,7 +56,7 @@ struct ExpiryEditorSection: View {
         } header: {
             Text("Expires")
         } footer: {
-            Text("When the time runs out, ByteCache moves the snippet to the Recycle Bin. This happens on any of your devices with ByteCache open; the ByteStash website doesn't know about it.")
+            FooterText("When the time runs out, ByteCache moves the snippet to the Recycle Bin. This happens on any of your devices with ByteCache open; the ByteStash website doesn't know about it.")
         }
     }
 }

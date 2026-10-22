@@ -11,7 +11,7 @@ public struct KeychainCredentialStore: CredentialStore {
     private let service: String
     private let account = "default"
 
-    public init(accessGroup: String?, service: String = "app.bytecache.credentials") {
+    public init(accessGroup: String?, service: String = "me.suryajs.bytecache.credentials") {
         self.accessGroup = accessGroup
         self.service = service
     }

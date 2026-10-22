@@ -80,6 +80,13 @@ public final class AppLockModel {
     public private(set) var isEnabled: Bool
     public private(set) var isLocked = false
     public var timeout: LockTimeout { didSet { defaults.set(timeout.rawValue, forKey: Self.timeoutKey) } }
+    /// What widgets show while App Lock is on.
+    public var widgetMode: WidgetLockMode {
+        didSet {
+            defaults.set(widgetMode.rawValue, forKey: WidgetLockMode.defaultsKey)
+            WidgetSnapshotWriter.reloadAllWidgets()
+        }
+    }
 
     @ObservationIgnored private let defaults: UserDefaults
     @ObservationIgnored private let authenticator: any Authenticating
@@ -95,6 +102,7 @@ public final class AppLockModel {
         self.now = now
         isEnabled = defaults.bool(forKey: Self.enabledKey)
         timeout = LockTimeout(rawValue: defaults.integer(forKey: Self.timeoutKey)) ?? .immediately
+        widgetMode = WidgetLockMode.stored(in: defaults)
     }
 
     /// For widgets: whether to hide snippet content.

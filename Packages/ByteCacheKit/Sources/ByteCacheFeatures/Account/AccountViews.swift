@@ -30,7 +30,7 @@ struct APIKeysView: View {
                     } header: {
                         Text("New key “\(created.info.name)”")
                     } footer: {
-                        Text("Copy it now — ByteStash won't show this key again, and ByteCache doesn't keep it.")
+                        FooterText("Copy it now — ByteStash won't show this key again, and ByteCache doesn't keep it.")
                     }
                 }
 
@@ -81,7 +81,7 @@ struct APIKeysView: View {
                 } header: {
                     Text("Your Keys")
                 } footer: {
-                    Text("Deleting a key signs out anything using it, including ByteCache on other devices.")
+                    FooterText("Deleting a key signs out anything using it, including ByteCache on other devices.")
                 }
             }
         }

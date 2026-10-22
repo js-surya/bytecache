@@ -2,9 +2,9 @@ name: Build and release
 
 # Features are merged into `develop` (no CI run). A release is one pull request from `develop` into `main`:
 # - the pull request checks it: the tests, and a quick unsigned compile of the iPhone/iPad and Mac apps;
-# - merging it (a regular merge, not squash) builds the release files once and publishes a release if the
-#   version in project.yml is new, with the builds, the source code and notes listing every change since
-#   the previous release. The files are built from the merged commit, so they match the tag.
+# - merging it (a regular merge, not squash) publishes a release if the version in project.yml is new: the
+#   source code and notes listing every change since the previous release. The apps themselves are
+#   distributed only through TestFlight and the App Store, so the release has no app files.
 # Change the version with scripts/set-version.sh X.Y.Z. Docs-only changes don't start a run.
 on:
   pull_request:
@@ -71,18 +71,6 @@ jobs:
               CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" -quiet
           done
 
-      - name: Build iPhone/iPad and Mac apps
-        if: github.event_name != 'pull_request'
-        run: scripts/package-release.sh "${{ github.run_number }}"
-
-      - name: Keep the builds with this run
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v7
-        with:
-          name: ByteCache-${{ steps.version.outputs.version }}-build${{ github.run_number }}
-          path: dist/*
-          retention-days: 14
-
       - name: Publish the release
         if: github.event_name == 'push' && steps.version.outputs.new == 'true'
         env:
@@ -91,13 +79,9 @@ jobs:
         run: |
           cat > notes.md <<NOTES
           ## Install
-          | Device | File | How |
-          |---|---|---|
-          | iPhone and iPad | \`ByteCache-$VERSION-iOS.ipa\` | Unsigned: sideload with Sideloadly or AltStore (signs it with your Apple ID). |
-          | Mac | \`ByteCache-$VERSION-macOS.zip\` | Unzip, move to Applications, then right-click → Open the first time. |
+          Get ByteCache for iPhone, iPad and Mac from the **[TestFlight beta](https://testflight.apple.com/join/rpmeVJW6)**: open the link on your device and follow the steps.
 
           Requires iOS / iPadOS 17 or macOS 14 or later, and a [ByteStash](https://github.com/jordan-dalby/ByteStash) server (or the public demo).
-          Check downloads against \`SHA256SUMS.txt\`.
           NOTES
           # Every change since the previous release (features land on develop, so pull-request-based
           # notes would miss them). Housekeeping commits (chore/ci/docs/test, version bumps) are left out.
@@ -110,7 +94,7 @@ jobs:
               | grep -vE '^Release [0-9]' \
               | perl -pe 's/^[a-z]+(\([^)]*\))?!?: //; s/^(.)/\u$1/; s/^/- /'
           } >> notes.md
-          gh release create "v$VERSION" dist/* \
+          gh release create "v$VERSION" \
             --target "$GITHUB_SHA" \
             --title "ByteCache $VERSION" \
             --notes-file notes.md

@@ -5,7 +5,7 @@
 	<key>BCAppGroupID</key>
 	<string>$(BC_APP_GROUP_ID)</string>
 	<key>BCKeychainGroup</key>
-	<string>$(AppIdentifierPrefix)app.bytecache.shared</string>
+	<string>$(AppIdentifierPrefix)me.suryajs.bytecache.shared</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -26,7 +26,7 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>app.bytecache.ByteCache</string>
+			<string>me.suryajs.bytecache</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>bytecache</string>
@@ -35,6 +35,8 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.developer-tools</string>
 	<key>NSAppTransportSecurity</key>
@@ -52,7 +54,7 @@
 	<string>ByteCache connects to the ByteStash server you enter, which may be on your local network.</string>
 	<key>NSUserActivityTypes</key>
 	<array>
-		<string>app.bytecache.ByteCache.snippet</string>
+		<string>me.suryajs.bytecache.snippet</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>

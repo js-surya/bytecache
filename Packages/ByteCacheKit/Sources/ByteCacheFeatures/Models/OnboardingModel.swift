@@ -69,6 +69,17 @@ public final class OnboardingModel {
         }
     }
 
+    /// Servers saved here or synced from iCloud, offered on the server screen so a new device
+    /// doesn't need the address typed again. Logins don't sync, so each one asks to sign in.
+    public var savedServers: [Credentials] { session.accounts }
+
+    public func useSavedServer(_ id: UUID) async {
+        errorMessage = nil
+        isWorking = true
+        defer { isWorking = false }
+        await session.switchTo(id)
+    }
+
     public func cancelAddServer() async {
         errorMessage = nil
         await session.cancelAddServer()

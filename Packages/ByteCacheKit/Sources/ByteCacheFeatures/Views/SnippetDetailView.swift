@@ -12,6 +12,11 @@ public struct SnippetDetailView: View {
     @State private var exportMessage: String?
     @State private var sharingLinks = false
     @State private var explaining = false
+    /// The file shown when files are tabs (nil: the first).
+    @State private var selectedFile: Int?
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
     @Environment(AppSettings.self) private var settings
     @Environment(\.openWindow) private var openWindow
     let showsOpenInWindow: Bool
@@ -45,6 +50,19 @@ public struct SnippetDetailView: View {
 
     private var fragments: [Fragment] { snippet.fragments.sorted { $0.position < $1.position } }
     private var allCode: String { fragments.map(\.code).joined(separator: "\n\n") }
+
+    /// Mac and iPad (not iPhone or iPad split narrow): files as tabs, with a status bar.
+    private var wide: Bool {
+        #if os(iOS)
+        sizeClass == .regular
+        #else
+        true
+        #endif
+    }
+    private var usesTabs: Bool { wide && fragments.count > 1 }
+    private var shownFile: Fragment? {
+        fragments.first { $0.id == selectedFile } ?? fragments.first
+    }
 
     public var body: some View {
         ScrollView {
@@ -83,13 +101,27 @@ public struct SnippetDetailView: View {
                         }
                     }
                 }
-                ForEach(fragments) { fragment in
-                    FragmentCard(fragment: fragment, snippetTitle: snippet.title) { list?.recordCopy(snippet) }
+                if usesTabs, let shownFile {
+                    VStack(alignment: .leading, spacing: 8) {
+                        FileTabStrip(fragments: fragments, selection: $selectedFile)
+                        FragmentCard(fragment: shownFile, snippetTitle: snippet.title) { list?.recordCopy(snippet) }
+                            .id(shownFile.id)
+                    }
+                } else {
+                    ForEach(fragments) { fragment in
+                        FragmentCard(fragment: fragment, snippetTitle: snippet.title) { list?.recordCopy(snippet) }
+                    }
                 }
             }
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if wide, let shownFile {
+                SnippetStatusBar(fragment: shownFile) { list?.recordCopy(snippet) }
+            }
+        }
+        .onChange(of: snippet.id) { selectedFile = nil }
         .navigationTitle(snippet.title)
         .fileExporter(isPresented: $exporting,
                       document: SnippetFileDocument(wrapper: (exportFile ?? wholeSnippet).wrapper),
@@ -105,24 +137,31 @@ public struct SnippetDetailView: View {
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
-        .toolbar {
-            ToolbarItemGroup {
-                if let list, !readOnly {
+        // Right-click the toolbar (Mac) or long-press it (iPad) to choose and reorder these.
+        .toolbar(id: "main") {
+            if let list, !readOnly {
+                ToolbarItem(id: "pin", placement: .primaryAction) {
                     Button { Task { await list.togglePin(snippet) } } label: {
                         Label(snippet.isPinned ? "Unpin" : "Pin", symbol: snippet.isPinned ? .pinFill : .pin)
                             .foregroundStyle(snippet.isPinned ? AnyShapeStyle(.orange) : AnyShapeStyle(.tint))
                     }
+                }
+                ToolbarItem(id: "favorite", placement: .primaryAction) {
                     Button { Task { await list.toggleFavorite(snippet) } } label: {
                         Label(snippet.isFavorite ? "Unfavorite" : "Favorite", symbol: snippet.isFavorite ? .starFill : .star)
                             .foregroundStyle(snippet.isFavorite ? AnyShapeStyle(.yellow) : AnyShapeStyle(.tint))
                     }
                 }
+            }
+            ToolbarItem(id: "wrap", placement: .primaryAction) {
                 Toggle(isOn: Bindable(settings).wrapLines) {
                     Label("Wrap Long Lines", symbol: .wrapLines)
                 }
                 .toggleStyle(.button)
                 .help("Wrap Long Lines")
-                if settings.suggestionsEnabled, let explainer = SnippetSuggesters.explainer() {
+            }
+            if settings.suggestionsEnabled, let explainer = SnippetSuggesters.explainer() {
+                ToolbarItem(id: "explain", placement: .primaryAction) {
                     Button { explaining = true } label: { Label("Explain", symbol: .sparkles) }
                         .sheet(isPresented: $explaining) {
                             NavigationStack {
@@ -131,8 +170,12 @@ public struct SnippetDetailView: View {
                             }
                         }
                 }
+            }
+            ToolbarItem(id: "share", placement: .primaryAction) {
                 SwiftUI.ShareLink(item: allCode)
-                if let list, !readOnly {
+            }
+            if let list, !readOnly {
+                ToolbarItem(id: "share-link", placement: .primaryAction) {
                     Button { sharingLinks = true } label: { Label("Share Link", symbol: .link) }
                         .sheet(isPresented: $sharingLinks) {
                             NavigationStack {
@@ -140,28 +183,40 @@ public struct SnippetDetailView: View {
                             }
                         }
                 }
-                let choices = SnippetExport.choices(for: snippet)
-                if choices.count > 1 {
-                    Menu {
-                        ForEach(choices) { choice in
-                            Button(choice.id == "all" ? "\(choice.title)…" : choice.title) { save(choice) }
-                            if choice.id == "all" { Divider() }
-                        }
-                    } label: {
-                        Label("Save", symbol: .download)
-                    }
-                } else if let only = choices.first {
-                    Button { save(only) } label: { Label("Save File…", symbol: .download) }
-                }
-                if showsOpenInWindow && supportsMultipleWindows {
+            }
+            ToolbarItem(id: "save", placement: .primaryAction) {
+                saveButton
+            }
+            if showsOpenInWindow && supportsMultipleWindows {
+                ToolbarItem(id: "window", placement: .primaryAction) {
                     Button { openWindow(value: snippet.id) } label: {
                         Label("Open in New Window", symbol: .newWindow)
                     }
                 }
-                if !readOnly {
+            }
+            if !readOnly {
+                ToolbarItem(id: "edit", placement: .primaryAction) {
                     Button(action: onEdit) { Label("Edit", symbol: .edit) }
                 }
             }
+        }
+        .logScreen("Snippet")
+    }
+
+    @ViewBuilder
+    private var saveButton: some View {
+        let choices = SnippetExport.choices(for: snippet)
+        if choices.count > 1 {
+            Menu {
+                ForEach(choices) { choice in
+                    Button(choice.id == "all" ? "\(choice.title)…" : choice.title) { save(choice) }
+                    if choice.id == "all" { Divider() }
+                }
+            } label: {
+                Label("Save", symbol: .download)
+            }
+        } else if let only = choices.first {
+            Button { save(only) } label: { Label("Save File…", symbol: .download) }
         }
     }
 }

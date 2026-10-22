@@ -10,7 +10,7 @@ final class AboutTextTests: XCTestCase {
     }
 
     func testCreditsAndGitHubLink() {
-        XCTAssertEqual(AboutText.credit, "Built with ❤️ by SyntaxError and Claude")
+        XCTAssertEqual(AboutText.credit, "Made with ❤️ by SyntaxError")
         XCTAssertEqual(AboutText.sourceCode.absoluteString, "https://github.com/js-surya/bytecache", "links to the project, not a profile")
     }
 

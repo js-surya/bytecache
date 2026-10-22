@@ -73,6 +73,8 @@ public struct SnippetRow: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
+            // The language, file count and date keep their size; tags give way first (3, 2, 1, none),
+            // so a narrow list never wraps a badge or splits a tag mid-word.
             details {
                 if let language = firstFragment?.language {
                     HStack(spacing: 3) {
@@ -80,29 +82,48 @@ public struct SnippetRow: View {
                         Text(LanguageName.display(language))
                     }
                         .font(.caption2.weight(.medium))
+                        .lineLimit(1)
                         .padding(.horizontal, 6).padding(.vertical, 2)
                         .background(.tint.opacity(0.15), in: Capsule())
+                        .fixedSize()
                 }
                 if snippet.fragments.count > 1 {
-                    Text("\(snippet.fragments.count) files").font(.caption2).foregroundStyle(.secondary)
+                    Text("\(snippet.fragments.count) files").font(.caption2).foregroundStyle(.secondary).fixedSize()
                 }
                 if showOwner, let owner = snippet.username {
-                    Text("by \(owner)").font(.caption2).foregroundStyle(.secondary)
+                    Text("by \(owner)").font(.caption2).foregroundStyle(.secondary).lineLimit(1)
                 }
-                ForEach(snippet.categories.prefix(3), id: \.self) { category in
-                    Text("#\(category)").font(.caption2).foregroundStyle(.secondary)
+                if typeSize.isAccessibilitySize {
+                    tags(snippet.categories.prefix(3))
+                } else {
+                    ViewThatFits(in: .horizontal) {
+                        tags(snippet.categories.prefix(3))
+                        tags(snippet.categories.prefix(2))
+                        tags(snippet.categories.prefix(1))
+                        Color.clear.frame(width: 0, height: 0)
+                    }
+                    Spacer(minLength: 0)
                 }
-                if !typeSize.isAccessibilitySize { Spacer(minLength: 0) }
-                if let expiry { ExpiryBadge(date: expiry, compact: true) }
+                if let expiry { ExpiryBadge(date: expiry, compact: true).fixedSize() }
                 if let date = snippet.updatedAt {
                     Text(date, format: .relative(presentation: .named))
                         .font(.caption2).foregroundStyle(.tertiary)
+                        .lineLimit(1)
+                        .fixedSize()
                 }
             }
         }
         .padding(.vertical, 2)
         .accessibilityElement(children: .combine)
         .accessibilityValue(status)
+    }
+
+    private func tags(_ categories: ArraySlice<String>) -> some View {
+        HStack(spacing: 6) {
+            ForEach(categories, id: \.self) { category in
+                Text("#\(category)").font(.caption2).foregroundStyle(.secondary).lineLimit(1).fixedSize()
+            }
+        }
     }
 
     /// The pin, star and globe markers, which are icons only.

@@ -10,6 +10,8 @@ import AppKit
 struct CopySnippetIntent: AppIntent {
     static let title: LocalizedStringResource = "Copy Snippet"
     static var isDiscoverable: Bool { false }
+    /// Copying from a locked iPhone or iPad asks for Face ID or the passcode first.
+    static var authenticationPolicy: IntentAuthenticationPolicy { .requiresAuthentication }
 
     @Parameter(title: "Snippet")
     var snippetID: Int
@@ -18,7 +20,7 @@ struct CopySnippetIntent: AppIntent {
     init(snippetID: Int) { self.snippetID = snippetID }
 
     func perform() async throws -> some IntentResult {
-        guard !AppEnvironment.isAppLockEnabled, let code = WidgetSnapshotStore().read()?.snippet(id: snippetID)?.code else {
+        guard WidgetVisibility.current().allowsCopy, let code = WidgetSnapshotStore().read()?.snippet(id: snippetID)?.code else {
             return .result()
         }
         if let server = AppEnvironment.makeCredentialStore().load()?.server {

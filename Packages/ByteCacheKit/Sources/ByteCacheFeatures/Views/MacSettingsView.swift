@@ -28,7 +28,10 @@ public struct MacSettingsView: View {
                     }
                 }
             }
-            .navigationSplitViewColumnWidth(min: 210, ideal: 230)
+            // Fixed, like System Settings. The Settings window ignores the column width on its own and
+            // drew the sidebar at 144 pt, cutting the labels off ("Ser…", "Ap…"); the frame enforces it.
+            .frame(minWidth: 230)
+            .navigationSplitViewColumnWidth(230)
             // Like System Settings: the sidebar always shows, so no hide-sidebar button.
             .toolbar(removing: .sidebarToggle)
         } detail: {
@@ -40,12 +43,20 @@ public struct MacSettingsView: View {
                 }
             }
         }
+        // Signed out, Account and its pages aren't in the sidebar: open the first page that is.
+        .onAppear(perform: showAvailablePage)
+        .onChange(of: session.state) { showAvailablePage() }
+    }
+
+    private func showAvailablePage() {
+        guard page.map({ !$0.isAvailable(session) }) ?? true else { return }
+        page = MacSettingsPage.allCases.first { $0.isAvailable(session) }
     }
 
     @ViewBuilder
     private func detail(_ page: MacSettingsPage) -> some View {
         switch page {
-        case .account: MacAccountPage(session: session)
+        case .account: AccountSettingsView(session: session, showsAccountPages: false)
         case .apiKeys: APIKeysView(model: AccountModel(session: session))
         case .password: ChangePasswordView(model: AccountModel(session: session))
         case .servers: ServersView(session: session)
@@ -83,9 +94,8 @@ enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
         case .appearance, .codeTheme, .haptics: .lookAndFeel
         case .search, .suggestions: .snippets
         case .appLock, .privacy: .privacy
-        case .iCloud, .handoff: .sync
-        case .backup: .data
-        case .reportBug, .about: .about
+        case .iCloud, .handoff, .backup: .sync
+        case .reportBug, .about: .support
         }
     }
 
@@ -95,7 +105,7 @@ enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
         case .apiKeys: "API Keys"
         case .password: "Change Password"
         case .servers: "Servers"
-        case .assistants: "AI Assistants (MCP)"
+        case .assistants: "AI Assistants"
         case .appearance: "Appearance"
         case .codeTheme: "Code Theme"
         case .haptics: "Haptics"
@@ -170,44 +180,13 @@ enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
 }
 
 /// Who's signed in, where, and Sign Out.
-private struct MacAccountPage: View {
-    let session: SessionManager
-    @Environment(AppSettings.self) private var settings
-
-    var body: some View {
-        SettingsList {
-            if case .signedIn(let server, let user) = session.state {
-                Section {
-                    HStack(spacing: 14) {
-                        Text(String(user.username.prefix(1)).uppercased())
-                            .font(.title2.weight(.semibold))
-                            .foregroundStyle(.white)
-                            .frame(width: 48, height: 48)
-                            .background(settings.accent.color.gradient, in: Circle())
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(user.username.isEmpty ? "Signed In" : user.username).font(.title3.weight(.semibold))
-                            Text(server.base.host() ?? server.base.absoluteString).foregroundStyle(.secondary)
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
-                Section {
-                    Button("Sign Out", role: .destructive) {
-                        SpotlightIndexer.removeAll()
-                        session.signOut()
-                    }
-                } footer: {
-                    Text("Signing out keeps the server in Servers, so signing in again is one step.")
-                }
-            }
-        }
-        .navigationTitle("Account")
-    }
-}
-
 /// Search options (a toggle on iPhone's main Settings list).
 private struct MacSearchPage: View {
     @Environment(AppSettings.self) private var settings
+
+    private var usesPaste: Bool {
+        settings.quickSearchReturnAction == .paste || settings.quickSearchOptionReturnAction == .paste
+    }
 
     var body: some View {
         @Bindable var settings = settings
@@ -215,20 +194,78 @@ private struct MacSearchPage: View {
             Section {
                 Toggle("Search Inside Code", isOn: $settings.searchInCode)
             } footer: {
-                Text("When on, searching also matches the code in your snippets, not just titles and descriptions.")
+                FooterText("When on, searching also matches the code in your snippets, not just titles and descriptions.")
             }
             Section {
                 Toggle("Show in Menu Bar", isOn: $settings.quickSearchInMenuBar)
+                    .disabled(settings.menuBarOnly)
                 Picker("Keyboard Shortcut", selection: $settings.quickSearchShortcut) {
                     ForEach(QuickSearchShortcut.allCases) { Text($0.title).tag($0) }
                 }
             } header: {
                 Text("Quick Search")
             } footer: {
-                Text("Find a snippet from anywhere: press the shortcut or click the menu bar icon, type, then press Return to copy it or ⌘Return to open it.")
+                FooterText("Find a snippet from anywhere: press the shortcut or click the menu bar icon, type, then choose a snippet with Return. ⌘Return always opens it in ByteCache.")
+            }
+            Section {
+                Picker("Return", selection: $settings.quickSearchReturnAction) {
+                    ForEach(QuickSearchAction.allCases) { Text($0.title).tag($0) }
+                }
+                Picker("⌥ Return", selection: $settings.quickSearchOptionReturnAction) {
+                    ForEach(QuickSearchAction.allCases) { Text($0.title).tag($0) }
+                }
+                if usesPaste {
+                    PastePermissionRow()
+                }
+            } header: {
+                Text("Choosing a Snippet")
+            } footer: {
+                FooterText("Paste into Active App puts the snippet straight into the app you were using. It needs Accessibility permission to press ⌘V there; without it, the snippet is copied instead.")
+            }
+            Section {
+                Picker("Starts With", selection: $settings.quickSearchStart) {
+                    Text("Recent").tag(QuickSearchStart.recent)
+                    Text("Pinned").tag(QuickSearchStart.pinned)
+                    Text("Favorites").tag(QuickSearchStart.favorites)
+                    if !settings.smartGroups.isEmpty {
+                        Divider()
+                        ForEach(settings.smartGroups) { Text($0.name).tag(QuickSearchStart.smartGroup($0.id)) }
+                    }
+                }
+                Toggle("Clear Search When Opened", isOn: $settings.quickSearchClearsOnOpen)
+                Picker("Menu Bar Window Size", selection: $settings.menuBarPanelSize) {
+                    ForEach(MenuBarPanelSize.allCases) { Text($0.rawValue.capitalized).tag($0) }
+                }
+                Toggle("Menu Bar Only", isOn: $settings.menuBarOnly)
+            } header: {
+                Text("Menu Bar")
+            } footer: {
+                FooterText("Menu Bar Only hides ByteCache from the Dock and the app switcher; open the main window from the menu bar icon. Takes effect right away.")
             }
         }
         .navigationTitle("Search")
+    }
+}
+/// Whether Paste into Active App can work yet, with a way to allow it. Rechecked when ByteCache
+/// comes back to the front (after a visit to System Settings).
+private struct PastePermissionRow: View {
+    @State private var allowed = ActiveAppPaster.shared.isAllowed
+
+    var body: some View {
+        HStack {
+            if allowed {
+                Label("Accessibility allowed", symbol: .checkCircle).foregroundStyle(.green)
+            } else {
+                Label("Accessibility not allowed yet", symbol: .warning).foregroundStyle(.orange)
+                Spacer()
+                Button("Allow…") {
+                    ActiveAppPaster.shared.askForPermission()
+                }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            allowed = ActiveAppPaster.shared.isAllowed
+        }
     }
 }
 #endif

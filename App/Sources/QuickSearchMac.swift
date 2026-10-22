@@ -117,7 +117,7 @@ struct MenuBarQuickSearch: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        QuickSearchView(model: services.quickSearch, lock: services.lock) { dismiss() }
+        MenuBarAssistantView(services: services) { dismiss() }
             .appSettingsStyle(services.settings)
     }
 }
