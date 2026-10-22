@@ -3,7 +3,8 @@ import SwiftUI
 extension AppSymbol {
     /// The icon as an `Image` (menus and toolbars need a plain image).
     public func image() -> Image {
-        Image(systemName: sfName)
+        // ByteCache's own {↓} mark is a custom symbol (design/Icons/make-mark.swift).
+        self == .byteCache ? Image("bytecache", bundle: .module) : Image(systemName: sfName)
     }
 }
 

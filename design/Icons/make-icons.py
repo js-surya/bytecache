@@ -17,7 +17,7 @@ TABLE = [
     ("plus", "plus"), ("plusCircle", "plus.circle.fill"),
     ("minusCircle", "minus.circle"), ("key", "key.fill"),
     ("keyOff", "key.slash"), ("warning", "exclamationmark.triangle"),
-    ("copy", "doc.on.doc"), ("braces", "curlybraces"),
+    ("copy", "doc.on.doc"), ("byteCache", "curlybraces"),
     ("appearance", "circle.lefthalf.filled"),
     ("code", "chevron.left.forwardslash.chevron.right"), ("checkCircle", "checkmark.circle.fill"),
     ("restore", "arrow.uturn.backward"), ("close", "xmark"),

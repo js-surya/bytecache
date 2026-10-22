@@ -79,7 +79,7 @@ struct ByteCacheApp: App {
         MenuBarExtra(isInserted: Bindable(services.settings).quickSearchInMenuBar) {
             MenuBarQuickSearch(services: services)
         } label: {
-            Label("ByteCache Quick Search", systemImage: "curlybraces")
+            Label("ByteCache Quick Search", symbol: .byteCache)
         }
         .menuBarExtraStyle(.window)
         #endif

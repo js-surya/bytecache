@@ -79,14 +79,14 @@ struct SnippetWidgetView: View {
         case .locked:
             locked
         case .signedOut:
-            message("Open ByteCache to sign in", systemImage: "curlybraces")
+            message("Open ByteCache to sign in", icon: Image("bytecache"))
         case .problem(let problem):
-            message(problem, systemImage: "wifi.exclamationmark")
+            message(problem, icon: Image(systemName: "wifi.exclamationmark"))
         case .notShared:
             message("Open ByteCache once. If this stays, this install can't share data with widgets — see Settings → About.",
-                    systemImage: "exclamationmark.triangle")
+                    icon: Image(systemName: "exclamationmark.triangle"))
         case .snippets(let snippets, _) where snippets.isEmpty:
-            message(emptyMessage, systemImage: "tray")
+            message(emptyMessage, icon: Image(systemName: "tray"))
         case .snippets(let snippets, _):
             content(snippets)
         }
@@ -104,7 +104,7 @@ struct SnippetWidgetView: View {
         default:
             VStack(alignment: .leading, spacing: 6) {
                 if family != .systemSmall {
-                    Label(title, systemImage: "curlybraces").font(.caption.weight(.semibold)).foregroundStyle(.tint)
+                    Label(title, image: "bytecache").font(.caption.weight(.semibold)).foregroundStyle(.tint)
                 }
                 ForEach(0..<(family == .systemLarge ? 7 : 3), id: \.self) { _ in
                     VStack(alignment: .leading, spacing: 3) {
@@ -144,7 +144,7 @@ struct SnippetWidgetView: View {
             single(snippets[0])
         default:
             VStack(alignment: .leading, spacing: 6) {
-                Label(title, systemImage: "curlybraces").font(.caption.weight(.semibold)).foregroundStyle(.tint)
+                Label(title, image: "bytecache").font(.caption.weight(.semibold)).foregroundStyle(.tint)
                 ForEach(snippets.prefix(family == .systemLarge ? 7 : 3)) { snippet in
                     row(snippet)
                 }
@@ -207,9 +207,9 @@ struct SnippetWidgetView: View {
         .accessibilityLabel("Copy \(snippet.title)")
     }
 
-    private func message(_ text: String, systemImage: String) -> some View {
+    private func message(_ text: String, icon: Image) -> some View {
         VStack(spacing: 6) {
-            Image(systemName: systemImage).font(.title3).foregroundStyle(.tint)
+            icon.font(.title3).foregroundStyle(.tint)
             Text(text).font(.caption).multilineTextAlignment(.center).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
