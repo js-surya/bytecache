@@ -20,6 +20,9 @@ public final class OnboardingModel {
     public var username = ""
     public var password = ""
     public var apiKey = ""
+    /// Create Account instead of Sign In (CP-75); only offered when the server allows it.
+    public var creatingAccount = false
+    public var confirmPassword = ""
     public private(set) var isWorking = false
     public private(set) var errorMessage: String?
 
@@ -36,9 +39,25 @@ public final class OnboardingModel {
     public var canLogin: Bool {
         guard !isWorking else { return false }
         switch method {
-        case .password: return !username.trimmingCharacters(in: .whitespaces).isEmpty && !password.isEmpty
+        case .password:
+            let filled = !username.trimmingCharacters(in: .whitespaces).isEmpty && !password.isEmpty
+            return creatingAccount ? filled && password == confirmPassword : filled
         case .apiKey: return !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         }
+    }
+
+    /// Shown under the fields while the two passwords differ.
+    public var passwordsDiffer: Bool {
+        creatingAccount && !confirmPassword.isEmpty && password != confirmPassword
+    }
+
+    public var canCreateAccount: Bool { session.canCreateAccount }
+
+    public func toggleCreatingAccount() {
+        creatingAccount.toggle()
+        method = .password
+        confirmPassword = ""
+        errorMessage = nil
     }
 
     /// Fills the public demo server and its published login.
@@ -60,8 +79,16 @@ public final class OnboardingModel {
         switch method {
         case .password:
             let name = username.trimmingCharacters(in: .whitespaces)
-            await run { [self] () async throws(APIError) in try await session.login(username: name, password: password) }
-            if errorMessage == nil { password = "" }
+            if creatingAccount {
+                await run { [self] () async throws(APIError) in try await session.register(username: name, password: password) }
+            } else {
+                await run { [self] () async throws(APIError) in try await session.login(username: name, password: password) }
+            }
+            if errorMessage == nil {
+                password = ""
+                confirmPassword = ""
+                creatingAccount = false
+            }
         case .apiKey:
             await run { [self] () async throws(APIError) in try await session.loginWithAPIKey(apiKey) }
             if errorMessage == ErrorText.message(for: .unauthorized) { errorMessage = Self.rejectedKeyMessage }

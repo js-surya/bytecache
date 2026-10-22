@@ -15,6 +15,27 @@ final class OnboardingTests: XCTestCase {
 
     private func ok(_ body: String) -> StubTransport.Reply { .response(status: 200, body: body, contentType: "application/json") }
 
+    /// CP-75: Create Account needs the password twice, then signs in.
+    func testCreateAccountNeedsMatchingPasswordsThenSignsIn() async {
+        let open = #"{"authRequired":true,"allowNewAccounts":true,"hasUsers":true}"#
+        let (m, session) = model([ok(open), ok(login)])
+        m.serverText = "a.io"
+        await m.connect()
+        XCTAssertTrue(m.canCreateAccount)
+        m.toggleCreatingAccount()
+        m.username = "new"
+        m.password = "secret"
+        m.confirmPassword = "secrex"
+        XCTAssertFalse(m.canLogin)
+        XCTAssertTrue(m.passwordsDiffer)
+        m.confirmPassword = "secret"
+        XCTAssertTrue(m.canLogin)
+        await m.login()
+        XCTAssertNil(m.errorMessage)
+        XCTAssertFalse(m.creatingAccount)
+        guard case .signedIn = session.state else { return XCTFail("\(session.state)") }
+    }
+
     func testDemoServerButtonFillsDemoAddress() {
         let (m, _) = model([])
         m.useDemoServer()
