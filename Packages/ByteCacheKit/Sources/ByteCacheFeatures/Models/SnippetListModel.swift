@@ -551,11 +551,13 @@ public final class SnippetListModel {
 
     private func announce(_ kind: SnippetChange.Kind, server: ServerURL) {
         NotificationCenter.default.post(name: SnippetChange.notification, object: self,
-                                        userInfo: [SnippetChange.key: SnippetChange(kind: kind, server: server)])
+                                        userInfo: [SnippetChange.key: SnippetChange(kind: kind, server: server,
+                                                                                    session: ObjectIdentifier(session))])
     }
 
     private func apply(_ change: SnippetChange) {
-        guard change.server == session.client?.server else { return }
+        // Only lists on the same session (the app's tabs share one; tests and other windows may not).
+        guard change.session == ObjectIdentifier(session), change.server == session.client?.server else { return }
         switch change.kind {
         case .updated(let snippet):
             place(snippet)
@@ -597,4 +599,5 @@ struct SnippetChange: @unchecked Sendable {
 
     let kind: Kind
     let server: ServerURL
+    let session: ObjectIdentifier
 }
