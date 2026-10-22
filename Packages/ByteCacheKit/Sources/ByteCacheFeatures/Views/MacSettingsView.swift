@@ -198,6 +198,7 @@ private struct MacSearchPage: View {
             }
             Section {
                 Toggle("Show in Menu Bar", isOn: $settings.quickSearchInMenuBar)
+                    .disabled(settings.menuBarOnly)
                 Picker("Keyboard Shortcut", selection: $settings.quickSearchShortcut) {
                     ForEach(QuickSearchShortcut.allCases) { Text($0.title).tag($0) }
                 }
@@ -220,6 +221,26 @@ private struct MacSearchPage: View {
                 Text("Choosing a Snippet")
             } footer: {
                 FooterText("Paste into Active App puts the snippet straight into the app you were using. It needs Accessibility permission to press ⌘V there; without it, the snippet is copied instead.")
+            }
+            Section {
+                Picker("Starts With", selection: $settings.quickSearchStart) {
+                    Text("Recent").tag(QuickSearchStart.recent)
+                    Text("Pinned").tag(QuickSearchStart.pinned)
+                    Text("Favorites").tag(QuickSearchStart.favorites)
+                    if !settings.smartGroups.isEmpty {
+                        Divider()
+                        ForEach(settings.smartGroups) { Text($0.name).tag(QuickSearchStart.smartGroup($0.id)) }
+                    }
+                }
+                Toggle("Clear Search When Opened", isOn: $settings.quickSearchClearsOnOpen)
+                Picker("Menu Bar Window Size", selection: $settings.menuBarPanelSize) {
+                    ForEach(MenuBarPanelSize.allCases) { Text($0.rawValue.capitalized).tag($0) }
+                }
+                Toggle("Menu Bar Only", isOn: $settings.menuBarOnly)
+            } header: {
+                Text("Menu Bar")
+            } footer: {
+                FooterText("Menu Bar Only hides ByteCache from the Dock and the app switcher; open the main window from the menu bar icon. Takes effect right away.")
             }
         }
         .navigationTitle("Search")

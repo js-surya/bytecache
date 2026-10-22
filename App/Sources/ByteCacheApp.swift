@@ -23,6 +23,10 @@ struct ByteCacheApp: App {
                     QuickSearchPanel.shared.configure(services)
                     SystemAppIconSwitcher.shared.apply()
                     ActiveAppPaster.shared.start()
+                    applyDockPolicy(menuBarOnly: services.settings.menuBarOnly)
+                }
+                .onChange(of: services.settings.menuBarOnly) { _, only in
+                    applyDockPolicy(menuBarOnly: only)
                 }
                 .onChange(of: services.settings.quickSearchShortcut) { _, shortcut in
                     GlobalHotKey.shared.register(shortcut)
@@ -87,5 +91,16 @@ private struct ReportBugMenuItem: View {
     var body: some View {
         Button("Report a Bug…") { openWindow(id: "report-bug") }
     }
+
+}
+#endif
+
+#if os(macOS)
+/// Menu Bar Only (CP-69): no Dock icon or app switcher entry; the menu bar icon stays.
+@MainActor private func applyDockPolicy(menuBarOnly: Bool) {
+    let policy: NSApplication.ActivationPolicy = menuBarOnly ? .accessory : .regular
+    guard NSApp.activationPolicy() != policy else { return }
+    NSApp.setActivationPolicy(policy)
+    if !menuBarOnly { NSApp.activate() }
 }
 #endif

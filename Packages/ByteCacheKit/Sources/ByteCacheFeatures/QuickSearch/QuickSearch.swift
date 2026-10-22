@@ -40,14 +40,23 @@ public final class QuickSearchModel {
         highlighted = min(max(highlighted + step, 0), results.count - 1)
     }
 
+    /// The list shown before anything is typed (Settings → Search); a search looks everywhere.
+    private var start: QuickSearchStart = .recent
+
     public func searchChanged() {
         highlighted = 0
+        let searching = list.searchText.contains { !$0.isWhitespace }
+        list.selection = searching ? .all : start.sidebarItem
         list.searchTextChanged()
     }
 
-    /// Fresh results each time the panel opens.
-    public func opened() async {
+    /// Fresh results each time the panel opens, from the start list unless a search is kept.
+    public func opened(start: QuickSearchStart = .recent, clearSearch: Bool = true) async {
+        self.start = start
         highlighted = 0
+        if clearSearch { list.searchText = "" }
+        let searching = list.searchText.contains { !$0.isWhitespace }
+        list.selection = searching ? .all : start.sidebarItem
         await list.refresh()
     }
 
@@ -68,13 +77,16 @@ public final class QuickSearchModel {
 public struct QuickSearchView: View {
     @Bindable var model: QuickSearchModel
     let lock: AppLockModel
+    /// Nil: the standard Quick Search panel size. The menu bar passes the size chosen in Settings.
+    let size: CGSize?
     let onClose: () -> Void
     @FocusState private var fieldFocused: Bool
     @Environment(AppSettings.self) private var settings
 
-    public init(model: QuickSearchModel, lock: AppLockModel, onClose: @escaping () -> Void) {
+    public init(model: QuickSearchModel, lock: AppLockModel, size: CGSize? = nil, onClose: @escaping () -> Void) {
         self.model = model
         self.lock = lock
+        self.size = size
         self.onClose = onClose
     }
 
@@ -94,7 +106,7 @@ public struct QuickSearchView: View {
             Divider()
             content
         }
-        .frame(width: 520, height: 380)
+        .frame(width: size?.width ?? 560, height: size?.height ?? 480)
         .onChange(of: model.list.searchText) { model.searchChanged() }
         .onKeyPress(.upArrow) { model.move(by: -1); return .handled }
         .onKeyPress(.downArrow) { model.move(by: 1); return .handled }
@@ -108,7 +120,9 @@ public struct QuickSearchView: View {
         .task {
             fieldFocused = true
             model.list.searchCode = settings.searchInCode
-            if !lock.isLocked { await model.opened() }
+            if !lock.isLocked {
+                await model.opened(start: settings.quickSearchStart, clearSearch: settings.quickSearchClearsOnOpen)
+            }
         }
     }
 
@@ -145,11 +159,47 @@ public struct QuickSearchView: View {
                     if let id = model.highlightedSnippet?.id { proxy.scrollTo(id) }
                 }
             }
+            if let snippet = model.highlightedSnippet {
+                Divider()
+                preview(snippet)
+            }
             Divider()
             Text(QuickSearchAction.hint(settings: settings))
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .padding(6)
+        }
+    }
+
+    /// The highlighted snippet's first file, so you can check it before choosing.
+    private func preview(_ snippet: Snippet) -> some View {
+        let fragment = snippet.fragments.min { $0.position < $1.position }
+        return VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 6) {
+                if let fragment {
+                    LanguageIconView(fragment.language, size: 12)
+                    Text(fragment.fileName.isEmpty ? LanguageName.display(fragment.language) : fragment.fileName)
+                        .lineLimit(1)
+                }
+                if snippet.fragments.count > 1 {
+                    Text("+\(snippet.fragments.count - 1) more").foregroundStyle(.secondary)
+                }
+                Spacer()
+                Toggle(isOn: Binding(get: { settings.wrapLines }, set: { settings.wrapLines = $0 })) {
+                    Label("Wrap", symbol: .wrapLines)
+                }
+                .toggleStyle(.button)
+                .controlSize(.small)
+                .help("Wrap long lines")
+            }
+            .font(.caption)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            ScrollView(.vertical) {
+                CodeView(code: fragment?.code ?? "", language: fragment?.language ?? "plaintext")
+                    .padding(.horizontal, 6)
+            }
+            .frame(height: 150)
         }
     }
 
