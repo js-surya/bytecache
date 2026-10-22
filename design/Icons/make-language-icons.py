@@ -118,6 +118,11 @@ def is_dark(svg_path):
     return all(is_dark_neutral(c) for c in colours)
 
 
+# Logos that are dark apart from a small coloured detail (Bash: a dark terminal with a green "$_"),
+# which vanish on a dark background just like all-black ones.
+MOSTLY_DARK = {"bash"}
+
+
 def write_imageset(name, svg, template):
     folder = os.path.join(ASSETS, f"{name}.imageset")
     os.makedirs(folder, exist_ok=True)
@@ -151,7 +156,7 @@ def main(package):
         logos.append(logo)
         write_imageset(f"lang-{logo}-color", colour, template=False)
         write_imageset(f"lang-{logo}-mono", mono, template=True)
-        if is_dark(colour):
+        if is_dark(colour) or logo in MOSTLY_DARK:
             dark.append(logo)
 
     available = {k: v for k, v in LOGOS.items() if v in logos}
