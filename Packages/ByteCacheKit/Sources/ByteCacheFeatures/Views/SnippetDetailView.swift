@@ -12,6 +12,11 @@ public struct SnippetDetailView: View {
     @State private var exportMessage: String?
     @State private var sharingLinks = false
     @State private var explaining = false
+    /// The file shown when files are tabs (nil: the first).
+    @State private var selectedFile: Int?
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
     @Environment(AppSettings.self) private var settings
     @Environment(\.openWindow) private var openWindow
     let showsOpenInWindow: Bool
@@ -45,6 +50,19 @@ public struct SnippetDetailView: View {
 
     private var fragments: [Fragment] { snippet.fragments.sorted { $0.position < $1.position } }
     private var allCode: String { fragments.map(\.code).joined(separator: "\n\n") }
+
+    /// Mac and iPad (not iPhone or iPad split narrow): files as tabs, with a status bar.
+    private var wide: Bool {
+        #if os(iOS)
+        sizeClass == .regular
+        #else
+        true
+        #endif
+    }
+    private var usesTabs: Bool { wide && fragments.count > 1 }
+    private var shownFile: Fragment? {
+        fragments.first { $0.id == selectedFile } ?? fragments.first
+    }
 
     public var body: some View {
         ScrollView {
@@ -83,13 +101,27 @@ public struct SnippetDetailView: View {
                         }
                     }
                 }
-                ForEach(fragments) { fragment in
-                    FragmentCard(fragment: fragment, snippetTitle: snippet.title) { list?.recordCopy(snippet) }
+                if usesTabs, let shownFile {
+                    VStack(alignment: .leading, spacing: 8) {
+                        FileTabStrip(fragments: fragments, selection: $selectedFile)
+                        FragmentCard(fragment: shownFile, snippetTitle: snippet.title) { list?.recordCopy(snippet) }
+                            .id(shownFile.id)
+                    }
+                } else {
+                    ForEach(fragments) { fragment in
+                        FragmentCard(fragment: fragment, snippetTitle: snippet.title) { list?.recordCopy(snippet) }
+                    }
                 }
             }
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if wide, let shownFile {
+                SnippetStatusBar(fragment: shownFile) { list?.recordCopy(snippet) }
+            }
+        }
+        .onChange(of: snippet.id) { selectedFile = nil }
         .navigationTitle(snippet.title)
         .fileExporter(isPresented: $exporting,
                       document: SnippetFileDocument(wrapper: (exportFile ?? wholeSnippet).wrapper),
