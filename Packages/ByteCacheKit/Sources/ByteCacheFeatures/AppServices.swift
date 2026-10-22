@@ -13,6 +13,8 @@ public final class AppServices {
     public let detector: LanguageDetector
     public let settings: AppSettings
     public let cloudSync: CloudSyncCoordinator
+    /// Explain results kept under the code, synced through iCloud (CP-79).
+    public let aiNotes: AINoteStore
     /// Appearance, line numbers and search-inside-code, shared with the web app's settings (CP-74).
     public let serverSettings: ServerSettingsSync
     public let lock: AppLockModel
@@ -47,6 +49,7 @@ public final class AppServices {
         lock.appDidLaunch()
         cloudSync = CloudSyncCoordinator(settings: settings, session: session, cloud: cloud ?? UbiquitousSyncStore())
         serverSettings = ServerSettingsSync(settings: settings, session: session)
+        aiNotes = AINoteStore(directory: AINoteStore.defaultDirectory, settings: settings, cloud: cloud ?? UbiquitousSyncStore())
     }
 }
 

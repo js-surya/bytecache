@@ -102,6 +102,8 @@ public final class AppSettings {
     public var iCloudSyncEnabled: Bool { didSet { defaults.set(iCloudSyncEnabled, forKey: Key.iCloudSync) } }
     public var handoffEnabled: Bool { didSet { defaults.set(handoffEnabled, forKey: Key.handoff) } }
     public var suggestionsEnabled: Bool { didSet { defaults.set(suggestionsEnabled, forKey: Key.suggestions) } }
+    /// Device-only: how many AI Notes to keep (the oldest go first).
+    public var aiNotesLimit: Int { didSet { defaults.set(aiNotesLimit, forKey: Key.aiNotesLimit) } }
     /// Device-only: phones differ, so haptics aren't synced.
     public var hapticsEnabled: Bool {
         didSet {
@@ -138,6 +140,7 @@ public final class AppSettings {
         static let quickSearchStart = "quickSearchStart", quickSearchClears = "quickSearchClearsOnOpen"
         static let menuBarPanelSize = "menuBarPanelSize", menuBarOnly = "menuBarOnly"
         static let snippetExpiries = "snippetExpiries"
+        static let aiNotesLimit = "aiNotesLimit"
         static let iCloudSync = "iCloudSyncEnabled", handoff = "handoffEnabled", suggestions = "suggestionsEnabled"
         static let haptics = "hapticsEnabled", hapticStrength = "hapticStrength"
     }
@@ -168,6 +171,7 @@ public final class AppSettings {
         iCloudSyncEnabled = defaults.object(forKey: Key.iCloudSync) as? Bool ?? true
         handoffEnabled = defaults.object(forKey: Key.handoff) as? Bool ?? true
         suggestionsEnabled = defaults.object(forKey: Key.suggestions) as? Bool ?? true
+        aiNotesLimit = (defaults.object(forKey: Key.aiNotesLimit) as? Int).flatMap { AINoteStore.limits.contains($0) ? $0 : nil } ?? 50
         hapticsEnabled = defaults.object(forKey: Key.haptics) as? Bool ?? true
         hapticStrength = defaults.string(forKey: Key.hapticStrength).flatMap(HapticStrength.init) ?? .medium
         Haptics.configure(enabled: hapticsEnabled, strength: hapticStrength)

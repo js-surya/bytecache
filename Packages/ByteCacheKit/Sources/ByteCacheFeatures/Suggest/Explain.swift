@@ -64,6 +64,8 @@ public final class ExplainModel {
 struct ExplainSheet: View {
     @State var model: ExplainModel
     let snippet: (code: String, language: String, title: String)
+    /// Called with the explanation, to keep it as an AI Note.
+    var onExplained: (String) -> Void = { _ in }
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -73,7 +75,7 @@ struct ExplainSheet: View {
                 ProgressView("Thinking…").frame(maxWidth: .infinity).padding(.top, 60)
             case .done(let text):
                 MarkdownView(text)
-                Text("Generated on this device by Apple Intelligence. It can be wrong — check before running code.")
+                Text("Generated on this device by Apple Intelligence. It can be wrong — check before running code. Kept as an AI Note under the code.")
                     .font(.footnote).foregroundStyle(.secondary).padding(.horizontal, 14)
             case .failed(let message):
                 ContentUnavailableView("No Explanation", symbol: .warning, description: Text(message))
@@ -81,6 +83,9 @@ struct ExplainSheet: View {
         }
         .navigationTitle("Explain")
         .toolbar { Button("Done") { dismiss() } }
-        .task { await model.explain(code: snippet.code, language: snippet.language, title: snippet.title) }
+        .task {
+            await model.explain(code: snippet.code, language: snippet.language, title: snippet.title)
+            if case .done(let text) = model.state { onExplained(text) }
+        }
     }
 }

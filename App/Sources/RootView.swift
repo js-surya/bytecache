@@ -132,6 +132,7 @@ struct RootView: View {
             restored = true
             if let link = PendingCapture.consume() { AppNavigator.shared.handle(link) }
             await services.cloudSync.start()
+            services.aiNotes.start()
         }
     }
 }

@@ -19,6 +19,7 @@ public struct SnippetDetailView: View {
     #endif
     @Environment(AppSettings.self) private var settings
     @Environment(\.openWindow) private var openWindow
+    @Environment(AINoteStore.self) private var aiNotes: AINoteStore?
     let showsOpenInWindow: Bool
 
     public init(snippet: Snippet, list: SnippetListModel?, showsOpenInWindow: Bool = true, onEdit: @escaping () -> Void) {
@@ -60,6 +61,10 @@ public struct SnippetDetailView: View {
         #endif
     }
     private var usesTabs: Bool { wide && fragments.count > 1 }
+
+    /// AI Notes belong to the signed-in server's snippets (not someone else's public ones).
+    private var noteServer: String? { readOnly ? nil : list?.session.client?.server.cacheKey }
+    private var canExplain: Bool { settings.suggestionsEnabled && SnippetSuggesters.explainer() != nil }
     private var shownFile: Fragment? {
         fragments.first { $0.id == selectedFile } ?? fragments.first
     }
@@ -110,6 +115,13 @@ public struct SnippetDetailView: View {
                 } else {
                     ForEach(fragments) { fragment in
                         FragmentCard(fragment: fragment, snippetTitle: snippet.title) { list?.recordCopy(snippet) }
+                    }
+                }
+                if let server = noteServer, let note = aiNotes?.note(server: server, snippetID: snippet.id) {
+                    AINoteCard(note: note, code: allCode, canExplainAgain: canExplain) {
+                        explaining = true
+                    } onDelete: {
+                        withAnimation { aiNotes?.delete(server: server, snippetID: snippet.id) }
                     }
                 }
             }
@@ -166,7 +178,11 @@ public struct SnippetDetailView: View {
                         .sheet(isPresented: $explaining) {
                             NavigationStack {
                                 ExplainSheet(model: ExplainModel(explainer: explainer),
-                                             snippet: (allCode, fragments.first?.language ?? "plaintext", snippet.title))
+                                             snippet: (allCode, fragments.first?.language ?? "plaintext", snippet.title)) { text in
+                                    if let server = noteServer {
+                                        aiNotes?.save(text, code: allCode, server: server, snippetID: snippet.id)
+                                    }
+                                }
                             }
                         }
                 }
@@ -200,6 +216,20 @@ public struct SnippetDetailView: View {
                 }
             }
         }
+        #if DEBUG
+        // `-BCAINotePreview`: a sample AI Note for older code, so the card and its "code changed" note show.
+        .task {
+            guard ProcessInfo.processInfo.arguments.contains("-BCAINotePreview"), let server = noteServer,
+                  aiNotes?.note(server: server, snippetID: snippet.id) == nil else { return }
+            aiNotes?.save("""
+            Defines a small **Greeter** type and prints a greeting.
+
+            - `Greeter` stores a `name` and builds `"Hello, <name>!"` in `greet()`.
+            - The last line creates one for "ByteCache" and prints the result.
+            - Nothing risky: no files, network or secrets.
+            """, code: allCode + "\n// older version", server: server, snippetID: snippet.id, date: Date().addingTimeInterval(-3_600))
+        }
+        #endif
         .logScreen("Snippet")
     }
 
