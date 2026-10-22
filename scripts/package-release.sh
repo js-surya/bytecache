@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# Builds unsigned release files into dist/:
+# Builds the unsigned release file into dist/:
 #   ByteCache-<version>-iOS.ipa    universal: iPhone and iPad, ad-hoc signed with its App Group (sideload,
-#                                  e.g. with AltStore, SideStore or Sideloadly)
-#   ByteCache-<version>-macOS.zip  the Mac app, ad-hoc signed (right-click → Open the first time)
+#                                  e.g. with AltStore, SideStore or Sideloadly); no iCloud (UNSIGNED_BUILD)
+# The Mac app is released signed and notarized instead (Xcode Organizer → Direct Distribution), added
+# to the GitHub release as ByteCache-<version>-macOS.zip; see CLAUDE.md "Branches and releases".
 # Usage: scripts/package-release.sh [build number]
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -19,8 +20,11 @@ common=(CURRENT_PROJECT_VERSION="$build" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_RE
         'SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) TIP_LINKS')
 
 echo "▸ iOS (iPhone + iPad) $version ($build)"
+# UNSIGNED_BUILD: the installer re-signs with the user's Apple ID, which can't use our iCloud, so
+# iCloud Sync is left out of this build (BuildFeatures.iCloud).
 xcodebuild -scheme ByteCache -configuration Release -destination 'generic/platform=iOS' \
-    -derivedDataPath "$derived/ios" "${common[@]}" build -quiet
+    -derivedDataPath "$derived/ios" "${common[@]}" \
+    'SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) TIP_LINKS UNSIGNED_BUILD' build -quiet
 payload="$derived/ipa/Payload"
 mkdir -p "$payload"
 cp -R "$derived/ios/Build/Products/Release-iphoneos/ByteCache.app" "$payload/"
@@ -50,15 +54,6 @@ for bundle in "$ios_app" "$ios_app"/PlugIns/*.appex; do
     [[ "$signed" == *group.me.suryajs.bytecache* ]] || { echo "error: $bundle has no App Group entitlement" >&2; exit 1; }
 done
 (cd "$derived/ipa" && zip -qry "../../../$dist/ByteCache-$version-iOS.ipa" Payload)
-
-echo "▸ macOS $version ($build)"
-xcodebuild -scheme ByteCache -configuration Release -destination 'generic/platform=macOS' \
-    -derivedDataPath "$derived/mac" "${common[@]}" build -quiet
-app="$derived/mac/Build/Products/Release/ByteCache.app"
-# Apple silicon refuses unsigned code: ad-hoc sign the extensions, then the app.
-find "$app/Contents/PlugIns" -name "*.appex" -maxdepth 1 -exec codesign --force --sign - {} \; 2>/dev/null || true
-codesign --force --sign - "$app"
-ditto -c -k --keepParent "$app" "$dist/ByteCache-$version-macOS.zip"
 
 (cd "$dist" && shasum -a 256 ./* > SHA256SUMS.txt)
 ls -lh "$dist"

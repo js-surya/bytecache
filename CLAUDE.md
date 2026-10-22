@@ -22,6 +22,7 @@ ByteCache ("Cache the bytes"; renamed from ByteCatch in CP-18 because of a name 
 ## Branches and releases
 - Feature/fix branches (one per Linear issue, e.g. `cp-14-report-a-bug`) → PR into **`develop`** (no GitHub CI; run tests locally first, then merge).
 - Release: ask the user for the version, `scripts/set-version.sh X.Y.Z` on `develop`, PR `develop` → `main` (one CI build), then **merge commit, not squash**; the merge publishes GitHub release `vX.Y.Z` (`.github/workflows/release.yml`) with notes from the commit log. Local release files: `scripts/package-release.sh`.
+- GitHub release files: the iOS `.ipa` is unsigned (built with `UNSIGNED_BUILD`, so no iCloud Sync, see `BuildFeatures`). The Mac app is released signed and notarized only: archive in Xcode → Organizer → Distribute App → Direct Distribution, zip it as `ByteCache-X.Y.Z-macOS.zip`, `gh release upload vX.Y.Z` it, then regenerate and re-upload `SHA256SUMS.txt`.
 
 ## Commands
 - Package tests: `swift test --package-path Packages/ByteCacheKit`

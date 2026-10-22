@@ -93,8 +93,9 @@ jobs:
           ## Install
           | Device | File | How |
           |---|---|---|
-          | iPhone and iPad | \`ByteCache-$VERSION-iOS.ipa\` | Unsigned: sideload with Sideloadly or AltStore (signs it with your Apple ID). |
-          | Mac | \`ByteCache-$VERSION-macOS.zip\` | Unzip, move to Applications, then right-click → Open the first time. |
+          | iPhone and iPad | [TestFlight beta](https://testflight.apple.com/join/rpmeVJW6) | Recommended: signed, with iCloud Sync. |
+          | iPhone and iPad | \`ByteCache-$VERSION-iOS.ipa\` | Unsigned: sideload with Sideloadly or AltStore (signs it with your Apple ID). Without iCloud Sync, which needs our signature. |
+          | Mac | \`ByteCache-$VERSION-macOS.zip\` | Signed and notarized: unzip and move to Applications. Added a few minutes after the release is published. |
 
           Requires iOS / iPadOS 17 or macOS 14 or later, and a [ByteStash](https://github.com/jordan-dalby/ByteStash) server (or the public demo).
           Check downloads against \`SHA256SUMS.txt\`.

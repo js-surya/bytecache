@@ -111,11 +111,13 @@ public struct SettingsView: View {
             }
 
             Section {
-                NavigationLink {
-                    ICloudSyncSettingsView()
-                } label: {
-                    SettingsLabel(title: "iCloud Sync", symbol: .icloud, color: .cyan,
-                                  value: settings.iCloudSyncEnabled ? "On" : "Off")
+                if BuildFeatures.iCloud {
+                    NavigationLink {
+                        ICloudSyncSettingsView()
+                    } label: {
+                        SettingsLabel(title: "iCloud Sync", symbol: .icloud, color: .cyan,
+                                      value: settings.iCloudSyncEnabled ? "On" : "Off")
+                    }
                 }
                 NavigationLink {
                     HandoffSettingsView()
