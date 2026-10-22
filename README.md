@@ -21,7 +21,6 @@
 
 <p align="center">
   <a href="https://testflight.apple.com/join/rpmeVJW6"><img alt="Join the beta on TestFlight" src="https://img.shields.io/badge/TestFlight-join%20the%20beta-0D96F6?logo=apple&logoColor=white"></a>
-  <a href="https://ko-fi.com/trailingfox"><img alt="Support on Ko-fi" src="https://img.shields.io/badge/Ko--fi-support%20ByteCache-FF5E5B?logo=ko-fi&logoColor=white"></a>
 </p>
 
 <p align="center">

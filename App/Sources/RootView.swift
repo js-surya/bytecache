@@ -77,17 +77,8 @@ struct RootView: View {
             .frame(minWidth: 520, minHeight: 600)
             #endif
         }
-        .sheet(item: Bindable(services.updates).offered) { release in
-            UpdateSheet(release: release, kind: .update, current: services.updates.runningVersion) {
-                services.updates.skipOffered()
-            }
-            .appSettingsStyle(services.settings)
-        }
-        .background {
-            // A second sheet needs its own anchor view.
-            Color.clear.sheet(item: Bindable(services.updates).whatsNew) { release in
-                UpdateSheet(release: release, kind: .whatsNew).appSettingsStyle(services.settings)
-            }
+        .sheet(item: Bindable(services.updates).whatsNew) { release in
+            WhatsNewSheet(release: release).appSettingsStyle(services.settings)
         }
         .onChange(of: services.session.state) {
             // Signing in refreshes too, so a first load that fails shows up in the widget.

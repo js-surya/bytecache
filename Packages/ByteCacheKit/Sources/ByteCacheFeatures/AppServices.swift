@@ -41,14 +41,14 @@ public final class AppServices {
         widgets = WidgetSnapshotWriter(session: session, smartGroups: { [settings] in settings.smartGroups })
         quickSearch = QuickSearchModel(list: SnippetListModel(session: session, cache: cache))
         saveQueue = SaveQueueFlusher(session: session, queue: pendingSaves)
-        updates = UpdateModel(settings: settings, checker: Self.makeUpdateChecker())
+        updates = UpdateModel(checker: Self.makeUpdateChecker())
         lock.appDidLaunch()
         cloudSync = CloudSyncCoordinator(settings: settings, session: session, cloud: cloud ?? UbiquitousSyncStore())
     }
 }
 
 extension AppServices {
-    /// Debug builds: env BC_DEBUG_PRETEND_VERSION (e.g. 1.0.0) makes the update check think it's older.
+    /// Debug builds: env BC_DEBUG_PRETEND_VERSION (e.g. 1.0.0) makes What's New think the app was updated to that version.
     static func makeUpdateChecker() -> UpdateChecker {
         #if DEBUG
         if let pretend = ProcessInfo.processInfo.environment["BC_DEBUG_PRETEND_VERSION"].flatMap(AppVersion.init) {

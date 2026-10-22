@@ -44,11 +44,6 @@ struct ByteCacheApp: App {
             CommandGroup(replacing: .help) {
                 ReportBugMenuItem()
             }
-            CommandGroup(after: .appInfo) {
-                if services.updates.offersUpdates {
-                    Button("Check for Updates…") { Task { await services.updates.checkNow() } }
-                }
-            }
             #endif
         }
         WindowGroup("Snippet", for: Int.self) { $id in

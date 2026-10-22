@@ -1,11 +1,11 @@
 import Foundation
 
-/// Where this copy came from. App Store and TestFlight copies are updated by Apple, so the app
-/// must not offer GitHub downloads there (App Review guidelines 2.4.5 and 2.5.2).
+/// Where this copy came from, for bug reports. ByteCache ships through TestFlight and the App Store;
+/// other copies are Xcode builds or GitHub releases from before 1.3.0.
 public enum InstallSource: Equatable, Sendable {
     /// App Store or TestFlight.
     case appStore
-    /// GitHub release (sideloaded or unzipped) or an Xcode build.
+    /// An Xcode build, or a GitHub release from before 1.3.0 (sideloaded or unzipped).
     case direct
 
     public enum Platform: Sendable { case iOSDevice, iOSSimulator, macOS }

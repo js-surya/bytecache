@@ -474,9 +474,7 @@ struct PrivacyInfoView: View {
                 Label("Copied text is read only when you tap Paste.", symbol: .clipboard)
                 Label("Language detection runs on this device.", symbol: .cpu)
                 Label("Bug reports leave the device only when you send one, after you've seen what's in it.", symbol: .bug)
-                if InstallSource.current == .direct {
-                    Label("Once a day ByteCache asks GitHub whether there's a newer version (turn off in About → Updates).", symbol: .download)
-                }
+                Label("After an update, What's New loads that version's notes from GitHub.", symbol: .download)
             } footer: {
                 FooterText(AboutText.privacy)
             }
@@ -487,7 +485,6 @@ struct PrivacyInfoView: View {
 
 struct AboutView: View {
     @Environment(AppSettings.self) private var settings
-    @Environment(UpdateModel.self) private var updates: UpdateModel?
     @Environment(\.openURL) private var openURL
     @State private var appIcon = AppIconModel()
 
@@ -509,30 +506,6 @@ struct AboutView: View {
                 }
             }
             #endif
-            if let updates, updates.offersUpdates {
-                Section {
-                    Toggle("Check for Updates", isOn: $settings.checkForUpdates)
-                    Button {
-                        Task { await updates.checkNow() }
-                    } label: {
-                        HStack {
-                            Text("Check Now")
-                            Spacer()
-                            if updates.isChecking {
-                                ProgressView().controlSize(.small)
-                            }
-                        }
-                    }
-                    .disabled(updates.isChecking)
-                    if let status = updates.status {
-                        Text(status).foregroundStyle(.secondary)
-                    }
-                } header: {
-                    Text("Updates")
-                } footer: {
-                    FooterText("Once a day, ByteCache checks for a newer version. Nothing about you is sent.")
-                }
-            }
             Section {
                 // Buttons, not Links: a Link tints its whole row like a web link.
                 Button { openURL(AboutText.sourceCode) } label: {
