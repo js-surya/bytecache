@@ -52,6 +52,11 @@ public struct APIClient: Sendable {
         return (response.token, response.user ?? User(id: 0, username: username))
     }
 
+    /// Whether the server offers single sign-on (CP-72).
+    public func ssoConfig() async throws(APIError) -> SSOConfig {
+        try await send(.get, "/api/auth/oidc/config")
+    }
+
     /// For single-user servers that don't require a login.
     public func anonymousLogin() async throws(APIError) -> (token: String, user: User) {
         let response: LoginResponse = try await send(.post, "/api/auth/anonymous")

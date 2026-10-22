@@ -5,6 +5,7 @@ public struct LoginView: View {
     @Bindable var model: OnboardingModel
     let server: ServerURL
     @State private var showKey = false
+    @State private var signingInWithSSO = false
 
     public init(model: OnboardingModel, server: ServerURL) {
         self.model = model
@@ -34,7 +35,7 @@ public struct LoginView: View {
             }
             .listRowBackground(Color.clear)
 
-            if !model.creatingAccount {
+            if !model.creatingAccount && !model.passwordsDisabled {
                 Section {
                     Picker("Sign in with", selection: $model.method.animation()) {
                         ForEach(OnboardingModel.LoginMethod.allCases) { Text($0.title).tag($0) }
@@ -132,7 +133,16 @@ public struct LoginView: View {
                     .disabled(!model.canLogin)
                     .keyboardShortcut(.defaultAction)
 
-                    if model.canCreateAccount && (model.method == .password || model.creatingAccount) {
+                    if let title = model.ssoTitle, !model.creatingAccount {
+                        Button { signingInWithSSO = true } label: {
+                            Label(title, symbol: .key).font(.headline).frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
+                        .disabled(model.isWorking)
+                    }
+
+                    if model.canCreateAccount && !model.passwordsDisabled && (model.method == .password || model.creatingAccount) {
                         Button(model.creatingAccount ? "I Already Have an Account" : "Create Account") {
                             withAnimation { model.toggleCreatingAccount() }
                         }
@@ -149,6 +159,15 @@ public struct LoginView: View {
             }
             .listRowBackground(Color.clear)
             .listRowInsets(EdgeInsets())
+        }
+        .task {
+            await model.session.loadSSO()
+            if model.passwordsDisabled { model.method = .apiKey }
+        }
+        .sheet(isPresented: $signingInWithSSO) {
+            SingleSignOnSheet(server: server, title: model.ssoTitle ?? "Single Sign-On") { token in
+                Task { await model.signIn(ssoToken: token) }
+            }
         }
         .logScreen("Sign in")
     }

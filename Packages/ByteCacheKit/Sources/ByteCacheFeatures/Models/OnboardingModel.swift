@@ -53,6 +53,19 @@ public final class OnboardingModel {
 
     public var canCreateAccount: Bool { session.canCreateAccount }
 
+    /// "Sign In with Authentik" when the server offers single sign-on (CP-72), else nil.
+    public var ssoTitle: String? { session.sso?.buttonTitle }
+
+    /// The server takes no passwords: single sign-on or an API key only.
+    public var passwordsDisabled: Bool {
+        guard case .needsLogin(_, let config) = session.state else { return false }
+        return config.disableInternalAccounts
+    }
+
+    public func signIn(ssoToken: String) async {
+        await run { [self] () async throws(APIError) in try await session.signIn(ssoToken: ssoToken) }
+    }
+
     public func toggleCreatingAccount() {
         creatingAccount.toggle()
         method = .password

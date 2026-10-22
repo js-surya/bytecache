@@ -11,7 +11,7 @@ public final class SessionManager {
         case signedIn(server: ServerURL, user: User)
     }
 
-    public static let ssoOnlyMessage = "This server only allows single sign-on, which ByteCache doesn't support yet."
+    public static let ssoOnlyMessage = "This server only allows single sign-on, but it isn't set up there."
     /// Shown as the user name for API-key logins; ByteStash has no "who am I" for keys.
     public nonisolated static let apiKeyUserName = "API key"
 
@@ -41,6 +41,8 @@ public final class SessionManager {
     @ObservationIgnored private let transport: any HTTPTransport
     @ObservationIgnored private var credentials: Credentials?
     @ObservationIgnored private var lastConfig = AuthConfig()
+    /// The server's single sign-on, when it offers one (CP-72); read with its auth config.
+    public private(set) var sso: SSOConfig?
     @ObservationIgnored private var accountToReturnTo: UUID?
     /// The server typed in on this visit to the server screen, until it's signed in.
     @ObservationIgnored private var typedInID: UUID?
@@ -78,9 +80,10 @@ public final class SessionManager {
             let result = try await api.anonymousLogin()
             beginAccount(on: server)
             signIn(token: result.token, user: result.user)
-        } else if config.disableInternalAccounts {
-            throw .forbidden(Self.ssoOnlyMessage)
         } else {
+            // A server without password logins is only usable through its single sign-on.
+            sso = config.disableInternalAccounts ? await Self.ssoConfig(api) : nil
+            if config.disableInternalAccounts && sso == nil { throw .forbidden(Self.ssoOnlyMessage) }
             beginAccount(on: server)
             persist(credentials!)
             state = .needsLogin(server: server, config: config)
@@ -305,10 +308,29 @@ public final class SessionManager {
         typedInID = existing == nil ? credentials?.id : nil
     }
 
-    private func signIn(token: String, user: User) {
+    /// Signs in with the login single sign-on handed back (the server's `bytestash_token`).
+    public func signIn(ssoToken: String) async throws(APIError) {
+        guard case .needsLogin(let server, _) = state else { throw .invalidServer }
+        let user = try await APIClient(server: server, token: ssoToken, transport: transport).verify()
+        signIn(token: ssoToken, user: user, how: "single sign-on")
+    }
+
+    /// Reads whether the server on the sign-in screen offers single sign-on (the sign-in screen calls it).
+    public func loadSSO() async {
+        guard case .needsLogin(let server, _) = state else { return }
+        let found = await Self.ssoConfig(APIClient(server: server, token: nil, transport: transport))
+        if case .needsLogin(let now, _) = state, now == server { sso = found }
+    }
+
+    private static func ssoConfig(_ api: APIClient) async -> SSOConfig? {
+        guard let config = try? await api.ssoConfig(), config.enabled else { return nil }
+        return config
+    }
+
+    private func signIn(token: String, user: User, how: String = "a password") {
         guard var current = credentials else { return }
         typedInID = nil
-        AppLog.shared.record("session", "signed in with a password")
+        AppLog.shared.record("session", "signed in with \(how)")
         current.token = token
         current.apiKey = nil
         current.username = user.username
@@ -323,7 +345,8 @@ public final class SessionManager {
     }
 
     private func showLogin(server: ServerURL) async {
-        if let config = try? await APIClient(server: server, token: nil, transport: transport).authConfig() {
+        let api = APIClient(server: server, token: nil, transport: transport)
+        if let config = try? await api.authConfig() {
             lastConfig = config
         }
         state = .needsLogin(server: server, config: lastConfig)
