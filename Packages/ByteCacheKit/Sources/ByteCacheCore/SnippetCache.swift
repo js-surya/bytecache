@@ -48,8 +48,24 @@ public final class SnippetCache {
         context = ModelContext(container)
     }
 
+    /// Saves a page of snippets. One lookup for the whole page, and unchanged snippets aren't rewritten
+    /// (a list refresh mostly brings back what's already cached).
     public func store(_ snippets: [Snippet], server: ServerURL) {
-        for snippet in snippets { write(snippet, server: server) }
+        let serverKey = server.cacheKey
+        let keys = snippets.map { CachedSnippet.key(serverKey, $0.id) }
+        let existing = Dictionary(((try? context.fetch(FetchDescriptor(predicate: #Predicate<CachedSnippet> { keys.contains($0.key) }))) ?? [])
+            .map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
+        var changed = false
+        for snippet in snippets {
+            guard let payload = try? encoder.encode(snippet) else { continue }
+            if let record = existing[CachedSnippet.key(serverKey, snippet.id)] {
+                if record.payload == payload { continue }
+                context.delete(record)
+            }
+            context.insert(CachedSnippet(serverKey: serverKey, snippet: snippet, payload: payload))
+            changed = true
+        }
+        guard changed else { return }
         trim(server: server)
         save()
     }
@@ -98,6 +114,9 @@ public final class SnippetCache {
 
     private func trim(server: ServerURL) {
         let serverKey = server.cacheKey
+        // Counting is cheap; loading and sorting every row is only worth it when there are too many.
+        let count = (try? context.fetchCount(FetchDescriptor(predicate: #Predicate<CachedSnippet> { $0.serverKey == serverKey }))) ?? 0
+        guard count > Self.maxPerServer else { return }
         let descriptor = FetchDescriptor(
             predicate: #Predicate<CachedSnippet> { $0.serverKey == serverKey },
             sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]

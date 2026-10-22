@@ -26,6 +26,16 @@ final class SnippetCacheTests: XCTestCase {
         XCTAssertEqual(cache.all(server: serverA, matching: SnippetQuery()).map(\.id), [2, 1, 3])
     }
 
+    /// Storing a page again keeps one copy of each snippet, and a changed snippet is updated.
+    func testStoringAgainUpdatesOnlyWhatChanged() throws {
+        let cache = try SnippetCache(inMemory: true)
+        cache.store([snippet(1, title: "a"), snippet(2, title: "b")], server: serverA)
+        cache.store([snippet(1, title: "a"), snippet(2, title: "b2")], server: serverA)
+        XCTAssertEqual(cache.all(server: serverA, matching: SnippetQuery()).map(\.title).sorted(), ["a", "b2"])
+        cache.store([snippet(1, title: "a"), snippet(2, title: "b2")], server: serverA)
+        XCTAssertEqual(cache.all(server: serverA, matching: SnippetQuery()).count, 2)
+    }
+
     func testUpsertReplacesExisting() throws {
         let cache = try SnippetCache(inMemory: true)
         cache.store([snippet(1, title: "old")], server: serverA)

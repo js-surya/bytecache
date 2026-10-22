@@ -289,7 +289,8 @@ public final class SnippetListModel {
             let known = Set(snippets.map(\.id))
             snippets = arranged(snippets + page.snippets.filter { !known.contains($0.id) })
             hasMore = page.hasMore
-            cache?.store(page.snippets, server: client.server)
+            // The cache keeps the newest few hundred; pages past that would only be trimmed again.
+            if q.offset < SnippetCache.maxPerServer { cache?.store(page.snippets, server: client.server) }
         } catch {
             handle(error, offlineQuery: nil, server: client.server)
         }
