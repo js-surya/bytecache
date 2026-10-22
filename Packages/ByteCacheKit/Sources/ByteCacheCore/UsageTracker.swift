@@ -18,8 +18,9 @@ public struct UsageTracker: @unchecked Sendable {
 
     public func recordCopy(snippetID: Int, server: ServerURL, at date: Date = Date()) {
         var t = table(server)
-        let entry = t[String(snippetID)] ?? [0, 0]
-        t[String(snippetID)] = [entry[0] + 1, date.timeIntervalSince1970]
+        // Tolerates a damaged entry (anything but [count, date]) instead of crashing on a copy.
+        let count = t[String(snippetID)]?.first ?? 0
+        t[String(snippetID)] = [count + 1, date.timeIntervalSince1970]
         defaults.set(t, forKey: key(server))
     }
 

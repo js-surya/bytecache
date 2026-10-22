@@ -52,14 +52,17 @@ final class LanguageEvalTests: XCTestCase {
         let detector = try detector()
         let code = Self.chunks.first { $0.lines >= 150 }?.text ?? String(repeating: "let x = foo(1)\n", count: 200)
         _ = detector.detect(DetectionInput(text: code)) // warm up
-        let runs = 20
-        let start = Date()
-        for _ in 0..<runs { _ = detector.detect(DetectionInput(text: code)) }
-        let average = Date().timeIntervalSince(start) / Double(runs)
-        print(String(format: "200-line detection: %.1f ms", average * 1000))
+        // The median of 20 runs, so a busy machine (builds running alongside) doesn't fail it.
+        let times = (0..<20).map { _ in
+            let start = Date()
+            _ = detector.detect(DetectionInput(text: code))
+            return Date().timeIntervalSince(start)
+        }.sorted()
+        let median = times[times.count / 2]
+        print(String(format: "200-line detection: %.1f ms", median * 1000))
         // GitHub's virtual Macs are several times slower than a real one.
         let slack = ProcessInfo.processInfo.environment["CI"] == "true" ? 4.0 : 1.0
-        XCTAssertLessThan(average, 0.030 * slack)
+        XCTAssertLessThan(median, 0.030 * slack)
     }
 
     func testModelIsAtMostFiveMegabytes() throws {
