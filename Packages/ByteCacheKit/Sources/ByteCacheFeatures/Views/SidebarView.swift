@@ -5,6 +5,7 @@ public struct SidebarView: View {
     let model: SidebarModel
     @Binding var selection: SidebarItem?
     let session: SessionManager
+    @Environment(\.windowToolbarID) private var windowToolbarID
     @State private var showingSettings = false
     /// The Smart Group being created (`.some(nil)`) or edited.
     @State private var editingGroup: SmartGroup??
@@ -110,7 +111,7 @@ public struct SidebarView: View {
             .appSettingsStyle(settings)
         }
         #else
-        .toolbar(id: "main") {
+        .toolbar(id: windowToolbarID) {
             ToolbarItem(id: "server", placement: .navigation) {
                 ServerMenu(session: session)
             }

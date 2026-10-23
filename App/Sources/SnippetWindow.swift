@@ -9,6 +9,7 @@ struct SnippetWindow: View {
     @State private var snippet: Snippet?
     @State private var failed: String?
     @State private var editor: SnippetEditorModel?
+    @State private var toolbarID = WindowToolbarID(base: "snippet")
 
     var body: some View {
         NavigationStack {
@@ -24,6 +25,7 @@ struct SnippetWindow: View {
                 }
             }
         }
+        .environment(\.windowToolbarID, toolbarID.id)
         .task { await load() }
         .userActivity(SnippetActivity.type, isActive: services.settings.handoffEnabled && snippet != nil) { activity in
             guard let snippet, let server = services.session.client?.server else { return }

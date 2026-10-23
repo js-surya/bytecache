@@ -17,10 +17,15 @@ struct MainSplitView: View {
     @State private var clipboardEmpty = false
     @State private var scanning = false
     @State private var history = NavigationHistory(start: .all)
+    @State private var toolbarID = WindowToolbarID(base: "main")
     /// Going Back/Forward into another section: the snippet to open once that section is loaded.
     @State private var restoredSnippet: Snippet.ID??
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+    #if DEBUG && os(macOS)
+    @MainActor private static var openedSecondWindow = false
+    #endif
 
     init(services: AppServices) {
         self.services = services
@@ -31,6 +36,7 @@ struct MainSplitView: View {
 
     var body: some View {
         layout
+        .environment(\.windowToolbarID, toolbarID.id)
         .task(id: sidebarSelection) {
             list.selection = sidebarSelection ?? .all
             // Only a change of section clears the open snippet; the first load must not drop one
@@ -44,6 +50,23 @@ struct MainSplitView: View {
             }
             #if DEBUG
             if ProcessInfo.processInfo.arguments.contains("-BCSelectFirst") { selectedSnippet = list.snippets.first?.id }
+            #if os(macOS)
+            // `-BCSecondWindow`: File → New Window once the first window has loaded (CP-82).
+            if ProcessInfo.processInfo.arguments.contains("-BCSecondWindow"), !Self.openedSecondWindow {
+                Self.openedSecondWindow = true
+                try? await Task.sleep(for: .seconds(1))
+                func find(_ menu: NSMenu?) -> NSMenuItem? {
+                    for item in menu?.items ?? [] {
+                        if item.title.hasPrefix("New") && item.title.hasSuffix("Window") { return item }
+                        if let found = find(item.submenu) { return found }
+                    }
+                    return nil
+                }
+                if let item = find(NSApp.mainMenu), let index = item.menu?.index(of: item) {
+                    item.menu?.performActionForItem(at: index)
+                }
+            }
+            #endif
             if ProcessInfo.processInfo.arguments.contains("-BCNewSnippet"), editor == nil {
                 startEditing(nil)
                 if let code = ProcessInfo.processInfo.environment["BC_DEBUG_CODE"], let editor {
@@ -202,7 +225,7 @@ struct MainSplitView: View {
                     return true
                 }
                 // Right-click the toolbar (Mac) or long-press it (iPad) to customise it.
-                .toolbar(id: "main") {
+                .toolbar(id: toolbarID.id) {
                     ToolbarItem(id: "back", placement: .navigation) {
                         Button { go(history.back()) } label: { Label("Back", symbol: .back) }
                             .disabled(!history.canGoBack)
