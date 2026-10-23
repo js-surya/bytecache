@@ -14,6 +14,7 @@ public struct SettingsToolbarItem: ToolbarContent {
     public var body: some ToolbarContent {
         ToolbarItem(placement: Self.placement) {
             Button(action: action) { Label("Settings", symbol: .settings) }
+                .toolbarIcon()
                 .accessibilityLabel("Settings")
         }
     }

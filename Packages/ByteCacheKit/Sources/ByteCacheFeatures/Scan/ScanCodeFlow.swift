@@ -143,6 +143,8 @@ struct CameraScanner: View {
                     .frame(maxWidth: .infinity)
                     .background(.black.opacity(0.45))
             }
+            // Partially folded (iPhone Duo), the controls take one half so the shutter isn't on the hinge.
+            .centeredAwayFromFold()
         }
         .preferredColorScheme(.dark)
         .onAppear { Haptics.prepare() }
