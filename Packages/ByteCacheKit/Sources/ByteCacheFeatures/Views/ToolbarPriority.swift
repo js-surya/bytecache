@@ -1,29 +1,40 @@
 import SwiftUI
 
-/// How readily a toolbar item moves to the overflow menu when the bar is short of room, such as the
+/// How readily toolbar items move to the overflow menu when the bar is short of room, such as the
 /// vertical bars on iPhone Duo (CP-83). No effect before iOS 27 / macOS 26.1.
 public enum ToolbarPriority {
     case low, high
+
+    @available(iOS 27, macOS 26.1, *)
+    var visibility: ToolbarItemVisibilityPriority { self == .high ? .high : .low }
 }
 
-extension ToolbarContent {
-    @ToolbarContentBuilder
-    public func overflowPriority(_ priority: ToolbarPriority) -> some ToolbarContent {
+// The availability check sits in a view builder, not a toolbar builder: `if #available` inside a
+// toolbar builder links on the simulator but not on devices with the iOS 27.1 SDK
+// (ToolbarContentBuilder.buildLimitedAvailability is missing there).
+extension View {
+    /// `.toolbar { … }` whose items get this overflow priority.
+    @ViewBuilder
+    public func toolbar<Content: ToolbarContent>(
+        overflowPriority priority: ToolbarPriority, @ToolbarContentBuilder content: () -> Content
+    ) -> some View {
         if #available(iOS 27, macOS 26.1, *) {
-            visibilityPriority(priority == .high ? .high : .low)
+            toolbar { content().visibilityPriority(priority.visibility) }
         } else {
-            self
+            toolbar(content: content)
         }
     }
-}
 
-extension CustomizableToolbarContent {
-    @ToolbarContentBuilder
-    public func overflowPriority(_ priority: ToolbarPriority) -> some CustomizableToolbarContent {
+    /// `.toolbar(id:) { … }` whose items get this overflow priority. Toolbars with the same id merge,
+    /// so this adds to the window's customisable toolbar.
+    @ViewBuilder
+    public func toolbar<Content: CustomizableToolbarContent>(
+        id: String, overflowPriority priority: ToolbarPriority, @ToolbarContentBuilder content: () -> Content
+    ) -> some View {
         if #available(iOS 27, macOS 26.1, *) {
-            visibilityPriority(priority == .high ? .high : .low)
+            toolbar(id: id) { content().visibilityPriority(priority.visibility) }
         } else {
-            self
+            toolbar(id: id, content: content)
         }
     }
 }

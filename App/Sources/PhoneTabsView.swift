@@ -200,16 +200,15 @@ struct PhoneTabsView: View {
 
     private func list(_ model: SnippetListModel, selection: Binding<Snippet.ID?>) -> some View {
         SnippetListView(model: model, selection: selection, showsSearchField: false)
-            .toolbar {
-                settingsButton
+            .toolbar { settingsButton }
+            // Stay in the bar when it's short of room (vertical bars on iPhone Duo); Sort goes first.
+            .toolbar(overflowPriority: .high) {
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button(action: onScan) { Label("Scan Code", symbol: .scan) }
                         .toolbarIcon()
                     Button(action: onNew) { Label("New Snippet", symbol: .newSnippet) }
                         .primaryToolbarAction()
                 }
-                // Stay in the bar when it's short of room (vertical bars on iPhone Duo); Sort goes first.
-                .overflowPriority(.high)
             }
             .navigationDestination(item: selection) { id in
                 SnippetDestination(id: id, list: model, services: services, onEdit: onEdit)

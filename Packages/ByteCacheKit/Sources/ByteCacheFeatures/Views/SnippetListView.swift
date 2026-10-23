@@ -68,6 +68,9 @@ public struct SnippetListView: View {
                     .toolbarIcon()
                 }
             }
+        }
+        // The first to go to the overflow menu when the bar is short of room (iPhone Duo).
+        .toolbar(id: windowToolbarID, overflowPriority: .low) {
             ToolbarItem(id: "sort") {
                 Menu {
                     Picker("Sort", selection: $model.sort) {
@@ -81,7 +84,6 @@ public struct SnippetListView: View {
                 }
                 .toolbarIcon()
             }
-            .overflowPriority(.low)
         }
         .onChange(of: model.sort) { Task { await model.refresh() } }
         .onChange(of: settings.searchInCode, initial: true) {

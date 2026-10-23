@@ -244,12 +244,13 @@ struct MainSplitView: View {
                         Button { scanning = true } label: { Label("Scan Code", symbol: .scan) }
                             .toolbarIcon()
                     }
+                }
+                // Stays in the bar when it's short of room (iPhone Duo inner display): before Scan, and Sort goes first.
+                .toolbar(id: toolbarID.id, overflowPriority: .high) {
                     ToolbarItem(id: "new", placement: .primaryAction) {
                         Button { startEditing(nil) } label: { Label("New Snippet", symbol: .newSnippet) }
                             .primaryToolbarAction()
                     }
-                    // Stays in the bar when it's short of room (iPhone Duo inner display): before Scan, and Sort goes first.
-                    .overflowPriority(.high)
                 }
                 #if os(macOS)
                 // Room for a row's language, tags and date on one line; it grows with the window.
