@@ -72,7 +72,7 @@ Join the **[TestFlight beta](https://testflight.apple.com/join/rpmeVJW6)** on yo
 
 ## Build
 
-You need Xcode 27 or later and [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`).
+You need Xcode 27.1 or later and [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`). Xcode 26 also builds it, without the iPhone Duo refinements (toolbar priorities and fold handling).
 
 ```sh
 git clone https://github.com/js-surya/bytecache.git
@@ -83,7 +83,7 @@ open ByteCache.xcodeproj
 
 To try it without your own server, tap **Try the demo server** on the first screen. It's public, so don't save real code there.
 
-Run all the tests and both builds:
+Run all the tests and both builds (GitHub doesn't build the apps, so please run this before a pull request):
 
 ```sh
 scripts/test.sh
