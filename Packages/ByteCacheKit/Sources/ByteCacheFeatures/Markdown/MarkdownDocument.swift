@@ -13,10 +13,14 @@ public enum MarkdownBlock: Equatable, Sendable {
     case quote(String)
     case code(language: String?, text: String)
     case rule
+    /// A GitHub-style table (CP-73). Rows are padded or cut to the header's width.
+    case table(header: [String], alignments: [TableAlignment], rows: [[String]])
+
+    public enum TableAlignment: Equatable, Sendable { case leading, center, trailing }
 }
 
 /// A small block-level Markdown reader for previews: headings, paragraphs, lists (bullets, numbers,
-/// tasks, nesting), quotes, fenced code and rules. Inline styling is left to `inline(_:)`.
+/// tasks, nesting), quotes, fenced code, rules and tables. Inline styling is left to `inline(_:)`.
 public enum MarkdownDocument {
     public static func isMarkdown(language: String) -> Bool {
         language == "markdown"
@@ -88,6 +92,23 @@ public enum MarkdownDocument {
                 quote.append(String(match.1))
                 continue
             }
+            if trimmed.contains("|"), index < lines.count, let alignments = tableAlignments(lines[index]) {
+                let header = tableCells(trimmed)
+                if header.count == alignments.count {
+                    flush()
+                    index += 1
+                    var rows: [[String]] = []
+                    while index < lines.count {
+                        let row = lines[index].trimmingCharacters(in: .whitespaces)
+                        guard !row.isEmpty, row.contains("|") else { break }
+                        let cells = tableCells(row)
+                        rows.append((0..<header.count).map { $0 < cells.count ? cells[$0] : "" })
+                        index += 1
+                    }
+                    blocks.append(.table(header: header, alignments: alignments, rows: rows))
+                    continue
+                }
+            }
             if !quote.isEmpty { flush() }
             paragraph.append(trimmed)
         }
@@ -100,6 +121,48 @@ public enum MarkdownDocument {
         let options = AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace,
                                                               failurePolicy: .returnPartiallyParsedIfPossible)
         return (try? AttributedString(markdown: text, options: options)) ?? AttributedString(text)
+    }
+
+    /// The cells of a table row: outer pipes optional, `\|` is a literal pipe.
+    static func tableCells(_ line: String) -> [String] {
+        var row = line.trimmingCharacters(in: .whitespaces)
+        if row.hasPrefix("|") { row.removeFirst() }
+        if row.hasSuffix("|") && !row.hasSuffix("\\|") { row.removeLast() }
+        var cells: [String] = []
+        var current = ""
+        var escaped = false
+        for character in row {
+            if escaped {
+                current.append(character == "|" ? "|" : "\\\(character)")
+                escaped = false
+            } else if character == "\\" {
+                escaped = true
+            } else if character == "|" {
+                cells.append(current.trimmingCharacters(in: .whitespaces))
+                current = ""
+            } else {
+                current.append(character)
+            }
+        }
+        if escaped { current.append("\\") }
+        cells.append(current.trimmingCharacters(in: .whitespaces))
+        return cells
+    }
+
+    /// The divider under a table's header ("|:--|:-:|--:|"), read as each column's alignment.
+    static func tableAlignments(_ line: String) -> [MarkdownBlock.TableAlignment]? {
+        let cells = tableCells(line)
+        guard !cells.isEmpty else { return nil }
+        var alignments: [MarkdownBlock.TableAlignment] = []
+        for cell in cells {
+            guard cell.wholeMatch(of: /:?-+:?/) != nil else { return nil }
+            switch (cell.hasPrefix(":"), cell.hasSuffix(":")) {
+            case (true, true): alignments.append(.center)
+            case (false, true): alignments.append(.trailing)
+            default: alignments.append(.leading)
+            }
+        }
+        return alignments
     }
 
     private static func depth(_ indent: Substring) -> Int {

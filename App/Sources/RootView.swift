@@ -19,8 +19,6 @@ struct RootView: View {
     let services: AppServices
     @State private var restored = false
     /// After a crash: offer a report once per launch.
-    @State private var offerCrashReport = CrashWatch.shared.endedUnexpectedly
-    @State private var reportingCrash = false
 
     /// Debug: `-BCLoadingPreview` shows only the loading animation (screenshots).
     private static var previewLoading: Bool {
@@ -60,22 +58,10 @@ struct RootView: View {
         .onChange(of: scenePhase) { _, phase in
             CrashReporting.scenePhaseChanged(phase)
             if phase == .active, let link = PendingCapture.consume() { AppNavigator.shared.handle(link) }
-            if phase == .active { Task { await services.updates.appBecameActive() } }
-        }
-        .alert("ByteCache Closed Unexpectedly", isPresented: $offerCrashReport) {
-            Button("Report…") { reportingCrash = true }
-            Button("Not Now", role: .cancel) {}
-        } message: {
-            Text("Send a short report so it can be fixed? You'll see everything in it before it's sent.")
-        }
-        .sheet(isPresented: $reportingCrash) {
-            NavigationStack {
-                ReportBugView(model: ReportBugModel(session: services.session, title: "ByteCache closed unexpectedly"),
-                              showsCancel: true)
+            if phase == .active {
+                Task { await services.updates.appBecameActive() }
+                Task { await services.serverSettings.pull() }
             }
-            #if os(macOS)
-            .frame(minWidth: 520, minHeight: 600)
-            #endif
         }
         .sheet(item: Bindable(services.updates).whatsNew) { release in
             WhatsNewSheet(release: release).appSettingsStyle(services.settings)
@@ -83,6 +69,7 @@ struct RootView: View {
         .onChange(of: services.session.state) {
             // Signing in refreshes too, so a first load that fails shows up in the widget.
             Task { await services.widgets.refresh() }
+            if case .signedIn = services.session.state { Task { await services.serverSettings.pull() } }
         }
         .onContinueUserActivity(SnippetActivity.type) { activity in
             guard services.settings.handoffEnabled, let target = SnippetActivity.parse(activity.userInfo) else { return }
@@ -92,6 +79,12 @@ struct RootView: View {
             guard !restored else { return }
             Task { await services.updates.appBecameActive() }
             await services.session.restore()
+            // After a crash, a toast instead of a prompt, once the app is on screen; the report waits
+            // in Settings → Report a Bug.
+            Task {
+                try? await Task.sleep(for: .seconds(1.5))
+                CrashReporting.announceUnexpectedEnd()
+            }
             #if DEBUG
             // `-BCDemoLogin` launch argument: sign in to the public demo (screenshots, quick checks).
             if ProcessInfo.processInfo.arguments.contains("-BCDemoLogin"), case .needsServer = services.session.state {
@@ -101,8 +94,10 @@ struct RootView: View {
             }
             // `-BCKeyLogin` with env BC_DEBUG_SERVER and BC_DEBUG_API_KEY: sign in to that server with an API key.
             let env = ProcessInfo.processInfo.environment
-            if ProcessInfo.processInfo.arguments.contains("-BCKeyLogin"), case .needsServer = services.session.state,
+            if ProcessInfo.processInfo.arguments.contains("-BCKeyLogin"), services.session.client == nil,
                let server = env["BC_DEBUG_SERVER"], let key = env["BC_DEBUG_API_KEY"] {
+                // Also from another server's sign-in screen (a simulator that remembers the demo).
+                if case .needsLogin = services.session.state { services.session.changeServer() }
                 try? await services.session.connect(server)
                 try? await services.session.loginWithAPIKey(key)
             }

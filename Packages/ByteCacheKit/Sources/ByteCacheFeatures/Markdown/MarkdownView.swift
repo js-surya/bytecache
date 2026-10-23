@@ -40,11 +40,15 @@ public struct MarkdownView: View {
                 .foregroundStyle(.secondary)
                 .padding(.leading, 12)
                 .overlay(alignment: .leading) { Capsule().fill(.tint.opacity(0.6)).frame(width: 3) }
+        case .code(let language, let text) where language?.lowercased() == "mermaid":
+            MermaidView(source: text)
         case .code(let language, let text):
             CodeView(code: text, language: language.flatMap(LanguageName.catalogID) ?? "plaintext")
                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         case .rule:
             Divider()
+        case .table(let header, let alignments, let rows):
+            MarkdownTableView(header: header, alignments: alignments, rows: rows)
         }
     }
 
@@ -65,5 +69,45 @@ public struct MarkdownView: View {
         case 3: .title3.weight(.semibold)
         default: .headline
         }
+    }
+}
+
+/// A GitHub-style table (CP-73): bold header, lines between rows, sideways scrolling when it's wide.
+struct MarkdownTableView: View {
+    let header: [String]
+    let alignments: [MarkdownBlock.TableAlignment]
+    let rows: [[String]]
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            Grid(alignment: .leading, horizontalSpacing: 0, verticalSpacing: 0) {
+                GridRow {
+                    ForEach(header.indices, id: \.self) { column in
+                        cell(header[column], column: column).fontWeight(.semibold)
+                    }
+                }
+                .background(.secondary.opacity(0.12))
+                ForEach(rows.indices, id: \.self) { row in
+                    Divider().gridCellUnsizedAxes(.horizontal)
+                    GridRow {
+                        ForEach(header.indices, id: \.self) { column in
+                            cell(rows[row][column], column: column)
+                        }
+                    }
+                }
+            }
+            .overlay(RoundedRectangle(cornerRadius: 6).stroke(.secondary.opacity(0.3)))
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+        }
+    }
+
+    private func cell(_ text: String, column: Int) -> some View {
+        let alignment = column < alignments.count ? alignments[column] : .leading
+        return Text(MarkdownDocument.inline(text))
+            .multilineTextAlignment(alignment == .center ? .center : alignment == .trailing ? .trailing : .leading)
+            .frame(minWidth: 60, maxWidth: 320, alignment: alignment == .center ? .center : alignment == .trailing ? .trailing : .leading)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .gridColumnAlignment(alignment == .center ? .center : alignment == .trailing ? .trailing : .leading)
     }
 }

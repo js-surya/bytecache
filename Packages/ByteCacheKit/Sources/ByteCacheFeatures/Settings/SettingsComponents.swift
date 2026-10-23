@@ -26,6 +26,8 @@ struct SettingsLabel: View {
     let symbol: AppSymbol
     let color: Color
     var value: String?
+    /// For a value that needs attention ("Crash found"); otherwise it's secondary text.
+    var valueColor: Color?
 
     var body: some View {
         HStack(spacing: 12) {
@@ -33,7 +35,7 @@ struct SettingsLabel: View {
             Text(title)
             Spacer(minLength: 8)
             if let value {
-                Text(value).foregroundStyle(.secondary).lineLimit(1)
+                Text(value).foregroundStyle(valueColor.map { AnyShapeStyle($0) } ?? AnyShapeStyle(.secondary)).lineLimit(1)
             }
         }
     }

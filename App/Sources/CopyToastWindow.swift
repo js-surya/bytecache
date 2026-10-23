@@ -1,21 +1,38 @@
 import SwiftUI
 import ByteCacheFeatures
+#if os(iOS)
+import UIKit.UIGestureRecognizerSubclass
+#endif
 
 /// Shows `CopyFeedback.toast` in its own click-through window above the active window, so the
 /// "Copied" toast is visible above sheets too (a SwiftUI overlay would sit behind them).
 @MainActor
 enum CopyToastWindow {
     static func install() {
-        CopyFeedback.toast.onShow = { show() }
+        CopyFeedback.toast.onShow = { duration in show(for: duration) }
     }
 
     private static var hideTask: Task<Void, Never>?
 
-    /// Hides the window once the toast has animated out.
-    private static func scheduleHide(_ hide: @escaping @MainActor () -> Void) {
+    /// The person started using the app: a toast that goes on interaction goes now.
+    private static func interacted() {
+        stopWatchingInteraction()
+        guard CopyFeedback.toast.dismissesOnInteraction else { return }
+        CopyFeedback.toast.hide()
+        // Let it animate out before the window goes.
         hideTask?.cancel()
         hideTask = Task {
-            try? await Task.sleep(for: .seconds(2.2))
+            try? await Task.sleep(for: .seconds(0.6))
+            guard !Task.isCancelled else { return }
+            hideWindow()
+        }
+    }
+
+    /// Hides the window once the toast has animated out (it stays as long as the toast does).
+    private static func scheduleHide(after duration: Duration, _ hide: @escaping @MainActor () -> Void) {
+        hideTask?.cancel()
+        hideTask = Task {
+            try? await Task.sleep(for: duration + .seconds(0.6))
             guard !Task.isCancelled else { return }
             hide()
         }
@@ -24,7 +41,7 @@ enum CopyToastWindow {
     #if os(iOS)
     private static var window: UIWindow?
 
-    private static func show() {
+    private static func show(for duration: Duration) {
         guard let scene = UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene })
             .first(where: { $0.activationState == .foregroundActive }) else { return }
@@ -40,16 +57,57 @@ enum CopyToastWindow {
             self.window = window
         }
         window?.isHidden = false
-        scheduleHide { window?.isHidden = true }
+        scheduleHide(after: duration) { hideWindow() }
+        stopWatchingInteraction()
+        if CopyFeedback.toast.dismissesOnInteraction {
+            // On the app's own windows (the toast's ignores touches); the touch still does its job.
+            for appWindow in scene.windows where appWindow !== window {
+                let watcher = FirstTouch { interacted() }
+                appWindow.addGestureRecognizer(watcher)
+                watchers.append(watcher)
+            }
+        }
+    }
+
+    private static func hideWindow() {
+        window?.isHidden = true
+        stopWatchingInteraction()
+    }
+
+    private static var watchers: [FirstTouch] = []
+
+    private static func stopWatchingInteraction() {
+        for watcher in watchers { watcher.view?.removeGestureRecognizer(watcher) }
+        watchers = []
+    }
+
+    /// Notices the first touch anywhere in a window without taking it from the app.
+    private final class FirstTouch: UIGestureRecognizer {
+        private let onTouch: () -> Void
+
+        init(_ onTouch: @escaping () -> Void) {
+            self.onTouch = onTouch
+            super.init(target: nil, action: nil)
+            cancelsTouchesInView = false
+            delaysTouchesBegan = false
+            delaysTouchesEnded = false
+        }
+
+        override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
+            state = .failed
+            onTouch()
+        }
     }
     #elseif os(macOS)
     private static var panel: NSPanel?
 
-    private static func show() {
+    private static func show(for duration: Duration) {
         guard let parent = NSApp.keyWindow ?? NSApp.mainWindow else { return }
         let panel = panel ?? makePanel()
         self.panel = panel
-        let size = NSSize(width: 260, height: 90)
+        // Room for longer messages (two lines), never wider than the window.
+        let long = (CopyFeedback.toast.message?.count ?? 0) > 30
+        let size = NSSize(width: min(long ? 460 : 260, parent.frame.width - 40), height: long ? 110 : 90)
         let frame = parent.frame
         panel.setFrame(NSRect(x: frame.midX - size.width / 2, y: frame.minY + 8,
                               width: size.width, height: size.height), display: false)
@@ -58,10 +116,29 @@ enum CopyToastWindow {
             parent.addChildWindow(panel, ordered: .above)
         }
         panel.orderFront(nil)
-        scheduleHide {
+        scheduleHide(after: duration) { hideWindow() }
+        stopWatchingInteraction()
+        if CopyFeedback.toast.dismissesOnInteraction {
+            monitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .keyDown, .scrollWheel]) { event in
+                MainActor.assumeIsolated { interacted() }
+                return event
+            }
+        }
+    }
+
+    private static var monitor: Any?
+
+    private static func hideWindow() {
+        if let panel {
             panel.parent?.removeChildWindow(panel)
             panel.orderOut(nil)
         }
+        stopWatchingInteraction()
+    }
+
+    private static func stopWatchingInteraction() {
+        if let monitor { NSEvent.removeMonitor(monitor) }
+        monitor = nil
     }
 
     private static func makePanel() -> NSPanel {

@@ -43,15 +43,16 @@ final class SessionManagerTests: XCTestCase {
         XCTAssertEqual(store.load()?.token, "anon")
     }
 
-    func testConnectSSOOnlyServerThrowsForbidden() async {
+    /// An SSO-only server whose single sign-on isn't enabled can't be used (CP-72 handles enabled ones).
+    func testConnectSSOOnlyServerWithoutSSOThrowsForbidden() async {
         let config = #"{"authRequired":true,"disableInternalAccounts":true}"#
         let store = InMemoryCredentialStore()
-        let session = SessionManager(store: store, transport: StubTransport([ok(config)]))
+        let session = SessionManager(store: store, transport: StubTransport([ok(config), ok(#"{"enabled":false}"#)]))
         do {
             try await session.connect("https://x.io")
             XCTFail("expected failure")
         } catch {
-            XCTAssertEqual(error, .forbidden("This server only allows single sign-on, which ByteCache doesn't support yet."))
+            XCTAssertEqual(error, .forbidden(SessionManager.ssoOnlyMessage))
         }
         XCTAssertEqual(session.state, .needsServer)
         XCTAssertNil(store.load())

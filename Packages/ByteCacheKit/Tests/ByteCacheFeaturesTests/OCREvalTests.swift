@@ -120,7 +120,8 @@ final class OCREvalTests: XCTestCase {
         let started = Date()
         let score = try await evaluate(Self.long, look)
         XCTAssertGreaterThanOrEqual(score, 0.95)
-        XCTAssertLessThan(Date().timeIntervalSince(started), 5)
+        // A ceiling, not a benchmark: Apple's recognizer takes about 2–3 s here, longer when the Mac is busy.
+        XCTAssertLessThan(Date().timeIntervalSince(started), 10)
     }
 
     func testReport() async throws {

@@ -69,3 +69,13 @@ final class MCPSetupTests: XCTestCase {
         XCTAssertFalse(text.contains("supersecretvalue"))
     }
 }
+
+/// The key's name uses Western digits and the Gregorian calendar in every region.
+final class MCPKeyNameTests: XCTestCase {
+    func testKeyNameIsTheSameInEveryRegion() {
+        var parts = DateComponents()
+        (parts.year, parts.month, parts.day, parts.hour) = (2026, 10, 22, 12)
+        let date = Calendar(identifier: .gregorian).date(from: parts)!
+        XCTAssertEqual(MCPSettingsModel.keyName(on: date), "ByteCache MCP 2026-10-22")
+    }
+}

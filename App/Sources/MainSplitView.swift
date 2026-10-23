@@ -71,9 +71,13 @@ struct MainSplitView: View {
             list.knownLanguages = sidebar.languages
             list.knownCategories = sidebar.categories
         }
-        .onChange(of: list.snippets) {
+        // Spotlight and the widgets follow the list once it settles: scrolling loads a page every
+        // moment, and redoing both for each page made scrolling stutter. A change restarts the wait.
+        .task(id: list.snippets) {
+            try? await Task.sleep(for: .seconds(2))
+            guard !Task.isCancelled else { return }
             if let server = services.session.client?.server { SpotlightIndexer.index(list.snippets, server: server) }
-            Task { await services.widgets.refresh() }
+            await services.widgets.refresh()
         }
         .task(id: AppNavigator.shared.pendingClipboardCapture) {
             guard AppNavigator.shared.pendingClipboardCapture else { return }

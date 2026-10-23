@@ -90,3 +90,12 @@ final class LanguageIconTests: XCTestCase {
         XCTAssertTrue(try String(contentsOf: url, encoding: .utf8).contains("MIT License"))
     }
 }
+
+/// CP-77: Bash's logo is dark apart from a small green "$_", so it's tinted like other dark logos.
+final class BashIconTests: XCTestCase {
+    func testBashIsTintedSoItShowsOnDarkBackgrounds() {
+        XCTAssertEqual(LanguageIcon.for("bash"), .logo("bash"))
+        XCTAssertTrue(LanguageIcon.darkLogos.contains("bash"))
+        XCTAssertNotNil(LanguageIcon.tint(for: "Shell"))
+    }
+}

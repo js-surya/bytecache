@@ -22,7 +22,9 @@ public struct MacSettingsView: View {
                     if !pages.isEmpty {
                         Section(section.title) {
                             ForEach(pages) { page in
-                                SettingsLabel(title: page.title, symbol: page.symbol(lock), color: page.color).tag(page)
+                                SettingsLabel(title: page.title, symbol: page.symbol(lock), color: page.color,
+                                              value: page == .reportBug && UnreportedCrash.shared.date != nil ? "Crash found" : nil,
+                                              valueColor: .orange).tag(page)
                             }
                         }
                     }
@@ -173,6 +175,9 @@ enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
         case .account, .apiKeys, .password, .assistants:
             if case .signedIn = session.state { return true }
             return false
+        case .suggestions:
+            // Macs that can't run Apple Intelligence (Intel) don't show it at all.
+            return !AIAvailability.current.hidesFeatures
         default:
             return true
         }
