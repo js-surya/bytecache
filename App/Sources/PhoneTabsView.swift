@@ -46,7 +46,6 @@ struct PhoneTabsView: View {
     @State private var libraryItem: SidebarItem?
     @State private var showingSettings = false
     @State private var searchPresented = false
-    @Environment(\.iconStyle) private var iconStyle
 
     init(services: AppServices, all: SnippetListModel, sidebar: SidebarModel, clipboard: ClipboardWatcher,
          allSelection: Binding<Snippet.ID?>, onNew: @escaping () -> Void, onScan: @escaping () -> Void,
@@ -84,7 +83,7 @@ struct PhoneTabsView: View {
         TabView(selection: $tab) {
             Tab(value: PhoneTab.snippets) {
                 stack(all, selection: $allSelection)
-            } label: { tabLabel("Snippets", .braces) }
+            } label: { tabLabel("Snippets", .byteCache) }
 
             Tab(value: PhoneTab.pinned) {
                 stack(pinned, selection: $pinnedSelection)
@@ -111,7 +110,7 @@ struct PhoneTabsView: View {
                 NavigationStack {
                     Group {
                         if search.searchText.trimmingCharacters(in: .whitespaces).isEmpty {
-                            ContentUnavailableView("Search Snippets", symbol: .braces,
+                            ContentUnavailableView("Search Snippets", symbol: .byteCache,
                                                    description: Text(services.settings.searchInCode
                                                         ? "Find snippets by title, description or code."
                                                         : "Find snippets by title or description. To search inside code too, turn on Search Inside Code in Settings."))
@@ -184,7 +183,7 @@ struct PhoneTabsView: View {
 
     /// Tab bar items take a plain image, so build it from the chosen icon style.
     private func tabLabel(_ title: String, _ symbol: AppSymbol) -> some View {
-        Label { Text(title) } icon: { symbol.image(iconStyle) }
+        Label { Text(title) } icon: { symbol.image() }
     }
 
     private func stack(_ model: SnippetListModel, selection: Binding<Snippet.ID?>) -> some View {
@@ -201,11 +200,14 @@ struct PhoneTabsView: View {
 
     private func list(_ model: SnippetListModel, selection: Binding<Snippet.ID?>) -> some View {
         SnippetListView(model: model, selection: selection, showsSearchField: false)
-            .toolbar {
-                settingsButton
+            .toolbar { settingsButton }
+            // Stay in the bar when it's short of room (vertical bars on iPhone Duo); Sort goes first.
+            .toolbar(overflowPriority: .high) {
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button(action: onScan) { Label("Scan Code", symbol: .scan) }
+                        .toolbarIcon()
                     Button(action: onNew) { Label("New Snippet", symbol: .newSnippet) }
+                        .primaryToolbarAction()
                 }
             }
             .navigationDestination(item: selection) { id in

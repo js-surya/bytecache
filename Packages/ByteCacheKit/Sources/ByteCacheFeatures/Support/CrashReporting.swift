@@ -23,14 +23,27 @@ public enum CrashReporting {
         #endif
     }
 
-    /// iPhone and iPad: leaving the foreground is a normal way to end. (A Mac app keeps running with
-    /// no window in front, so there only Quit counts.)
+    /// After a crash: a short toast pointing to Settings → Report a Bug, instead of a prompt that
+    /// stops you at launch. The crash waits there until it's reported or dismissed.
+    public static func announceUnexpectedEnd() {
+        guard CrashWatch.shared.endedUnexpectedly else { return }
+        let message = "ByteCache closed unexpectedly. You can report it in Settings → Report a Bug."
+        AppLog.shared.record("app", "showed the closed-unexpectedly toast")
+        AccessibilityNotification.Announcement(message).post()
+        // Long enough to read; gone at the first tap, click or key, so it never stands in the way.
+        CopyFeedback.toast.show(message, symbol: .warning, for: .seconds(4), dismissOnInteraction: true)
+    }
+
+    /// iPhone and iPad: leaving the foreground is a normal way to end. That starts at "inactive":
+    /// swiping ByteCache away in the app switcher ends it there, often before it ever reaches
+    /// "background", and that mustn't count as a crash. (A Mac app keeps running with no window in
+    /// front, so there only Quit counts.)
     public static func scenePhaseChanged(_ phase: ScenePhase) {
         #if os(iOS)
         switch phase {
         case .active: CrashWatch.shared.enteredForeground()
-        case .background: CrashWatch.shared.enteredBackground()
-        default: break
+        case .inactive, .background: CrashWatch.shared.enteredBackground()
+        @unknown default: break
         }
         #endif
     }

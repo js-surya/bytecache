@@ -15,6 +15,7 @@ struct ByteCacheApp: App {
             RootView(services: services)
                 .appSettingsStyle(services.settings)
                 .environment(services.cloudSync)
+                .environment(services.aiNotes)
                 .environment(services.lock)
                 .environment(services.updates)
                 .appLockCover(services.lock)
@@ -51,6 +52,7 @@ struct ByteCacheApp: App {
                 SnippetWindow(id: id, services: services)
                     .appSettingsStyle(services.settings)
                 .environment(services.cloudSync)
+                .environment(services.aiNotes)
                 .environment(services.lock)
                 .appLockCover(services.lock)
             }
@@ -68,6 +70,7 @@ struct ByteCacheApp: App {
             MacSettingsView(session: services.session)
             .appSettingsStyle(services.settings)
                 .environment(services.cloudSync)
+                .environment(services.aiNotes)
                 .environment(services.lock)
                 .environment(services.updates)
                 .appLockCover(services.lock)
@@ -76,7 +79,7 @@ struct ByteCacheApp: App {
         MenuBarExtra(isInserted: Bindable(services.settings).quickSearchInMenuBar) {
             MenuBarQuickSearch(services: services)
         } label: {
-            Label("ByteCache Quick Search", systemImage: "curlybraces")
+            Label("ByteCache Quick Search", symbol: .byteCache)
         }
         .menuBarExtraStyle(.window)
         #endif

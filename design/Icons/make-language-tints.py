@@ -33,6 +33,7 @@ LOGOS = {
     "cobol": ("linguist", "COBOL"), "ansible": ("simpleicons", "Ansible"), "latex": ("simpleicons", "LaTeX"),
     "django": ("simpleicons", "Django"), "flask": ("simpleicons", "Flask"), "nextjs": ("simpleicons", "Next.js"),
     "apachekafka": ("simpleicons", "Apache Kafka"), "unity": ("simpleicons", "Unity"),
+    "bash": ("linguist", "Shell"),
 }
 
 # Language key (GENERIC in make-language-icons.py) -> Linguist name. PL/SQL takes SQL's colour: Linguist's

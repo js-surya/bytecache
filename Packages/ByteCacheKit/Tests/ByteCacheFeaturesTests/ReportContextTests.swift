@@ -6,7 +6,7 @@ import ByteCacheCore
 final class ReportContextTests: XCTestCase {
     private func inputs() -> ReportContext.Inputs {
         ReportContext.Inputs(
-            install: .appStore, language: "en-IN", appearance: "Dark", iconStyle: "SF Symbols",
+            install: .appStore, language: "en-IN", appearance: "Dark",
             languageIcons: "Colour", appIcon: "Default", iCloudSync: true, handoff: false,
             appLock: true, widgetsWhileLocked: "Titles Only", servers: 2, signIn: "API key",
             network: "Wi-Fi", lowPower: false, widgets: "App Group", lastProblem: nil)
@@ -17,7 +17,7 @@ final class ReportContextTests: XCTestCase {
         XCTAssertEqual(lines, [
             "Installed from: App Store or TestFlight",
             "Language: en-IN",
-            "Look: Dark · SF Symbols · Colour language icons · Default app icon",
+            "Look: Dark · Colour language icons · Default app icon",
             "iCloud Sync: on · Handoff: off · App Lock: on (widgets: Titles Only)",
             "Servers: 2 · Signed in with: API key",
             "Network: Wi-Fi · Low Power Mode: off",

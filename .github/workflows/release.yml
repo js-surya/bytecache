@@ -1,15 +1,12 @@
-name: Build and release
+name: Release
 
-# Features are merged into `develop` (no CI run). A release is one pull request from `develop` into `main`:
-# - the pull request checks it: the tests, and a quick unsigned compile of the iPhone/iPad and Mac apps;
-# - merging it (a regular merge, not squash) publishes a release if the version in project.yml is new: the
-#   source code and notes listing every change since the previous release. The apps themselves are
-#   distributed only through TestFlight and the App Store, so the release has no app files.
-# Change the version with scripts/set-version.sh X.Y.Z. Docs-only changes don't start a run.
+# Features are merged into `develop`, tested and built on a Mac first (scripts/test.sh); GitHub doesn't
+# build the apps (its Mac runners lag behind new Xcode releases). A release is one pull request from
+# `develop` into `main`: merging it (a regular merge, not squash) publishes a release if the version
+# and build in project.yml are new: the source code and notes listing every change since the previous
+# release. The apps themselves are distributed only through TestFlight and the App Store, so the
+# release has no app files. Change the version with scripts/set-version.sh X.Y.Z [BUILD].
 on:
-  pull_request:
-    branches: [main]
-    paths-ignore: ['**.md', 'docs/**', '.github/ISSUE_TEMPLATE/**']
   push:
     branches: [main]
     paths-ignore: ['**.md', 'docs/**', '.github/ISSUE_TEMPLATE/**']
@@ -23,59 +20,44 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: macos-26
-    timeout-minutes: 60
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - name: Use the newest Xcode
-        run: |
-          ls -d /Applications/Xcode*.app
-          xcode=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
-          sudo xcode-select -s "$xcode"
-          xcodebuild -version
-          major=$(xcodebuild -version | sed -n -E 's/^Xcode ([0-9]+).*/\1/p')
-          if [ "$major" -lt 26 ]; then
-            echo "::error::ByteCache needs Xcode 26 or later; this runner has Xcode $major."
-            exit 1
-          fi
-
       - name: Version
         id: version
         run: |
           version=$(scripts/version.sh)
-          echo "version=$version" >> "$GITHUB_OUTPUT"
+          build=$(scripts/version.sh --build)
+          # A release is a version and build, "ByteCache 1.3.0 (7)". The first release of a version is
+          # tagged vX.Y.Z; later builds of the same version (TestFlight keeps the version) vX.Y.Z-BUILD.
           if git rev-parse -q --verify "refs/tags/v$version" >/dev/null; then
+            tag="v$version-$build"
+          else
+            tag="v$version"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "build=$build" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
             echo "new=false" >> "$GITHUB_OUTPUT"
-            echo "v$version is already released."
+            echo "$version ($build) is already released."
           else
             echo "new=true" >> "$GITHUB_OUTPUT"
-            echo "v$version is not released yet."
+            echo "$version ($build) is not released yet: $tag."
           fi
 
-      - name: Tests
-        # Through xcodebuild (not swift test) so asset catalogs are compiled as in the app.
-        working-directory: Packages/ByteCacheKit
-        env:
-          TEST_RUNNER_CI: "true"   # xcodebuild hands TEST_RUNNER_* to the tests as CI=true
-        run: xcodebuild test -scheme ByteCacheKit-Package -destination 'platform=macOS' -quiet
-
-      - name: Check the iPhone/iPad and Mac apps compile
-        if: github.event_name == 'pull_request'
-        run: |
-          for platform in iOS macOS; do
-            xcodebuild build -scheme ByteCache -configuration Debug -destination "generic/platform=$platform" \
-              CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" -quiet
-          done
-
       - name: Publish the release
-        if: github.event_name == 'push' && steps.version.outputs.new == 'true'
+        if: steps.version.outputs.new == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
+          BUILD: ${{ steps.version.outputs.build }}
+          TAG: ${{ steps.version.outputs.tag }}
         run: |
           cat > notes.md <<NOTES
           ## Install
@@ -94,7 +76,7 @@ jobs:
               | grep -vE '^Release [0-9]' \
               | perl -pe 's/^[a-z]+(\([^)]*\))?!?: //; s/^(.)/\u$1/; s/^/- /'
           } >> notes.md
-          gh release create "v$VERSION" \
+          gh release create "$TAG" \
             --target "$GITHUB_SHA" \
-            --title "ByteCache $VERSION" \
+            --title "ByteCache $VERSION ($BUILD)" \
             --notes-file notes.md

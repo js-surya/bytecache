@@ -2,6 +2,7 @@ import ByteCacheCore
 import SwiftUI
 
 public struct SnippetListView: View {
+    @Environment(\.windowToolbarID) private var windowToolbarID
     @Bindable var model: SnippetListModel
     @Binding var selection: Snippet.ID?
     let showsSearchField: Bool
@@ -30,14 +31,17 @@ public struct SnippetListView: View {
             if model.isSelecting { BulkActionBar(model: model) }
         }
         .overlay {
-            if model.snippets.isEmpty && model.isLoading {
-                LoadingMark()
-            } else if model.snippets.isEmpty && !model.isLoading {
-                if model.searchText.isEmpty {
-                    ContentUnavailableView("No Snippets", symbol: .tray, description: Text("Nothing here yet."))
-                } else {
-                    ContentUnavailableView.search(text: model.searchText)
+            if model.snippets.isEmpty {
+                Group {
+                    if model.isLoading {
+                        LoadingMark()
+                    } else if model.searchText.isEmpty {
+                        ContentUnavailableView("No Snippets", symbol: .tray, description: Text("Nothing here yet."))
+                    } else {
+                        ContentUnavailableView.search(text: model.searchText)
+                    }
                 }
+                .centeredAwayFromFold()
             }
         }
         .safeAreaInset(edge: .top) {
@@ -53,13 +57,20 @@ public struct SnippetListView: View {
         .onChange(of: model.searchText) { model.searchTextChanged() }
         .refreshable { await model.refresh() }
         .navigationTitle(model.title)
-        // One toolbar id for the whole main window, so it can be customised (CP-71).
-        .toolbar(id: "main") {
+        // One toolbar id for the whole window, so it can be customised (CP-71); per window, see WindowToolbarID.
+        .toolbar(id: windowToolbarID) {
             if !model.isReadOnly && !model.snippets.isEmpty {
                 ToolbarItem(id: "select") {
-                    Button(model.isSelecting ? "Done" : "Select") { model.isSelecting.toggle() }
+                    // An icon as well as the title: vertical bars (iPhone Duo) show only items with one.
+                    Button { model.isSelecting.toggle() } label: {
+                        Label(model.isSelecting ? "Done" : "Select", symbol: model.isSelecting ? .check : .select)
+                    }
+                    .toolbarIcon()
                 }
             }
+        }
+        // The first to go to the overflow menu when the bar is short of room (iPhone Duo).
+        .toolbar(id: windowToolbarID, overflowPriority: .low) {
             ToolbarItem(id: "sort") {
                 Menu {
                     Picker("Sort", selection: $model.sort) {
@@ -71,6 +82,7 @@ public struct SnippetListView: View {
                 } label: {
                     Label("Sort", symbol: .sort)
                 }
+                .toolbarIcon()
             }
         }
         .onChange(of: model.sort) { Task { await model.refresh() } }

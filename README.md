@@ -72,7 +72,7 @@ Join the **[TestFlight beta](https://testflight.apple.com/join/rpmeVJW6)** on yo
 
 ## Build
 
-You need Xcode 27 or later and [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`).
+You need Xcode 27.1 or later and [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`). Xcode 26 also builds it, without the iPhone Duo refinements (toolbar priorities and fold handling).
 
 ```sh
 git clone https://github.com/js-surya/bytecache.git
@@ -83,7 +83,7 @@ open ByteCache.xcodeproj
 
 To try it without your own server, tap **Try the demo server** on the first screen. It's public, so don't save real code there.
 
-Run all the tests and both builds:
+Run all the tests and both builds (GitHub doesn't build the apps, so please run this before a pull request):
 
 ```sh
 scripts/test.sh
@@ -111,7 +111,7 @@ Bug reports and ideas are welcome. Please use the [issue forms](../../issues/new
 
 Made with ❤️ by [SyntaxError](https://github.com/js-surya).
 
-Uses [HighlightSwift](https://github.com/appstefan/HighlightSwift) (MIT), [highlight.js](https://highlightjs.org) (BSD-3-Clause), [Lucide](https://lucide.dev) icons (ISC) and [Devicon](https://devicon.dev) language logos (MIT; the logos are trademarks of their owners). The colour palettes belong to their authors. The language model was trained on permissively licensed open-source code, and the test set contains short excerpts from it; [DATA.md](Packages/ByteCacheKit/Sources/ByteCacheLanguage/DATA.md) lists every source with its licence.
+Uses [HighlightSwift](https://github.com/appstefan/HighlightSwift) (MIT), [highlight.js](https://highlightjs.org) (BSD-3-Clause), [Mermaid](https://mermaid.js.org) (MIT) and [Devicon](https://devicon.dev) language logos (MIT; the logos are trademarks of their owners). Icons are Apple's SF Symbols; versions before 1.3 also offered [Lucide](https://lucide.dev) icons (ISC). The colour palettes belong to their authors. The language model was trained on permissively licensed open-source code, and the test set contains short excerpts from it; [DATA.md](Packages/ByteCacheKit/Sources/ByteCacheLanguage/DATA.md) lists every source with its licence.
 
 ## Licence
 

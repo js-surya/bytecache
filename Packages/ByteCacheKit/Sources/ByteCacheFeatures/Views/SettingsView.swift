@@ -20,6 +20,7 @@ enum SettingsSection: CaseIterable {
 /// Settings in the style of the iOS Settings app: grouped rows with coloured icons.
 public struct SettingsView: View {
     let session: SessionManager
+    @Environment(AINoteStore.self) private var aiNotes: AINoteStore?
     @Environment(AppSettings.self) private var settings
     @Environment(AppLockModel.self) private var lock
 
@@ -82,11 +83,15 @@ public struct SettingsView: View {
                 Toggle(isOn: Binding(get: { settings.searchInCode }, set: { settings.searchInCode = $0 })) {
                     SettingsLabel(title: "Search Inside Code", symbol: .search, color: .indigo)
                 }
-                NavigationLink {
-                    SuggestionsSettingsView()
-                } label: {
-                    SettingsLabel(title: "Smart Suggestions", symbol: .sparkles, color: .pink,
-                                  value: settings.suggestionsEnabled && SnippetSuggesters.onDevice() != nil ? "On" : "Off")
+                // Devices that can't run Apple Intelligence don't show it, unless notes from another device
+                // are here to manage.
+                if !AIAvailability.current.hidesFeatures || (aiNotes?.count ?? 0) > 0 {
+                    NavigationLink {
+                        SuggestionsSettingsView()
+                    } label: {
+                        SettingsLabel(title: "Smart Suggestions", symbol: .sparkles, color: .pink,
+                                      value: settings.suggestionsEnabled && AIAvailability.current == .available ? "On" : "Off")
+                    }
                 }
             } header: {
                 Text(SettingsSection.snippets.title)
@@ -136,7 +141,8 @@ public struct SettingsView: View {
                 NavigationLink {
                     ReportBugView(model: ReportBugModel(session: session))
                 } label: {
-                    SettingsLabel(title: "Report a Bug", symbol: .bug, color: .red)
+                    SettingsLabel(title: "Report a Bug", symbol: .bug, color: .red,
+                                  value: UnreportedCrash.shared.date == nil ? nil : "Crash found", valueColor: .orange)
                 }
                 NavigationLink {
                     AboutView()
@@ -175,7 +181,7 @@ public struct SettingsView: View {
 }
 
 #if DEBUG
-/// Env `BC_SETTINGS_PAGE=about|acknowledgements|account|haptics|servers|report|mcp` opens that page, for screenshots.
+/// Env `BC_SETTINGS_PAGE=about|acknowledgements|account|haptics|servers|report|mcp|suggestions` opens that page, for screenshots.
 private struct DebugSettingsPage: ViewModifier {
     let session: SessionManager
     @State private var page = ProcessInfo.processInfo.environment["BC_SETTINGS_PAGE"]
@@ -187,6 +193,7 @@ private struct DebugSettingsPage: ViewModifier {
             case "servers": ServersView(session: session)
             case "report": ReportBugView(model: ReportBugModel(session: session))
             case "mcp": MCPSettingsView(model: MCPSettingsModel(session: session))
+            case "suggestions": SuggestionsSettingsView()
             case "acknowledgements": AcknowledgementsView()
             case "account": AccountSettingsView(session: session)
             default: AboutView()
@@ -291,36 +298,6 @@ struct AppearanceSettingsView: View {
                         #endif
                     }
                 }
-            }
-            Section {
-                ForEach(IconStyle.allCases) { style in
-                    Button { settings.iconStyle = style } label: {
-                        HStack(spacing: 14) {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text(style.title).foregroundStyle(.primary)
-                                HStack(spacing: 14) {
-                                    // Same box for both styles: SF Symbols vary in width, so the two rows
-                                    // only line up in columns when every icon gets the same frame.
-                                    ForEach([AppSymbol.pin, .star, .copy, .server, .key, .scan, .settings], id: \.self) { symbol in
-                                        Icon(symbol, size: 18).font(.system(size: 16))
-                                            .frame(width: 22, height: 22)
-                                    }
-                                }
-                                .foregroundStyle(.secondary)
-                                .environment(\.iconStyle, style)
-                            }
-                            Spacer()
-                            if settings.iconStyle == style {
-                                Icon(.check).foregroundStyle(.tint).fontWeight(.semibold)
-                            }
-                        }
-                    }
-                    .accessibilityAddTraits(settings.iconStyle == style ? .isSelected : [])
-                }
-            } header: {
-                Text("Icon Style")
-            } footer: {
-                FooterText("Changes the icons inside ByteCache. Widgets, Control Center and system menus keep Apple's SF Symbols.")
             }
             Section {
                 ForEach(LanguageIconStyle.allCases) { style in
@@ -475,6 +452,7 @@ struct PrivacyInfoView: View {
                 Label("Language detection runs on this device.", symbol: .cpu)
                 Label("Bug reports leave the device only when you send one, after you've seen what's in it.", symbol: .bug)
                 Label("After an update, What's New loads that version's notes from GitHub.", symbol: .download)
+                Label("AI Notes stay on your devices and in your iCloud, never on your server.", symbol: .sparkles)
             } footer: {
                 FooterText(AboutText.privacy)
             }
@@ -597,6 +575,7 @@ struct AcknowledgementsView: View {
             Section("Code") {
                 credit("HighlightSwift", detail: "MIT License, © 2023 Stefan Britton")
                 credit("highlight.js", detail: "BSD 3-Clause License, © 2006 Ivan Sagalaev")
+                licence("Mermaid", detail: "MIT License, © 2014 - 2022 Knut Sveidqvist", file: "MERMAID-LICENSE")
             }
             Section {
                 licence("Lucide icons", detail: "ISC License, © Lucide Icons and Contributors (some icons © Cole Bemis, MIT)", file: "LUCIDE-LICENSE")
@@ -695,26 +674,58 @@ struct HandoffSettingsView: View {
 
 struct SuggestionsSettingsView: View {
     @Environment(AppSettings.self) private var settings
+    @Environment(AINoteStore.self) private var aiNotes: AINoteStore?
+    @State private var confirmingClear = false
+    @Environment(\.scenePhase) private var scenePhase
+    /// Read again on returning to the app: turning Apple Intelligence on, or its download finishing,
+    /// happens outside ByteCache.
+    @State private var availability = AIAvailability.current
 
     var body: some View {
         @Bindable var settings = settings
-        let available = SnippetSuggesters.onDevice() != nil
         SettingsList {
             Section {
-                Toggle("Suggest Titles & Tags", isOn: $settings.suggestionsEnabled)
-                    .disabled(!available)
+                // Shown off while Apple Intelligence can't be used; the choice itself is kept for later.
+                Toggle("Suggest Titles & Tags", isOn: Binding(
+                    get: { settings.suggestionsEnabled && availability == .available },
+                    set: { settings.suggestionsEnabled = $0 }
+                ))
+                .disabled(availability != .available)
             } footer: {
                 VStack(alignment: .leading, spacing: 6) {
                     FooterText("When you save code, ByteCache suggests a title, a one-line description and categories, and the Explain button describes what a snippet does — all with Apple Intelligence on this device. Your code never leaves it. Suggestions only fill empty fields; what you type always wins.")
-                    if !available {
-                        Label("Needs Apple Intelligence (iOS 26 or macOS 26 on a supported device, turned on in Settings).",
-                              symbol: .warning)
+                    if let why = availability.explanation {
+                        Label(why, symbol: .warning)
                             .foregroundStyle(.orange)
                     }
                 }
             }
+            if let aiNotes {
+                Section {
+                    LabeledContent("Saved Notes", value: aiNotes.count == 0 ? "None"
+                                   : "\(aiNotes.count) · \(ByteCountFormatter.string(fromByteCount: Int64(aiNotes.byteSize), countStyle: .file))")
+                    Picker("Keep Up To", selection: $settings.aiNotesLimit) {
+                        ForEach(AINoteStore.limits, id: \.self) { Text("\($0) notes").tag($0) }
+                    }
+                    .onChange(of: settings.aiNotesLimit) { aiNotes.applyLimit() }
+                    Button("Clear All AI Notes", role: .destructive) { confirmingClear = true }
+                        .disabled(aiNotes.count == 0)
+                } header: {
+                    Text("AI Notes")
+                } footer: {
+                    FooterText("Explain keeps its answer as an AI Note under the code. Notes stay on this device and, with iCloud Sync on, sync to your other devices; they're never sent to your ByteStash server. When the limit is reached, the oldest note makes room.")
+                }
+            }
         }
         .navigationTitle("Smart Suggestions")
+        .confirmationDialog("Clear All AI Notes?", isPresented: $confirmingClear, titleVisibility: .visible) {
+            Button("Clear All AI Notes", role: .destructive) { aiNotes?.clearAll() }
+        } message: {
+            Text(settings.iCloudSyncEnabled ? "They're removed from this device and your other devices." : "They're removed from this device.")
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { availability = AIAvailability.current }
+        }
     }
 }
 
@@ -745,7 +756,7 @@ private struct ProfileCard: View {
                 Text(isAPIKey ? "Signed in with an API key" : (user.username.isEmpty ? "Signed In" : user.username))
                     .font(.title3.weight(.semibold))
                 HStack(spacing: 5) {
-                    Icon(.server, size: 12).font(.caption)
+                    Icon(.server).font(.caption)
                     Text(serverName ?? server.base.host() ?? server.base.absoluteString)
                         .truncationMode(.middle)
                 }

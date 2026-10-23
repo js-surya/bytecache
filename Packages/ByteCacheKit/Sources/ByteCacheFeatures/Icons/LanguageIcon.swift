@@ -92,7 +92,6 @@ public struct LanguageIconView: View {
     /// Overrides the Settings choice (the Appearance preview shows both).
     var style: LanguageIconStyle?
     @Environment(AppSettings.self) private var settings
-    @Environment(\.iconStyle) private var iconStyle
 
     public init(_ language: String, size: CGFloat = 16, style: LanguageIconStyle? = nil) {
         self.language = language
@@ -116,12 +115,12 @@ public struct LanguageIconView: View {
                 }
             case .generic(let symbol):
                 if inColour, let tint = LanguageIcon.tint(for: language) {
-                    symbol.image(iconStyle).resizable().foregroundStyle(tint.color)
+                    symbol.image().resizable().foregroundStyle(tint.color)
                 } else {
-                    symbol.image(iconStyle).resizable()
+                    symbol.image().resizable()
                 }
             case .fallback:
-                AppSymbol.code.image(iconStyle).resizable()
+                AppSymbol.code.image().resizable()
             }
         }
         .scaledToFit()

@@ -2,10 +2,12 @@ import SwiftUI
 
 /// ByteCache's loading animation, from the app icon: the ↓ arrow drops into the `{ }` braces,
 /// which squeeze slightly as they catch it, then it fades into the box and the loop repeats.
-/// Still (arrow resting inside) when Reduce Motion is on.
+/// Still (arrow resting inside) when Reduce Motion is on. Appears after a moment, so quick loads
+/// don't flash it.
 public struct LoadingMark: View {
     var caption: String?
     var size: CGFloat
+    @State private var visible = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     public init(_ caption: String? = nil, size: CGFloat = 40) {
@@ -46,9 +48,17 @@ public struct LoadingMark: View {
                 }
             }
             .frame(width: size * 2.2, height: size * 1.6)
+            // The loop's animations would otherwise also move the mark from its first layout (the
+            // top-left corner) when it appears during a tab switch.
+            .geometryGroup()
             if let caption {
                 Text(caption).font(.subheadline).foregroundStyle(.secondary)
             }
+        }
+        .opacity(visible ? 1 : 0)
+        .task {
+            try? await Task.sleep(for: .seconds(0.3))
+            withAnimation(.easeOut(duration: 0.2)) { visible = true }
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(caption ?? "Loading")

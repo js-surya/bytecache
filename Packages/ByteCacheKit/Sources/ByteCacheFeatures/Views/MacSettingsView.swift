@@ -9,20 +9,28 @@ public struct MacSettingsView: View {
     @State private var page: MacSettingsPage? = .account
     @Environment(AppSettings.self) private var settings
     @Environment(AppLockModel.self) private var lock
+    @Environment(AINoteStore.self) private var aiNotes: AINoteStore?
 
     public init(session: SessionManager) {
         self.session = session
+    }
+
+    /// Smart Suggestions also shows where Apple Intelligence can't run, when there are AI Notes to manage.
+    private func shows(_ page: MacSettingsPage) -> Bool {
+        page == .suggestions && (aiNotes?.count ?? 0) > 0 ? true : page.isAvailable(session)
     }
 
     public var body: some View {
         NavigationSplitView(columnVisibility: .constant(.all)) {
             List(selection: $page) {
                 ForEach(SettingsSection.allCases, id: \.self) { section in
-                    let pages = MacSettingsPage.allCases.filter { $0.section == section && $0.isAvailable(session) }
+                    let pages = MacSettingsPage.allCases.filter { $0.section == section && shows($0) }
                     if !pages.isEmpty {
                         Section(section.title) {
                             ForEach(pages) { page in
-                                SettingsLabel(title: page.title, symbol: page.symbol(lock), color: page.color).tag(page)
+                                SettingsLabel(title: page.title, symbol: page.symbol(lock), color: page.color,
+                                              value: page == .reportBug && UnreportedCrash.shared.date != nil ? "Crash found" : nil,
+                                              valueColor: .orange).tag(page)
                             }
                         }
                     }
@@ -49,8 +57,8 @@ public struct MacSettingsView: View {
     }
 
     private func showAvailablePage() {
-        guard page.map({ !$0.isAvailable(session) }) ?? true else { return }
-        page = MacSettingsPage.allCases.first { $0.isAvailable(session) }
+        guard page.map({ !shows($0) }) ?? true else { return }
+        page = MacSettingsPage.allCases.first { shows($0) }
     }
 
     @ViewBuilder
@@ -173,6 +181,9 @@ enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
         case .account, .apiKeys, .password, .assistants:
             if case .signedIn = session.state { return true }
             return false
+        case .suggestions:
+            // Macs that can't run Apple Intelligence (Intel) don't show it at all.
+            return !AIAvailability.current.hidesFeatures
         default:
             return true
         }

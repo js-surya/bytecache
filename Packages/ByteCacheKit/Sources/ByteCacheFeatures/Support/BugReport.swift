@@ -56,7 +56,9 @@ public struct DeviceInfo: Equatable, Sendable {
         return DeviceInfo(app: AboutText.versionWithBuild, os: "macOS \(version)", model: model, platform: "Mac")
         #else
         let simulator = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"]
-        let pad = UIDevice.current.userInterfaceIdiom == .pad
+        // The device, not the window: a hardware model id like "iPad14,1" (the window's size class
+        // says nothing about the device on iPad multitasking or iPhone Duo).
+        let pad = (simulator ?? machine).hasPrefix("iPad")
         return DeviceInfo(app: AboutText.versionWithBuild, os: "\(pad ? "iPadOS" : "iOS") \(version)",
                           model: simulator.map { "\($0) (Simulator)" } ?? machine, platform: pad ? "iPad" : "iPhone")
         #endif

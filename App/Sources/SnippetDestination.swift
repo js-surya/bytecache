@@ -17,8 +17,10 @@ struct SnippetDestination: View {
             SnippetDetailView(snippet: snippet, list: list) { onEdit(snippet) }
         } else if let failed {
             ContentUnavailableView("Couldn't Open Snippet", symbol: .warning, description: Text(failed))
+                .centeredAwayFromFold()
         } else {
             LoadingMark()
+                .centeredAwayFromFold()
                 .task(id: id) { await load() }
         }
     }

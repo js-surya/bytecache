@@ -10,7 +10,6 @@ final class SettingsPersistenceTests: XCTestCase {
         first.appearance = .dark
         first.accent = .orange
         first.codeThemeID = "dracula"
-        first.iconStyle = .lucide
         first.searchInCode = true
         first.showLineNumbers = false
         first.wrapLines = true
@@ -25,7 +24,6 @@ final class SettingsPersistenceTests: XCTestCase {
         XCTAssertEqual(second.appearance, .dark)
         XCTAssertEqual(second.accent, .orange)
         XCTAssertEqual(second.codeThemeID, "dracula")
-        XCTAssertEqual(second.iconStyle, .lucide)
         XCTAssertTrue(second.searchInCode)
         XCTAssertFalse(second.showLineNumbers)
         XCTAssertTrue(second.wrapLines)

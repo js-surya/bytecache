@@ -6,6 +6,7 @@ public struct SnippetDetailView: View {
     let list: SnippetListModel?
     let onEdit: () -> Void
 
+    @Environment(\.windowToolbarID) private var windowToolbarID
     @Environment(\.supportsMultipleWindows) private var supportsMultipleWindows
     @State private var exporting = false
     @State private var exportFile: ExportFile?
@@ -19,6 +20,7 @@ public struct SnippetDetailView: View {
     #endif
     @Environment(AppSettings.self) private var settings
     @Environment(\.openWindow) private var openWindow
+    @Environment(AINoteStore.self) private var aiNotes: AINoteStore?
     let showsOpenInWindow: Bool
 
     public init(snippet: Snippet, list: SnippetListModel?, showsOpenInWindow: Bool = true, onEdit: @escaping () -> Void) {
@@ -60,6 +62,10 @@ public struct SnippetDetailView: View {
         #endif
     }
     private var usesTabs: Bool { wide && fragments.count > 1 }
+
+    /// AI Notes belong to the signed-in server's snippets (not someone else's public ones).
+    private var noteServer: String? { readOnly ? nil : list?.session.client?.server.cacheKey }
+    private var canExplain: Bool { settings.suggestionsEnabled && SnippetSuggesters.explainer() != nil }
     private var shownFile: Fragment? {
         fragments.first { $0.id == selectedFile } ?? fragments.first
     }
@@ -112,6 +118,13 @@ public struct SnippetDetailView: View {
                         FragmentCard(fragment: fragment, snippetTitle: snippet.title) { list?.recordCopy(snippet) }
                     }
                 }
+                if let server = noteServer, let note = aiNotes?.note(server: server, snippetID: snippet.id) {
+                    AINoteCard(note: note, code: allCode, canExplainAgain: canExplain) {
+                        explaining = true
+                    } onDelete: {
+                        withAnimation { aiNotes?.delete(server: server, snippetID: snippet.id) }
+                    }
+                }
             }
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -138,19 +151,20 @@ public struct SnippetDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         // Right-click the toolbar (Mac) or long-press it (iPad) to choose and reorder these.
-        .toolbar(id: "main") {
+        .toolbar(id: windowToolbarID) {
             if let list, !readOnly {
                 ToolbarItem(id: "pin", placement: .primaryAction) {
+                    // The colour goes on the button: in toolbars its tint wins over the label's style.
                     Button { Task { await list.togglePin(snippet) } } label: {
                         Label(snippet.isPinned ? "Unpin" : "Pin", symbol: snippet.isPinned ? .pinFill : .pin)
-                            .foregroundStyle(snippet.isPinned ? AnyShapeStyle(.orange) : AnyShapeStyle(.tint))
                     }
+                    .tint(snippet.isPinned ? .orange : .primary)
                 }
                 ToolbarItem(id: "favorite", placement: .primaryAction) {
                     Button { Task { await list.toggleFavorite(snippet) } } label: {
                         Label(snippet.isFavorite ? "Unfavorite" : "Favorite", symbol: snippet.isFavorite ? .starFill : .star)
-                            .foregroundStyle(snippet.isFavorite ? AnyShapeStyle(.yellow) : AnyShapeStyle(.tint))
                     }
+                    .tint(snippet.isFavorite ? .yellow : .primary)
                 }
             }
             ToolbarItem(id: "wrap", placement: .primaryAction) {
@@ -158,25 +172,32 @@ public struct SnippetDetailView: View {
                     Label("Wrap Long Lines", symbol: .wrapLines)
                 }
                 .toggleStyle(.button)
+                .toolbarIcon()
                 .help("Wrap Long Lines")
             }
             if settings.suggestionsEnabled, let explainer = SnippetSuggesters.explainer() {
                 ToolbarItem(id: "explain", placement: .primaryAction) {
                     Button { explaining = true } label: { Label("Explain", symbol: .sparkles) }
+                        .toolbarIcon()
                         .sheet(isPresented: $explaining) {
                             NavigationStack {
                                 ExplainSheet(model: ExplainModel(explainer: explainer),
-                                             snippet: (allCode, fragments.first?.language ?? "plaintext", snippet.title))
+                                             snippet: (allCode, fragments.first?.language ?? "plaintext", snippet.title)) { text in
+                                    if let server = noteServer {
+                                        aiNotes?.save(text, code: allCode, server: server, snippetID: snippet.id)
+                                    }
+                                }
                             }
                         }
                 }
             }
             ToolbarItem(id: "share", placement: .primaryAction) {
-                SwiftUI.ShareLink(item: allCode)
+                SwiftUI.ShareLink(item: allCode).toolbarIcon()
             }
             if let list, !readOnly {
                 ToolbarItem(id: "share-link", placement: .primaryAction) {
                     Button { sharingLinks = true } label: { Label("Share Link", symbol: .link) }
+                        .toolbarIcon()
                         .sheet(isPresented: $sharingLinks) {
                             NavigationStack {
                                 ShareLinksView(model: ShareLinksModel(session: list.session, snippetID: snippet.id), title: snippet.title)
@@ -185,21 +206,36 @@ public struct SnippetDetailView: View {
                 }
             }
             ToolbarItem(id: "save", placement: .primaryAction) {
-                saveButton
+                saveButton.toolbarIcon()
             }
             if showsOpenInWindow && supportsMultipleWindows {
                 ToolbarItem(id: "window", placement: .primaryAction) {
                     Button { openWindow(value: snippet.id) } label: {
                         Label("Open in New Window", symbol: .newWindow)
                     }
+                    .toolbarIcon()
                 }
             }
             if !readOnly {
                 ToolbarItem(id: "edit", placement: .primaryAction) {
-                    Button(action: onEdit) { Label("Edit", symbol: .edit) }
+                    Button(action: onEdit) { Label("Edit", symbol: .edit) }.toolbarIcon()
                 }
             }
         }
+        #if DEBUG
+        // `-BCAINotePreview`: a sample AI Note for older code, so the card and its "code changed" note show.
+        .task {
+            guard ProcessInfo.processInfo.arguments.contains("-BCAINotePreview"), let server = noteServer,
+                  aiNotes?.note(server: server, snippetID: snippet.id) == nil else { return }
+            aiNotes?.save("""
+            Defines a small **Greeter** type and prints a greeting.
+
+            - `Greeter` stores a `name` and builds `"Hello, <name>!"` in `greet()`.
+            - The last line creates one for "ByteCache" and prints the result.
+            - Nothing risky: no files, network or secrets.
+            """, code: allCode + "\n// older version", server: server, snippetID: snippet.id, date: Date().addingTimeInterval(-3_600))
+        }
+        #endif
         .logScreen("Snippet")
     }
 
@@ -228,7 +264,7 @@ struct StatusChip: View {
     let color: Color
 
     var body: some View {
-        Label { Text(title) } icon: { Icon(symbol, size: 12) }
+        Label { Text(title) } icon: { Icon(symbol) }
             .font(.caption.weight(.semibold))
             .foregroundStyle(color)
             .padding(.horizontal, 8).padding(.vertical, 3)

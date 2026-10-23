@@ -13,6 +13,30 @@ final class CrashWatchTests: XCTestCase {
         let watch = CrashWatch(directory: directory())
         watch.launched()
         XCTAssertFalse(watch.endedUnexpectedly)
+        XCTAssertNil(watch.unreportedCrash)
+    }
+
+    /// A crash waits in Settings → Report a Bug, across launches, until it's reported or dismissed.
+    func testAnUnreportedCrashIsKeptUntilReportedOrDismissed() {
+        let dir = directory()
+        CrashWatch(directory: dir).launched()          // the process dies while open
+        let next = CrashWatch(directory: dir)
+        next.launched()
+        XCTAssertTrue(next.endedUnexpectedly)
+        XCTAssertNotNil(next.unreportedCrash)
+        next.enteredBackground()                       // a normal end…
+
+        let later = CrashWatch(directory: dir)
+        later.launched()
+        XCTAssertFalse(later.endedUnexpectedly, "this launch is fine…")
+        XCTAssertEqual(later.unreportedCrash, next.unreportedCrash, "…but the earlier crash still waits")
+        later.clearUnreportedCrash()
+        XCTAssertNil(later.unreportedCrash)
+        later.enteredBackground()
+
+        let after = CrashWatch(directory: dir)
+        after.launched()
+        XCTAssertNil(after.unreportedCrash)
     }
 
     func testEndingWhileInTheForegroundIsUnexpected() {
