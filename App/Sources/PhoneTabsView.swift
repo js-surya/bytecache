@@ -83,7 +83,7 @@ struct PhoneTabsView: View {
         TabView(selection: $tab) {
             Tab(value: PhoneTab.snippets) {
                 stack(all, selection: $allSelection)
-            } label: { tabLabel("Snippets", .braces) }
+            } label: { tabLabel("Snippets", .byteCache) }
 
             Tab(value: PhoneTab.pinned) {
                 stack(pinned, selection: $pinnedSelection)
@@ -110,7 +110,7 @@ struct PhoneTabsView: View {
                 NavigationStack {
                     Group {
                         if search.searchText.trimmingCharacters(in: .whitespaces).isEmpty {
-                            ContentUnavailableView("Search Snippets", symbol: .braces,
+                            ContentUnavailableView("Search Snippets", symbol: .byteCache,
                                                    description: Text(services.settings.searchInCode
                                                         ? "Find snippets by title, description or code."
                                                         : "Find snippets by title or description. To search inside code too, turn on Search Inside Code in Settings."))

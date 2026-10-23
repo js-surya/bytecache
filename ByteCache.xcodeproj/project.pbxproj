@@ -15,6 +15,7 @@
 		20F29759BEC565975A361286 /* SnippetWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9410E8194624BCFCB3E8120D /* SnippetWidgets.swift */; };
 		29005D864E5BD54505658F6C /* AppIcon-Midnight.icon in Resources */ = {isa = PBXBuildFile; fileRef = E5653C3A0D84638FD2D5627F /* AppIcon-Midnight.icon */; };
 		3636E772D4D90508809CCC1D /* ByteCacheFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = 0E7FFD3C3DCB9854880651BD /* ByteCacheFeatures */; };
+		38D87A86D5EFDCE68BEA0019 /* WidgetAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8F3B485A0B1FBDE43707445E /* WidgetAssets.xcassets */; };
 		3B03DD7B3CBF1E2309E14C32 /* SnippetDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = D132C6DCD693053E8D76A755 /* SnippetDestination.swift */; };
 		475B31822917A21ABE1CCD5E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 48B08E0D98346BBDFA3CD218 /* Assets.xcassets */; };
 		4B1C615C616406BD8E39044E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 88519509BC45ABBCD838A62C /* PrivacyInfo.xcprivacy */; };
@@ -122,6 +123,7 @@
 		88519509BC45ABBCD838A62C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		88BB3269C865DB06121B67A3 /* ByteCache-macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ByteCache-macOS.entitlements"; sourceTree = "<group>"; };
 		8AC788C5E57184B005571A08 /* AppIcon-Mint.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = "AppIcon-Mint.icon"; sourceTree = "<group>"; };
+		8F3B485A0B1FBDE43707445E /* WidgetAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = WidgetAssets.xcassets; sourceTree = "<group>"; };
 		902C7392FB9E4C154F9BDCE9 /* Widgets-macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Widgets-macOS.entitlements"; sourceTree = "<group>"; };
 		9410E8194624BCFCB3E8120D /* SnippetWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetWidgets.swift; sourceTree = "<group>"; };
 		94EFFAB61EEFDFCC00528068 /* CopySnippetIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopySnippetIntent.swift; sourceTree = "<group>"; };
@@ -297,6 +299,7 @@
 				4E4B60EE3C1DF4C3460F0580 /* Info.plist */,
 				7F31B6298B2F885456681F97 /* PrivacyInfo.xcprivacy */,
 				9410E8194624BCFCB3E8120D /* SnippetWidgets.swift */,
+				8F3B485A0B1FBDE43707445E /* WidgetAssets.xcassets */,
 				66F44EE4730BF764EBBB8DDD /* Widgets-iOS.entitlements */,
 				902C7392FB9E4C154F9BDCE9 /* Widgets-macOS.entitlements */,
 			);
@@ -497,6 +500,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6AD5F31D791485AC9D7088F0 /* PrivacyInfo.xcprivacy in Resources */,
+				38D87A86D5EFDCE68BEA0019 /* WidgetAssets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -817,7 +821,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -921,7 +925,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;

@@ -16,7 +16,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case keyOff
     case warning
     case copy
-    case braces
+    case byteCache
     case appearance
     case code
     case checkCircle
@@ -106,7 +106,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .keyOff: "key.slash"
         case .warning: "exclamationmark.triangle"
         case .copy: "doc.on.doc"
-        case .braces: "curlybraces"
+        case .byteCache: "curlybraces"
         case .appearance: "circle.lefthalf.filled"
         case .code: "chevron.left.forwardslash.chevron.right"
         case .checkCircle: "checkmark.circle.fill"

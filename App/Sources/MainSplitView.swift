@@ -232,7 +232,7 @@ struct MainSplitView: View {
                     SnippetDestination(id: id, list: list, services: services) { startEditing($0) }
                         .id(id)
                 } else {
-                    ContentUnavailableView("No Snippet Selected", symbol: .braces,
+                    ContentUnavailableView("No Snippet Selected", symbol: .byteCache,
                                            description: Text("Pick a snippet, or press ⌘N to create one."))
                 }
             }
