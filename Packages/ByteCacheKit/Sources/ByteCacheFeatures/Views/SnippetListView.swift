@@ -2,6 +2,7 @@ import ByteCacheCore
 import SwiftUI
 
 public struct SnippetListView: View {
+    @Environment(\.windowToolbarID) private var windowToolbarID
     @Bindable var model: SnippetListModel
     @Binding var selection: Snippet.ID?
     let showsSearchField: Bool
@@ -53,8 +54,8 @@ public struct SnippetListView: View {
         .onChange(of: model.searchText) { model.searchTextChanged() }
         .refreshable { await model.refresh() }
         .navigationTitle(model.title)
-        // One toolbar id for the whole main window, so it can be customised (CP-71).
-        .toolbar(id: "main") {
+        // One toolbar id for the whole window, so it can be customised (CP-71); per window, see WindowToolbarID.
+        .toolbar(id: windowToolbarID) {
             if !model.isReadOnly && !model.snippets.isEmpty {
                 ToolbarItem(id: "select") {
                     Button(model.isSelecting ? "Done" : "Select") { model.isSelecting.toggle() }

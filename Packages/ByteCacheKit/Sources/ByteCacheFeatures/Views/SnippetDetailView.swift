@@ -6,6 +6,7 @@ public struct SnippetDetailView: View {
     let list: SnippetListModel?
     let onEdit: () -> Void
 
+    @Environment(\.windowToolbarID) private var windowToolbarID
     @Environment(\.supportsMultipleWindows) private var supportsMultipleWindows
     @State private var exporting = false
     @State private var exportFile: ExportFile?
@@ -150,7 +151,7 @@ public struct SnippetDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         // Right-click the toolbar (Mac) or long-press it (iPad) to choose and reorder these.
-        .toolbar(id: "main") {
+        .toolbar(id: windowToolbarID) {
             if let list, !readOnly {
                 ToolbarItem(id: "pin", placement: .primaryAction) {
                     Button { Task { await list.togglePin(snippet) } } label: {
