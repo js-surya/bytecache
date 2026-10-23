@@ -204,7 +204,9 @@ struct PhoneTabsView: View {
                 settingsButton
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button(action: onScan) { Label("Scan Code", symbol: .scan) }
+                        .toolbarIcon()
                     Button(action: onNew) { Label("New Snippet", symbol: .newSnippet) }
+                        .primaryToolbarAction()
                 }
                 // Stay in the bar when it's short of room (vertical bars on iPhone Duo); Sort goes first.
                 .overflowPriority(.high)

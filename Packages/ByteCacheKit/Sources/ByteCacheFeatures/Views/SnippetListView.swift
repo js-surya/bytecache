@@ -65,6 +65,7 @@ public struct SnippetListView: View {
                     Button { model.isSelecting.toggle() } label: {
                         Label(model.isSelecting ? "Done" : "Select", symbol: model.isSelecting ? .check : .select)
                     }
+                    .toolbarIcon()
                 }
             }
             ToolbarItem(id: "sort") {
@@ -78,6 +79,7 @@ public struct SnippetListView: View {
                 } label: {
                     Label("Sort", symbol: .sort)
                 }
+                .toolbarIcon()
             }
             .overflowPriority(.low)
         }

@@ -100,7 +100,7 @@ public struct SidebarView: View {
         .toolbar {
             SettingsToolbarItem { showingSettings = true }
             ToolbarItem(placement: .topBarTrailing) {
-                ServerMenu(session: session)
+                ServerMenu(session: session).toolbarIcon()
             }
         }
         .sheet(isPresented: $showingSettings) {
@@ -113,7 +113,7 @@ public struct SidebarView: View {
         #else
         .toolbar(id: windowToolbarID) {
             ToolbarItem(id: "server", placement: .navigation) {
-                ServerMenu(session: session)
+                ServerMenu(session: session).toolbarIcon()
             }
         }
         #endif

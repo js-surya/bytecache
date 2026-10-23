@@ -154,16 +154,17 @@ public struct SnippetDetailView: View {
         .toolbar(id: windowToolbarID) {
             if let list, !readOnly {
                 ToolbarItem(id: "pin", placement: .primaryAction) {
+                    // The colour goes on the button: in toolbars its tint wins over the label's style.
                     Button { Task { await list.togglePin(snippet) } } label: {
                         Label(snippet.isPinned ? "Unpin" : "Pin", symbol: snippet.isPinned ? .pinFill : .pin)
-                            .foregroundStyle(snippet.isPinned ? AnyShapeStyle(.orange) : AnyShapeStyle(.tint))
                     }
+                    .tint(snippet.isPinned ? .orange : .primary)
                 }
                 ToolbarItem(id: "favorite", placement: .primaryAction) {
                     Button { Task { await list.toggleFavorite(snippet) } } label: {
                         Label(snippet.isFavorite ? "Unfavorite" : "Favorite", symbol: snippet.isFavorite ? .starFill : .star)
-                            .foregroundStyle(snippet.isFavorite ? AnyShapeStyle(.yellow) : AnyShapeStyle(.tint))
                     }
+                    .tint(snippet.isFavorite ? .yellow : .primary)
                 }
             }
             ToolbarItem(id: "wrap", placement: .primaryAction) {
@@ -171,11 +172,13 @@ public struct SnippetDetailView: View {
                     Label("Wrap Long Lines", symbol: .wrapLines)
                 }
                 .toggleStyle(.button)
+                .toolbarIcon()
                 .help("Wrap Long Lines")
             }
             if settings.suggestionsEnabled, let explainer = SnippetSuggesters.explainer() {
                 ToolbarItem(id: "explain", placement: .primaryAction) {
                     Button { explaining = true } label: { Label("Explain", symbol: .sparkles) }
+                        .toolbarIcon()
                         .sheet(isPresented: $explaining) {
                             NavigationStack {
                                 ExplainSheet(model: ExplainModel(explainer: explainer),
@@ -189,11 +192,12 @@ public struct SnippetDetailView: View {
                 }
             }
             ToolbarItem(id: "share", placement: .primaryAction) {
-                SwiftUI.ShareLink(item: allCode)
+                SwiftUI.ShareLink(item: allCode).toolbarIcon()
             }
             if let list, !readOnly {
                 ToolbarItem(id: "share-link", placement: .primaryAction) {
                     Button { sharingLinks = true } label: { Label("Share Link", symbol: .link) }
+                        .toolbarIcon()
                         .sheet(isPresented: $sharingLinks) {
                             NavigationStack {
                                 ShareLinksView(model: ShareLinksModel(session: list.session, snippetID: snippet.id), title: snippet.title)
@@ -202,18 +206,19 @@ public struct SnippetDetailView: View {
                 }
             }
             ToolbarItem(id: "save", placement: .primaryAction) {
-                saveButton
+                saveButton.toolbarIcon()
             }
             if showsOpenInWindow && supportsMultipleWindows {
                 ToolbarItem(id: "window", placement: .primaryAction) {
                     Button { openWindow(value: snippet.id) } label: {
                         Label("Open in New Window", symbol: .newWindow)
                     }
+                    .toolbarIcon()
                 }
             }
             if !readOnly {
                 ToolbarItem(id: "edit", placement: .primaryAction) {
-                    Button(action: onEdit) { Label("Edit", symbol: .edit) }
+                    Button(action: onEdit) { Label("Edit", symbol: .edit) }.toolbarIcon()
                 }
             }
         }

@@ -228,21 +228,25 @@ struct MainSplitView: View {
                 .toolbar(id: toolbarID.id) {
                     ToolbarItem(id: "back", placement: .navigation) {
                         Button { go(history.back()) } label: { Label("Back", symbol: .back) }
+                            .toolbarIcon()
                             .disabled(!history.canGoBack)
                             .keyboardShortcut("[", modifiers: .command)
                             .help("Back (⌘[)")
                     }
                     ToolbarItem(id: "forward", placement: .navigation) {
                         Button { go(history.forward()) } label: { Label("Forward", symbol: .forward) }
+                            .toolbarIcon()
                             .disabled(!history.canGoForward)
                             .keyboardShortcut("]", modifiers: .command)
                             .help("Forward (⌘])")
                     }
                     ToolbarItem(id: "scan", placement: .primaryAction) {
                         Button { scanning = true } label: { Label("Scan Code", symbol: .scan) }
+                            .toolbarIcon()
                     }
                     ToolbarItem(id: "new", placement: .primaryAction) {
                         Button { startEditing(nil) } label: { Label("New Snippet", symbol: .newSnippet) }
+                            .primaryToolbarAction()
                     }
                     // Stays in the bar when it's short of room (iPhone Duo inner display): before Scan, and Sort goes first.
                     .overflowPriority(.high)
