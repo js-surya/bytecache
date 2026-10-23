@@ -11,7 +11,7 @@ public struct SettingsIcon: View {
     }
 
     public var body: some View {
-        Icon(symbol, size: 17)
+        Icon(symbol)
             .font(.system(size: 15, weight: .semibold))
             .foregroundStyle(.white)
             .frame(width: 29, height: 29)

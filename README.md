@@ -111,7 +111,7 @@ Bug reports and ideas are welcome. Please use the [issue forms](../../issues/new
 
 Made with ❤️ by [SyntaxError](https://github.com/js-surya).
 
-Uses [HighlightSwift](https://github.com/appstefan/HighlightSwift) (MIT), [highlight.js](https://highlightjs.org) (BSD-3-Clause), [Lucide](https://lucide.dev) icons (ISC) and [Devicon](https://devicon.dev) language logos (MIT; the logos are trademarks of their owners). The colour palettes belong to their authors. The language model was trained on permissively licensed open-source code, and the test set contains short excerpts from it; [DATA.md](Packages/ByteCacheKit/Sources/ByteCacheLanguage/DATA.md) lists every source with its licence.
+Uses [HighlightSwift](https://github.com/appstefan/HighlightSwift) (MIT), [highlight.js](https://highlightjs.org) (BSD-3-Clause), [Mermaid](https://mermaid.js.org) (MIT) and [Devicon](https://devicon.dev) language logos (MIT; the logos are trademarks of their owners). Icons are Apple's SF Symbols; versions before 1.3 also offered [Lucide](https://lucide.dev) icons (ISC). The colour palettes belong to their authors. The language model was trained on permissively licensed open-source code, and the test set contains short excerpts from it; [DATA.md](Packages/ByteCacheKit/Sources/ByteCacheLanguage/DATA.md) lists every source with its licence.
 
 ## Licence
 

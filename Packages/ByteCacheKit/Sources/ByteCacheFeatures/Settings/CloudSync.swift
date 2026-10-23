@@ -8,6 +8,9 @@ public protocol KeyValueSyncStore: AnyObject {
     func data(forKey key: String) -> Data?
     func setData(_ data: Data, forKey key: String)
     func synchronize()
+    func removeValue(forKey key: String)
+    /// Every key in the store.
+    var allKeys: [String] { get }
     /// Posted when another device changed a value; nil when the store never changes remotely.
     var externalChangeNotification: Notification.Name? { get }
 }
@@ -21,6 +24,8 @@ public final class UbiquitousSyncStore: KeyValueSyncStore {
     public func data(forKey key: String) -> Data? { store.data(forKey: key) }
     public func setData(_ data: Data, forKey key: String) { store.set(data, forKey: key) }
     public func synchronize() { store.synchronize() }
+    public func removeValue(forKey key: String) { store.removeObject(forKey: key) }
+    public var allKeys: [String] { Array(store.dictionaryRepresentation.keys) }
     public var externalChangeNotification: Notification.Name? { NSUbiquitousKeyValueStore.didChangeExternallyNotification }
 
     /// Whether this device is signed in to iCloud.
@@ -35,6 +40,8 @@ public final class InMemorySyncStore: KeyValueSyncStore {
     public func data(forKey key: String) -> Data? { values[key] }
     public func setData(_ data: Data, forKey key: String) { values[key] = data }
     public func synchronize() {}
+    public func removeValue(forKey key: String) { values[key] = nil }
+    public var allKeys: [String] { Array(values.keys) }
     public var externalChangeNotification: Notification.Name? { nil }
 }
 

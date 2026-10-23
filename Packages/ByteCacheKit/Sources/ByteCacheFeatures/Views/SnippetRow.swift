@@ -54,9 +54,9 @@ public struct SnippetRow: View {
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4)) : AnyLayout(HStackLayout(spacing: 6))
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
-                if snippet.isPinned { Icon(.pinFill, size: 13).foregroundStyle(.orange).imageScale(.small) }
-                if snippet.isFavorite { Icon(.starFill, size: 13).foregroundStyle(.yellow).imageScale(.small) }
-                if snippet.isPublic && !showOwner { Icon(.globe, size: 13).foregroundStyle(.blue).imageScale(.small) }
+                if snippet.isPinned { Icon(.pinFill).foregroundStyle(.orange).imageScale(.small) }
+                if snippet.isFavorite { Icon(.starFill).foregroundStyle(.yellow).imageScale(.small) }
+                if snippet.isPublic && !showOwner { Icon(.globe).foregroundStyle(.blue).imageScale(.small) }
                 Text(highlighted(snippet.title.isEmpty ? "Untitled snippet" : snippet.title))
                     .font(.headline)
                     .lineLimit(typeSize.isAccessibilitySize ? 3 : 1)

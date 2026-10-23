@@ -21,7 +21,7 @@ struct ExpiryBadge: View {
         TimelineView(.periodic(from: .now, by: ExpiryText.isSoon(date) ? 1 : 60)) { context in
             let soon = ExpiryText.isSoon(date, now: context.date)
             Label { Text(ExpiryText.remaining(until: date, now: context.date)).monospacedDigit() } icon: {
-                Icon(.timer, size: compact ? 11 : 13)
+                Icon(.timer)
             }
             .font(compact ? .caption2.weight(.medium) : .caption.weight(.semibold))
             .foregroundStyle(soon ? .orange : .secondary)

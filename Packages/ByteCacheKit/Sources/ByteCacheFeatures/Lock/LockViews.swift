@@ -52,7 +52,7 @@ struct LockScreenView: View {
 
     var body: some View {
         VStack(spacing: 18) {
-            Icon(.lock, size: 34)
+            Icon(.lock)
                 .font(.system(size: 34, weight: .semibold))
                 .foregroundStyle(.white)
                 .frame(width: 76, height: 76)
