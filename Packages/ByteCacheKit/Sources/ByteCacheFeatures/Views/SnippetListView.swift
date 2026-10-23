@@ -58,7 +58,10 @@ public struct SnippetListView: View {
         .toolbar(id: windowToolbarID) {
             if !model.isReadOnly && !model.snippets.isEmpty {
                 ToolbarItem(id: "select") {
-                    Button(model.isSelecting ? "Done" : "Select") { model.isSelecting.toggle() }
+                    // An icon as well as the title: vertical bars (iPhone Duo) show only items with one.
+                    Button { model.isSelecting.toggle() } label: {
+                        Label(model.isSelecting ? "Done" : "Select", symbol: model.isSelecting ? .check : .select)
+                    }
                 }
             }
             ToolbarItem(id: "sort") {
@@ -73,6 +76,7 @@ public struct SnippetListView: View {
                     Label("Sort", symbol: .sort)
                 }
             }
+            .overflowPriority(.low)
         }
         .onChange(of: model.sort) { Task { await model.refresh() } }
         .onChange(of: settings.searchInCode, initial: true) {

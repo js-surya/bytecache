@@ -90,6 +90,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case back
     case forward
     case more
+    case select
 
     public var sfName: String {
         switch self {
@@ -180,6 +181,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .back: "chevron.left"
         case .forward: "chevron.right"
         case .more: "ellipsis.circle"
+        case .select: "checkmark.circle"
         }
     }
 }

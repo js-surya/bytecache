@@ -206,6 +206,8 @@ struct PhoneTabsView: View {
                     Button(action: onScan) { Label("Scan Code", symbol: .scan) }
                     Button(action: onNew) { Label("New Snippet", symbol: .newSnippet) }
                 }
+                // Stay in the bar when it's short of room (vertical bars on iPhone Duo); Sort goes first.
+                .overflowPriority(.high)
             }
             .navigationDestination(item: selection) { id in
                 SnippetDestination(id: id, list: model, services: services, onEdit: onEdit)

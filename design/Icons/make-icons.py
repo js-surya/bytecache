@@ -42,6 +42,7 @@ TABLE = [
     ("touchID", "touchid"), ("opticID", "opticid"),
     ("circle", "circle"), ("checkbox", "square"), ("checkboxChecked", "checkmark.square.fill"),
     ("back", "chevron.left"), ("forward", "chevron.right"), ("more", "ellipsis.circle"),
+    ("select", "checkmark.circle"),
 ]
 
 
