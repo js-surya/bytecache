@@ -244,6 +244,8 @@ struct MainSplitView: View {
                     ToolbarItem(id: "new", placement: .primaryAction) {
                         Button { startEditing(nil) } label: { Label("New Snippet", symbol: .newSnippet) }
                     }
+                    // Stays in the bar when it's short of room (iPhone Duo inner display): before Scan, and Sort goes first.
+                    .overflowPriority(.high)
                 }
                 #if os(macOS)
                 // Room for a row's language, tags and date on one line; it grows with the window.
@@ -255,8 +257,7 @@ struct MainSplitView: View {
                     SnippetDestination(id: id, list: list, services: services) { startEditing($0) }
                         .id(id)
                 } else {
-                    ContentUnavailableView("No Snippet Selected", symbol: .byteCache,
-                                           description: Text("Pick a snippet, or press ⌘N to create one."))
+                    noSnippetSelected
                 }
             }
             #if os(macOS)
@@ -264,6 +265,25 @@ struct MainSplitView: View {
             .navigationSplitViewColumnWidth(min: 380, ideal: 600)
             #endif
         }
+    }
+
+    private var noSnippetSelected: some View {
+        #if os(macOS)
+        ContentUnavailableView("No Snippet Selected", symbol: .byteCache,
+                               description: Text("Pick a snippet, or press ⌘N to create one."))
+        #else
+        // A button as well: iPhone Duo and iPad often have no keyboard, and in a tall window the list
+        // is hidden behind the sidebar button. Kept off the fold when partially folded.
+        ContentUnavailableView {
+            Label("No Snippet Selected", symbol: .byteCache)
+        } description: {
+            Text("Pick a snippet, or create a new one.")
+        } actions: {
+            Button { startEditing(nil) } label: { Label("New Snippet", symbol: .newSnippet) }
+                .buttonStyle(.borderedProminent)
+        }
+        .centeredAwayFromFold()
+        #endif
     }
 
     private var selected: Snippet? {
