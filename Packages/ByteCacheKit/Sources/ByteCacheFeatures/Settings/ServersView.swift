@@ -15,7 +15,8 @@ extension Credentials {
     }
 
     public var loginDescription: String {
-        if apiKey != nil { return SessionManager.apiKeyUserName }
+        if apiKey != nil, !isUsingBackupKey { return SessionManager.apiKeyUserName }
+        if isUsingBackupKey { return username ?? "Signed in" }
         if token != nil { return username ?? "Signed in" }
         return "Not signed in"
     }

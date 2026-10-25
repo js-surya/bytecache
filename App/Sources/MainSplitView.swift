@@ -149,6 +149,10 @@ struct MainSplitView: View {
             services.saveQueue.startMonitoring()
             await services.saveQueue.flush()
         }
+        // The login expired and the backup key took over: load what just failed again (CP-91).
+        .onChange(of: services.session.backupKeySwitches) {
+            Task { await list.refresh(); await sidebar.load() }
+        }
         .onChange(of: services.saveQueue.uploadedGeneration) {
             Task { await list.refresh(); await sidebar.load() }
         }

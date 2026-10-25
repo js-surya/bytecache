@@ -19,6 +19,8 @@ public final class OnboardingModel {
     public var method = LoginMethod.password
     public var username = ""
     public var password = ""
+    /// "Stay signed in" on the sign-in screen: off unless the user turns it on (CP-91).
+    public var staySignedIn = false
     public var apiKey = ""
     /// Create Account instead of Sign In (CP-75); only offered when the server allows it.
     public var creatingAccount = false
@@ -64,6 +66,13 @@ public final class OnboardingModel {
 
     public func signIn(ssoToken: String) async {
         await run { [self] () async throws(APIError) in try await session.signIn(ssoToken: ssoToken) }
+        await applyStaySignedIn()
+    }
+
+    /// After a password or single sign-on sign-in: makes the backup key only if the user chose it.
+    private func applyStaySignedIn() async {
+        guard errorMessage == nil, case .signedIn = session.state else { return }
+        await session.setStaySignedIn(staySignedIn, keyName: SessionManager.backupKeyName())
     }
 
     public func toggleCreatingAccount() {
@@ -101,6 +110,7 @@ public final class OnboardingModel {
                 password = ""
                 confirmPassword = ""
                 creatingAccount = false
+                await applyStaySignedIn()
             }
         case .apiKey:
             await run { [self] () async throws(APIError) in try await session.loginWithAPIKey(apiKey) }

@@ -109,7 +109,8 @@ public final class MCPSettingsModel {
     /// Creating keys needs a password login; ByteStash doesn't let API keys manage keys.
     public var canCreateKey: Bool { session.client.map { $0.apiKey == nil && $0.token != nil } ?? false }
     /// Signed in with an API key: that key also works for assistants.
-    public var loginKey: String? { session.client?.apiKey }
+    /// Not this device's backup key (CP-91): signing out revokes it.
+    public var loginKey: String? { session.isUsingBackupKey ? nil : session.client?.apiKey }
 
     /// Only reachable on a private network, so cloud-hosted assistants can't connect.
     public var isPrivateServer: Bool { endpoint?.host().map(ServerReach.isPrivate(host:)) ?? false }

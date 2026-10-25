@@ -11,6 +11,12 @@ public struct Credentials: Codable, Equatable, Identifiable, Sendable {
     public var apiKey: String?
     /// Optional label chosen by the user, shown instead of the address.
     public var name: String?
+    /// A key made after a password or single sign-on login, used once the server ends that login
+    /// (ByteStash logins expire, 24 hours by default), so the app stays signed in.
+    public var backupKey: String?
+    public var backupKeyID: Int?
+    /// The user chose "Stay signed in" for this login: only then is a backup key made (CP-91).
+    public var staySignedIn = false
 
     public init(id: UUID = UUID(), server: ServerURL, token: String? = nil, username: String? = nil, apiKey: String? = nil,
                 name: String? = nil) {
@@ -23,6 +29,9 @@ public struct Credentials: Codable, Equatable, Identifiable, Sendable {
     }
 
     public var isSignedIn: Bool { token != nil || apiKey != nil }
+    /// The login expired and the app carries on with its backup key (no share links or account
+    /// management until the next sign-in).
+    public var isUsingBackupKey: Bool { apiKey != nil && apiKey == backupKey }
 
     /// A client for this login, or nil when not signed in.
     public func makeClient(transport: any HTTPTransport = URLSession.shared) -> APIClient? {
@@ -35,10 +44,12 @@ public struct Credentials: Codable, Equatable, Identifiable, Sendable {
         var copy = self
         copy.token = nil
         copy.apiKey = nil
+        copy.backupKey = nil
+        copy.backupKeyID = nil
         return copy
     }
 
-    private enum CodingKeys: String, CodingKey { case id, server, token, username, apiKey, name }
+    private enum CodingKeys: String, CodingKey { case id, server, token, username, apiKey, name, backupKey, backupKeyID, staySignedIn }
 
     public init(from decoder: any Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -50,6 +61,9 @@ public struct Credentials: Codable, Equatable, Identifiable, Sendable {
             apiKey: try c.decodeIfPresent(String.self, forKey: .apiKey),
             name: try c.decodeIfPresent(String.self, forKey: .name)
         )
+        backupKey = try c.decodeIfPresent(String.self, forKey: .backupKey)
+        backupKeyID = try c.decodeIfPresent(Int.self, forKey: .backupKeyID)
+        staySignedIn = try c.decodeIfPresent(Bool.self, forKey: .staySignedIn) ?? false
     }
 }
 

@@ -110,12 +110,22 @@ public struct LoginView: View {
                     } else if model.creatingAccount {
                         FooterText("Creates an account on this server and signs you in.")
                     } else if model.session.sessionExpired {
-                        Text("Your session expired. Sign in again to continue.").foregroundStyle(.orange)
+                        Text("Your sign-in expired: ByteStash ends sign-ins after a while (24 hours unless the server is set otherwise). Sign in again; to avoid this, turn on Stay Signed In below.")
+                            .foregroundStyle(.orange)
                     } else if model.method == .apiKey {
                         FooterText("Create a key in ByteStash under Settings → API Keys. It's kept in the Keychain on this device.")
                     }
                 }
                 .font(.footnote)
+            }
+
+            if model.method == .password {
+                // Off unless chosen: it makes an API key on the user's account (CP-91).
+                Section {
+                    Toggle(StaySignedInText.title, isOn: $model.staySignedIn)
+                } footer: {
+                    FooterText(StaySignedInText.explanation)
+                }
             }
 
             Section {
@@ -161,6 +171,8 @@ public struct LoginView: View {
             .listRowInsets(EdgeInsets())
         }
         .task {
+            // The choice made for this server last time (off for a new one).
+            model.staySignedIn = model.session.staysSignedIn
             await model.session.loadSSO()
             if model.passwordsDisabled { model.method = .apiKey }
         }
