@@ -59,23 +59,8 @@ jobs:
           BUILD: ${{ steps.version.outputs.build }}
           TAG: ${{ steps.version.outputs.tag }}
         run: |
-          cat > notes.md <<NOTES
-          ## Install
-          Get ByteCache for iPhone, iPad and Mac from the **[TestFlight beta](https://testflight.apple.com/join/rpmeVJW6)**: open the link on your device and follow the steps.
-
-          Requires iOS / iPadOS 17 or macOS 14 or later, and a [ByteStash](https://github.com/jordan-dalby/ByteStash) server (or the public demo).
-          NOTES
-          # Every change since the previous release (features land on develop, so pull-request-based
-          # notes would miss them). Housekeeping commits (chore/ci/docs/test, version bumps) are left out.
-          previous=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || true)
-          {
-            echo
-            echo "## What's changed"
-            git log --no-merges --format='%s' ${previous:+$previous..}HEAD \
-              | grep -vE '^(chore|ci|docs|test)(\(|:)' \
-              | grep -vE '^Release [0-9]' \
-              | perl -pe 's/^[a-z]+(\([^)]*\))?!?: //; s/^([a-z])(?=[a-z]*(?:[^A-Za-z]|$))/\u$1/; s/^/- /'
-          } >> notes.md
+          # Install steps, then New / Fixes / Improvements from the commit log since the previous release.
+          scripts/release-notes.sh > notes.md
           gh release create "$TAG" \
             --target "$GITHUB_SHA" \
             --title "ByteCache $VERSION ($BUILD)" \
