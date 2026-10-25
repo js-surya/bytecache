@@ -816,6 +816,9 @@ struct AccountSettingsView: View {
                         }
                     }
                 }
+                if session.canStaySignedIn {
+                    StaySignedInSection(session: session)
+                }
                 Section {
                     Button("Sign Out", role: .destructive) {
                         SpotlightIndexer.removeAll()
@@ -828,5 +831,37 @@ struct AccountSettingsView: View {
             }
         }
         .navigationTitle("Account")
+    }
+}
+
+/// Settings → Account: "Stay signed in" for password and single sign-on logins (CP-91). It makes or
+/// deletes an API key on the user's account, so the explanation sits right under it.
+private struct StaySignedInSection: View {
+    let session: SessionManager
+    @State private var working = false
+    @State private var failed = false
+
+    var body: some View {
+        Section {
+            Toggle(StaySignedInText.title, isOn: Binding(
+                get: { session.staysSignedIn },
+                set: { on in
+                    working = true
+                    Task {
+                        failed = !(await session.setStaySignedIn(on, keyName: SessionManager.backupKeyName()))
+                        working = false
+                    }
+                }
+            ))
+            .disabled(working)
+        } footer: {
+            VStack(alignment: .leading, spacing: 6) {
+                if failed {
+                    Text("Couldn't make the key. The server may not allow API keys; try again later.").foregroundStyle(.red)
+                }
+                FooterText(session.isUsingBackupKey ? StaySignedInText.usingKey : StaySignedInText.explanation)
+            }
+            .font(.footnote)
+        }
     }
 }

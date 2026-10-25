@@ -19,10 +19,13 @@ public struct SnippetListView: View {
     public var body: some View {
         Group {
             if model.isSelecting {
+                #if os(macOS)
+                // Rows toggle themselves (see `row`): a Mac list's own selection can't (CP-86).
+                List { listContent }
+                #else
                 List(selection: $model.selectedIDs) { listContent }
-                    #if os(iOS)
                     .environment(\.editMode, .constant(.active))
-                    #endif
+                #endif
             } else {
                 List(selection: $selection) { listContent }
             }
@@ -127,8 +130,7 @@ public struct SnippetListView: View {
     }
 
     private func row(_ snippet: Snippet) -> some View {
-        SnippetRow(snippet: snippet, showOwner: model.isReadOnly, search: model.parsedSearch.text, searchCode: model.searchCode,
-                   expiry: settings.expiry(of: snippet, server: model.session.client?.server))
+        rowLabel(snippet)
             .tag(snippet.id)
             .task { await model.loadMoreIfNeeded(current: snippet) }
             .contextMenu { SnippetActions(snippet: snippet, model: model) }
@@ -160,6 +162,33 @@ public struct SnippetListView: View {
                 }
             }
             #endif
+    }
+
+    @ViewBuilder
+    private func rowLabel(_ snippet: Snippet) -> some View {
+        let label = SnippetRow(snippet: snippet, showOwner: model.isReadOnly, search: model.parsedSearch.text,
+                               searchCode: model.searchCode,
+                               expiry: settings.expiry(of: snippet, server: model.session.client?.server))
+        #if os(macOS)
+        if model.isSelecting {
+            // Select mode on the Mac: a circle on each row, and each click adds or removes it (CP-86).
+            let selected = model.selectedIDs.contains(snippet.id)
+            HStack(spacing: 10) {
+                Icon(selected ? .checkCircle : .circle)
+                    .font(.title3)
+                    .foregroundStyle(selected ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+                label
+            }
+            .contentShape(Rectangle())
+            .onTapGesture { model.selectedIDs = SelectModeSelection.toggling(snippet.id, in: model.selectedIDs) }
+            .accessibilityAddTraits(selected ? .isSelected : [])
+            .accessibilityAction { model.selectedIDs = SelectModeSelection.toggling(snippet.id, in: model.selectedIDs) }
+        } else {
+            label
+        }
+        #else
+        label
+        #endif
     }
 }
 

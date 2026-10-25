@@ -1,5 +1,6 @@
 import XCTest
 @testable import ByteCacheFeatures
+import ByteCacheCore
 
 /// CP-82: each Mac window gets its own toolbar id, so AppKit doesn't sync toolbars whose items differ.
 @MainActor
@@ -28,4 +29,15 @@ final class WindowToolbarIDTests: XCTestCase {
         XCTAssertEqual([main.id, snippet.id], ["test-c", "test-d"])
     }
     #endif
+}
+
+/// CP-91: the backup key's name says which device made it.
+@MainActor
+final class BackupKeyNameTests: XCTestCase {
+    func testNameHasPlatformModelAndADate() {
+        let device = DeviceInfo.current
+        let name = SessionManager.backupKeyName(on: Date(timeIntervalSince1970: 1_792_800_000))
+        XCTAssertTrue(name.hasPrefix("ByteCache on \(device.platform) (\(device.model)), "), name)
+        XCTAssertTrue(name.range(of: #", \d{4}-\d{2}-\d{2}$"#, options: .regularExpression) != nil, name)
+    }
 }
