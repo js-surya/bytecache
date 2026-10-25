@@ -15,6 +15,8 @@ public struct Credentials: Codable, Equatable, Identifiable, Sendable {
     /// (ByteStash logins expire, 24 hours by default), so the app stays signed in.
     public var backupKey: String?
     public var backupKeyID: Int?
+    /// The user chose "Stay signed in" for this login: only then is a backup key made (CP-91).
+    public var staySignedIn = false
 
     public init(id: UUID = UUID(), server: ServerURL, token: String? = nil, username: String? = nil, apiKey: String? = nil,
                 name: String? = nil) {
@@ -47,7 +49,7 @@ public struct Credentials: Codable, Equatable, Identifiable, Sendable {
         return copy
     }
 
-    private enum CodingKeys: String, CodingKey { case id, server, token, username, apiKey, name, backupKey, backupKeyID }
+    private enum CodingKeys: String, CodingKey { case id, server, token, username, apiKey, name, backupKey, backupKeyID, staySignedIn }
 
     public init(from decoder: any Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -61,6 +63,7 @@ public struct Credentials: Codable, Equatable, Identifiable, Sendable {
         )
         backupKey = try c.decodeIfPresent(String.self, forKey: .backupKey)
         backupKeyID = try c.decodeIfPresent(Int.self, forKey: .backupKeyID)
+        staySignedIn = try c.decodeIfPresent(Bool.self, forKey: .staySignedIn) ?? false
     }
 }
 

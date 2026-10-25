@@ -24,8 +24,17 @@ public final class SessionManager {
     /// failed can load again.
     public private(set) var backupKeySwitches = 0
     /// Signed in on the backup key after the login expired (CP-91): snippets work, share links and
-    /// account management need a new sign-in.
-    public var isUsingBackupKey: Bool { credentials?.isUsingBackupKey ?? false }
+    /// account management need a new sign-in. Stored (not computed from `credentials`, which isn't
+    /// observed) so screens update when it changes.
+    public private(set) var isUsingBackupKey = false
+    /// The user chose "Stay signed in" for the current login (also known on the sign-in screen).
+    public private(set) var staysSignedIn = false
+    /// "Stay signed in" applies: a password or single sign-on login, or one already on its backup key.
+    /// (A key the user typed in never expires, so it needs no backup.)
+    public var canStaySignedIn: Bool {
+        guard case .signedIn = state, let current = credentials else { return false }
+        return current.token != nil || current.isUsingBackupKey
+    }
     /// Every saved server, in the order they were added.
     public private(set) var accounts: [Credentials] = []
     public var activeAccountID: UUID? { credentials?.id }
@@ -45,7 +54,15 @@ public final class SessionManager {
 
     @ObservationIgnored private let store: any CredentialStore
     @ObservationIgnored private let transport: any HTTPTransport
-    @ObservationIgnored private var credentials: Credentials?
+    @ObservationIgnored private var credentials: Credentials? {
+        didSet {
+            isUsingBackupKey = credentials?.isUsingBackupKey ?? false
+            staysSignedIn = credentials?.staySignedIn ?? false
+        }
+    }
+    /// A backup key is being made: a second request (sign-in and the app's own check at once) would
+    /// make a second key.
+    @ObservationIgnored private var makingBackupKey = false
     @ObservationIgnored private var lastConfig = AuthConfig()
     /// The server's single sign-on, when it offers one (CP-72); read with its auth config.
     public private(set) var sso: SSOConfig?
@@ -148,23 +165,54 @@ public final class SessionManager {
         dropToLogin()
     }
 
-    /// After a password or single sign-on login, makes the backup key that keeps the app signed in
-    /// once the server ends that login (ByteStash logins expire, 24 hours by default). Does nothing
-    /// for API-key logins or when there's a key already. `name` says which device it's for.
-    public func ensureBackupKey(name: String) async {
-        guard case .signedIn = state, let current = credentials, current.token != nil,
-              current.apiKey == nil, current.backupKey == nil,
-              let client = current.makeClient(transport: transport) else { return }
+    /// Turns "Stay signed in" on (makes the backup key) or off (revokes and forgets it). Off while
+    /// the app is already running on the key signs out, since the login itself has expired.
+    /// Returns false when the key couldn't be made.
+    @discardableResult
+    public func setStaySignedIn(_ on: Bool, keyName: String) async -> Bool {
+        guard var current = credentials else { return false }
+        current.staySignedIn = on
+        persist(current)
+        if on { return await ensureBackupKey(name: keyName) }
+        if current.isUsingBackupKey {
+            AppLog.shared.record("session", "stay signed in turned off while using the backup key; signing out")
+            dropToLogin()
+            return true
+        }
+        if let id = current.backupKeyID, current.token != nil, let client = current.makeClient(transport: transport) {
+            try? await client.deleteAPIKey(id: id)
+        }
+        guard var latest = credentials, latest.id == current.id else { return true }
+        latest.backupKey = nil
+        latest.backupKeyID = nil
+        persist(latest)
+        AppLog.shared.record("session", "stay signed in turned off; backup key removed")
+        return true
+    }
+
+    /// When the user chose "Stay signed in", makes the backup key that keeps the app signed in once
+    /// the server ends a password or single sign-on login (ByteStash logins expire, 24 hours by
+    /// default). Does nothing otherwise, or when there's a key already. `name` says which device
+    /// it's for. Returns false when the key couldn't be made.
+    @discardableResult
+    public func ensureBackupKey(name: String) async -> Bool {
+        guard case .signedIn = state, let current = credentials, current.staySignedIn else { return false }
+        guard current.backupKey == nil else { return true }
+        guard current.token != nil, current.apiKey == nil, !makingBackupKey,
+              let client = current.makeClient(transport: transport) else { return false }
+        makingBackupKey = true
+        defer { makingBackupKey = false }
         guard let created = try? await client.createAPIKey(name: name) else {
             AppLog.shared.record("session", "couldn't make a backup key; the login will need renewing when it expires")
-            return
+            return false
         }
         // The account may have changed while the key was being made.
-        guard var latest = credentials, latest.id == current.id else { return }
+        guard var latest = credentials, latest.id == current.id else { return false }
         latest.backupKey = created.key
         latest.backupKeyID = created.info.id
         persist(latest)
         AppLog.shared.record("session", "made a backup key to stay signed in")
+        return true
     }
 
     /// Forgets the current server and shows setup; Cancel there returns to another saved server, if any.

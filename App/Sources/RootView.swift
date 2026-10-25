@@ -113,6 +113,9 @@ struct RootView: View {
                 if case .needsLogin = services.session.state { services.session.changeServer() }
                 try? await services.session.connect(server)
                 try? await services.session.login(username: user, password: password)
+                if env["BC_DEBUG_STAY_SIGNED_IN"] == "1" {
+                    await services.session.setStaySignedIn(true, keyName: SessionManager.backupKeyName())
+                }
             }
             // `-BCCopyToast`: show the "Copied" toast every 3 s (screenshots).
             if ProcessInfo.processInfo.arguments.contains("-BCCopyToast") {

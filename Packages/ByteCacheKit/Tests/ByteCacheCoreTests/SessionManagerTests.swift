@@ -162,7 +162,9 @@ final class SessionManagerTests: XCTestCase {
         try await session.connect("https://x.io")
         try await session.login(username: "demo", password: "demodemo")
 
-        await session.ensureBackupKey(name: "ByteCache on iPhone")
+        let made = await session.setStaySignedIn(true, keyName: "ByteCache on iPhone")
+        XCTAssertTrue(made)
+        XCTAssertTrue(session.staysSignedIn)
         XCTAssertEqual(store.load()?.backupKey, "backup-key")
         XCTAssertEqual(store.load()?.backupKeyID, 7)
         XCTAssertEqual(store.load()?.token, "t", "the login stays in use until it expires")
@@ -170,6 +172,46 @@ final class SessionManagerTests: XCTestCase {
 
         await session.ensureBackupKey(name: "ByteCache on iPhone") // already has one: no request (none stubbed)
         XCTAssertEqual(store.load()?.backupKey, "backup-key")
+    }
+
+    func testNoBackupKeyUnlessTheUserChoseToStaySignedIn() async throws {
+        let store = InMemoryCredentialStore()
+        // No reply stubbed for making a key: a request would fail the test.
+        let session = SessionManager(store: store, transport: StubTransport([ok(authConfig), ok(loginReply)]))
+        try await session.connect("https://x.io")
+        try await session.login(username: "demo", password: "demodemo")
+
+        let made = await session.ensureBackupKey(name: "ByteCache on iPhone")
+        XCTAssertFalse(made)
+        XCTAssertFalse(session.staysSignedIn)
+        XCTAssertNil(store.load()?.backupKey)
+    }
+
+    func testTwoRequestsAtOnceMakeOneKey() async throws {
+        let store = InMemoryCredentialStore()
+        // One key reply only: a second key request would fail the test.
+        let session = SessionManager(store: store, transport: StubTransport([ok(authConfig), ok(loginReply), ok(createdKey)]))
+        try await session.connect("https://x.io")
+        try await session.login(username: "demo", password: "demodemo")
+
+        async let fromSignIn = session.setStaySignedIn(true, keyName: "ByteCache on iPhone")
+        async let fromApp = session.ensureBackupKey(name: "ByteCache on iPhone")
+        _ = await (fromSignIn, fromApp)
+        XCTAssertEqual(store.load()?.backupKey, "backup-key")
+        XCTAssertTrue(session.staysSignedIn)
+    }
+
+    func testTurningStaySignedInOffRevokesTheKey() async throws {
+        let store = InMemoryCredentialStore()
+        let session = SessionManager(store: store, transport: StubTransport([ok(authConfig), ok(loginReply), ok(createdKey), ok("{}")]))
+        try await session.connect("https://x.io")
+        try await session.login(username: "demo", password: "demodemo")
+        await session.setStaySignedIn(true, keyName: "ByteCache on iPhone")
+
+        await session.setStaySignedIn(false, keyName: "ByteCache on iPhone") // DELETE /api/keys/7
+        XCTAssertFalse(session.staysSignedIn)
+        XCTAssertNil(store.load()?.backupKey)
+        guard case .signedIn = session.state else { return XCTFail("\(session.state)") }
     }
 
     func testRestoreWithExpiredLoginUsesTheBackupKey() async {

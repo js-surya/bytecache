@@ -15,3 +15,18 @@ extension SessionManager {
         return "ByteCache on \(DeviceInfo.current.platform), \(formatter.string(from: date))"
     }
 }
+
+/// What "Stay signed in" does, in the same words wherever it can be turned on (CP-91). It makes an
+/// API key on the user's account, so it's only done when they choose it.
+public enum StaySignedInText {
+    public static let title = "Stay Signed In"
+
+    @MainActor
+    public static var explanation: String {
+        "Makes an API key for this device in your ByteStash account (“ByteCache on \(DeviceInfo.current.platform)”). "
+            + "When the server ends your sign-in, after 24 hours by default, ByteCache carries on with that key "
+            + "instead of asking you to sign in again. You'll see it under API Keys; turning this off deletes it."
+    }
+
+    public static let usingKey = "Your sign-in has ended, and ByteCache is using this device's key. Turning this off signs you out."
+}
