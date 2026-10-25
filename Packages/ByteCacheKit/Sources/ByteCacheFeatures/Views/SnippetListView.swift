@@ -19,7 +19,7 @@ public struct SnippetListView: View {
     public var body: some View {
         Group {
             if model.isSelecting {
-                List(selection: $model.selectedIDs) { listContent }
+                List(selection: selectModeSelection) { listContent }
                     #if os(iOS)
                     .environment(\.editMode, .constant(.active))
                     #endif
@@ -123,6 +123,16 @@ public struct SnippetListView: View {
             Section("Snippets") {
                 ForEach(model.otherSection) { row($0) }
             }
+        }
+    }
+
+    /// Select mode's selection; on the Mac a plain click adds or removes a snippet (CP-86).
+    private var selectModeSelection: Binding<Set<Int>> {
+        Binding {
+            model.selectedIDs
+        } set: { new in
+            model.selectedIDs = SelectModeSelection.apply(old: model.selectedIDs, new: new,
+                                                          plainClick: SelectModeSelection.isPlainClick)
         }
     }
 
