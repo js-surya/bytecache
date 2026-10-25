@@ -24,6 +24,9 @@ public final class AccountModel {
         self.session = session
     }
 
+    /// The login expired and the app carries on with this device's backup key (CP-91).
+    public var usesBackupKey: Bool { session.isUsingBackupKey }
+
     public var canManage: Bool {
         guard let client = session.client else { return false }
         return client.apiKey == nil && client.token != nil

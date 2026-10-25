@@ -10,7 +10,9 @@ struct APIKeysView: View {
         SettingsList {
             if !model.canManage {
                 ContentUnavailableView("Password Sign-In Needed", symbol: .keyOff,
-                                       description: Text("ByteStash only lets you manage API keys when you're signed in with a password."))
+                                       description: Text(model.usesBackupKey
+                                           ? "Your sign-in expired, so ByteCache stays signed in with a key for this device. ByteStash only lets you manage API keys after signing in with your password again."
+                                           : "ByteStash only lets you manage API keys when you're signed in with a password."))
             } else {
                 if let created = model.newKey {
                     Section {
@@ -107,7 +109,9 @@ struct ChangePasswordView: View {
         SettingsList {
             if !model.canManage {
                 ContentUnavailableView("Password Sign-In Needed", symbol: .keyOff,
-                                       description: Text("You're signed in with an API key. Sign in with your password to change it."))
+                                       description: Text(model.usesBackupKey
+                                           ? "Your sign-in expired, so ByteCache stays signed in with a key for this device. Sign in with your password again to change it."
+                                           : "You're signed in with an API key. Sign in with your password to change it."))
             } else if !model.allowPasswordChanges {
                 ContentUnavailableView("Turned Off on This Server", symbol: .lockOpen,
                                        description: Text("The ByteStash administrator has disabled password changes."))

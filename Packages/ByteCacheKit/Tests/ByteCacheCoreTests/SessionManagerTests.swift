@@ -143,6 +143,93 @@ final class SessionManagerTests: XCTestCase {
         XCTAssertEqual(kept, server)
         XCTAssertEqual(store.load()?.server, server); XCTAssertEqual(store.load()?.token, nil); XCTAssertEqual(store.load()?.username, "demo")
     }
+
+    // MARK: Staying signed in (CP-91)
+
+    private let invalidToken = #"{"error":"Invalid token"}"#
+    private let createdKey = #"{"id":7,"name":"ByteCache on iPhone","key":"backup-key","isActive":true}"#
+
+    private func withBackupKey() -> Credentials {
+        var credentials = Credentials(server: server, token: "old", username: "demo")
+        credentials.backupKey = "backup-key"
+        credentials.backupKeyID = 7
+        return credentials
+    }
+
+    func testEnsureBackupKeyMakesOneKeyAfterPasswordLogin() async throws {
+        let store = InMemoryCredentialStore()
+        let session = SessionManager(store: store, transport: StubTransport([ok(authConfig), ok(loginReply), ok(createdKey)]))
+        try await session.connect("https://x.io")
+        try await session.login(username: "demo", password: "demodemo")
+
+        await session.ensureBackupKey(name: "ByteCache on iPhone")
+        XCTAssertEqual(store.load()?.backupKey, "backup-key")
+        XCTAssertEqual(store.load()?.backupKeyID, 7)
+        XCTAssertEqual(store.load()?.token, "t", "the login stays in use until it expires")
+        XCTAssertFalse(session.isUsingBackupKey)
+
+        await session.ensureBackupKey(name: "ByteCache on iPhone") // already has one: no request (none stubbed)
+        XCTAssertEqual(store.load()?.backupKey, "backup-key")
+    }
+
+    func testRestoreWithExpiredLoginUsesTheBackupKey() async {
+        let store = InMemoryCredentialStore(withBackupKey())
+        let session = SessionManager(store: store, transport: StubTransport([status(403, invalidToken)]))
+        await session.restore()
+        guard case .signedIn(_, let user) = session.state else { return XCTFail("\(session.state)") }
+        XCTAssertEqual(user.username, "demo", "still shows who's signed in, not \"API key\"")
+        XCTAssertTrue(session.isUsingBackupKey)
+        XCTAssertEqual(session.client?.apiKey, "backup-key")
+        XCTAssertNil(store.load()?.token)
+    }
+
+    func testRejectedLoginSwitchesToBackupKeyThenToSignIn() async {
+        let store = InMemoryCredentialStore(withBackupKey())
+        let verify = ok(#"{"valid":true,"user":{"id":2,"username":"demo"}}"#)
+        let session = SessionManager(store: store, transport: StubTransport([verify, ok(authConfig)]))
+        await session.restore()
+
+        session.handleUnauthorized()
+        guard case .signedIn = session.state else { return XCTFail("\(session.state)") }
+        XCTAssertTrue(session.isUsingBackupKey)
+        XCTAssertEqual(session.backupKeySwitches, 1)
+        XCTAssertFalse(session.sessionExpired)
+
+        // Other requests sent with the old login fail right after the switch: not the key's fault.
+        session.handleUnauthorized()
+        guard case .signedIn = session.state else { return XCTFail("a stale rejection signed out: \(session.state)") }
+
+        session.backupKeyGracePeriod = .zero
+        session.handleUnauthorized() // the backup key is rejected too (revoked): sign in again
+        guard case .needsLogin = session.state else { return XCTFail("\(session.state)") }
+        XCTAssertTrue(session.sessionExpired)
+        XCTAssertNil(store.load()?.backupKey)
+    }
+
+    func testRestoreWithExpiredLoginAndNoBackupKeySaysItExpired() async {
+        let store = InMemoryCredentialStore(Credentials(server: server, token: "old", username: "demo"))
+        let session = SessionManager(store: store, transport: StubTransport([status(403, invalidToken), ok(authConfig)]))
+        await session.restore()
+        guard case .needsLogin = session.state else { return XCTFail("\(session.state)") }
+        XCTAssertTrue(session.sessionExpired)
+    }
+
+    func testRestoreWithA403NotAboutTheLoginStaysSignedIn() async {
+        // A proxy or VPN answering 403 while the network recovers isn't a reason to sign out.
+        let store = InMemoryCredentialStore(Credentials(server: server, token: "t", username: "demo"))
+        let session = SessionManager(store: store, transport: StubTransport([status(403, #"{"error":"Forbidden"}"#)]))
+        await session.restore()
+        guard case .signedIn(_, let user) = session.state else { return XCTFail("\(session.state)") }
+        XCTAssertEqual(user.username, "demo")
+        XCTAssertEqual(store.load()?.token, "t")
+    }
+
+    func testBackupKeyIsSavedAndRead() throws {
+        let credentials = withBackupKey()
+        let decoded = try JSONDecoder().decode(Credentials.self, from: JSONEncoder().encode(credentials))
+        XCTAssertEqual(decoded, credentials)
+        XCTAssertNil(credentials.signedOut.backupKey)
+    }
 }
 
 final class KeychainCredentialStoreTests: XCTestCase {

@@ -52,6 +52,11 @@ struct RootView: View {
             }
         }
         .animation(.default, value: services.session.state)
+        // A key that keeps this device signed in once the server ends the login (CP-91).
+        .task(id: services.session.state) {
+            guard case .signedIn = services.session.state else { return }
+            await services.session.ensureBackupKey(name: SessionManager.backupKeyName())
+        }
         .onOpenURL { url in
             if let link = DeepLink(url: url) { AppNavigator.shared.handle(link) }
         }
@@ -100,6 +105,14 @@ struct RootView: View {
                 if case .needsLogin = services.session.state { services.session.changeServer() }
                 try? await services.session.connect(server)
                 try? await services.session.loginWithAPIKey(key)
+            }
+            // `-BCPasswordLogin` with env BC_DEBUG_SERVER, BC_DEBUG_USER and BC_DEBUG_PASSWORD: sign in with a
+            // password (tests the backup key that keeps the app signed in, CP-91).
+            if ProcessInfo.processInfo.arguments.contains("-BCPasswordLogin"), services.session.client == nil,
+               let server = env["BC_DEBUG_SERVER"], let user = env["BC_DEBUG_USER"], let password = env["BC_DEBUG_PASSWORD"] {
+                if case .needsLogin = services.session.state { services.session.changeServer() }
+                try? await services.session.connect(server)
+                try? await services.session.login(username: user, password: password)
             }
             // `-BCCopyToast`: show the "Copied" toast every 3 s (screenshots).
             if ProcessInfo.processInfo.arguments.contains("-BCCopyToast") {

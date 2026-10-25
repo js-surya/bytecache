@@ -20,6 +20,12 @@ public final class SessionManager {
     }
     /// The server stopped accepting the saved login while the app was open; sign-in says so.
     public private(set) var sessionExpired = false
+    /// Goes up each time the app moves from an expired login to its backup key, so lists that just
+    /// failed can load again.
+    public private(set) var backupKeySwitches = 0
+    /// Signed in on the backup key after the login expired (CP-91): snippets work, share links and
+    /// account management need a new sign-in.
+    public var isUsingBackupKey: Bool { credentials?.isUsingBackupKey ?? false }
     /// Every saved server, in the order they were added.
     public private(set) var accounts: [Credentials] = []
     public var activeAccountID: UUID? { credentials?.id }
@@ -46,6 +52,11 @@ public final class SessionManager {
     @ObservationIgnored private var accountToReturnTo: UUID?
     /// The server typed in on this visit to the server screen, until it's signed in.
     @ObservationIgnored private var typedInID: UUID?
+    /// When the backup key took over. Rejections that arrive shortly after come from requests sent
+    /// with the expired login, not from the key.
+    @ObservationIgnored private var backupKeySince: ContinuousClock.Instant?
+    /// How long after switching to the backup key a rejection is put down to an older request.
+    @ObservationIgnored var backupKeyGracePeriod: Duration = .seconds(15)
 
     /// An MCP client for the current server, using `apiKey` (the key assistants will use).
     public func mcpClient(apiKey: String) -> MCPClient? {
@@ -127,9 +138,33 @@ public final class SessionManager {
         state = .signedIn(server: server, user: Self.apiKeyUser)
     }
 
-    /// Forgets the login but keeps the server, so the login screen is one step away.
+    /// Forgets the login but keeps the server, so the login screen is one step away. The backup key
+    /// is revoked when the login still allows it (keys can only be managed with a password login).
     public func signOut() {
+        if let current = credentials, let id = current.backupKeyID, current.token != nil,
+           let client = current.makeClient(transport: transport) {
+            Task { try? await client.deleteAPIKey(id: id) }
+        }
         dropToLogin()
+    }
+
+    /// After a password or single sign-on login, makes the backup key that keeps the app signed in
+    /// once the server ends that login (ByteStash logins expire, 24 hours by default). Does nothing
+    /// for API-key logins or when there's a key already. `name` says which device it's for.
+    public func ensureBackupKey(name: String) async {
+        guard case .signedIn = state, let current = credentials, current.token != nil,
+              current.apiKey == nil, current.backupKey == nil,
+              let client = current.makeClient(transport: transport) else { return }
+        guard let created = try? await client.createAPIKey(name: name) else {
+            AppLog.shared.record("session", "couldn't make a backup key; the login will need renewing when it expires")
+            return
+        }
+        // The account may have changed while the key was being made.
+        guard var latest = credentials, latest.id == current.id else { return }
+        latest.backupKey = created.key
+        latest.backupKeyID = created.info.id
+        persist(latest)
+        AppLog.shared.record("session", "made a backup key to stay signed in")
     }
 
     /// Forgets the current server and shows setup; Cancel there returns to another saved server, if any.
@@ -160,9 +195,26 @@ public final class SessionManager {
 
     public func handleUnauthorized() {
         guard case .signedIn = state else { return }
+        if switchToBackupKey() { return }
+        if isUsingBackupKey, let since = backupKeySince, ContinuousClock.now - since < backupKeyGracePeriod {
+            AppLog.shared.record("session", "ignored a rejection of a request sent before the switch to the backup key")
+            return
+        }
         AppLog.shared.record("session", "server rejected the login (401 or invalid token); showing sign-in")
         sessionExpired = true
         dropToLogin()
+    }
+
+    /// The login was rejected: carries on with the backup key, if there is one not yet in use.
+    private func switchToBackupKey() -> Bool {
+        guard var current = credentials, let key = current.backupKey, !current.isUsingBackupKey else { return false }
+        current.token = nil
+        current.apiKey = key
+        persist(current)
+        backupKeySince = .now
+        backupKeySwitches += 1
+        AppLog.shared.record("session", "login expired; using the backup key")
+        return true
     }
 
     // MARK: Several servers
@@ -253,6 +305,12 @@ public final class SessionManager {
 
     private static let apiKeyUser = User(id: 0, username: apiKeyUserName)
 
+    /// The user to show for a login: its username, or "API key" for a key the user entered.
+    private static func displayUser(_ credentials: Credentials) -> User {
+        if credentials.apiKey != nil, !credentials.isUsingBackupKey { return apiKeyUser }
+        return User(id: 0, username: credentials.username ?? "")
+    }
+
     private func leaveActiveSynchronously() {
         var list = store.loadAll()
         list.activeID = nil
@@ -283,7 +341,7 @@ public final class SessionManager {
         do {
             if stored.apiKey != nil {
                 _ = try await client.metadata()
-                state = .signedIn(server: stored.server, user: Self.apiKeyUser)
+                state = .signedIn(server: stored.server, user: Self.displayUser(stored))
             } else {
                 let user = try await client.verify()
                 var updated = stored
@@ -291,13 +349,20 @@ public final class SessionManager {
                 persist(updated)
                 state = .signedIn(server: stored.server, user: user)
             }
-        } catch .unauthorized, .forbidden {
+        } catch .unauthorized {
+            // An expired login with a backup key carries on with the key.
+            if stored.backupKey != nil, !stored.isUsingBackupKey {
+                credentials = stored
+                state = .signedIn(server: stored.server, user: User(id: 0, username: stored.username ?? ""))
+                if switchToBackupKey() { return }
+            }
             persist(stored.signedOut)
+            sessionExpired = stored.token != nil
             await showLogin(server: stored.server)
         } catch {
-            // Offline or server trouble: stay signed in so cached snippets remain browsable.
-            let name = stored.apiKey != nil ? Self.apiKeyUserName : stored.username ?? ""
-            state = .signedIn(server: stored.server, user: User(id: 0, username: name))
+            // Offline, server trouble, or a 403 that isn't about the login (a proxy or VPN while the
+            // network recovers): stay signed in so cached snippets remain browsable.
+            state = .signedIn(server: stored.server, user: Self.displayUser(stored))
         }
     }
 

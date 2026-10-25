@@ -110,7 +110,8 @@ public struct LoginView: View {
                     } else if model.creatingAccount {
                         FooterText("Creates an account on this server and signs you in.")
                     } else if model.session.sessionExpired {
-                        Text("Your session expired. Sign in again to continue.").foregroundStyle(.orange)
+                        Text("Your sign-in expired: ByteStash ends sign-ins after a while (24 hours unless the server is set otherwise). Sign in again, and ByteCache will keep you signed in from then on.")
+                            .foregroundStyle(.orange)
                     } else if model.method == .apiKey {
                         FooterText("Create a key in ByteStash under Settings → API Keys. It's kept in the Keychain on this device.")
                     }
