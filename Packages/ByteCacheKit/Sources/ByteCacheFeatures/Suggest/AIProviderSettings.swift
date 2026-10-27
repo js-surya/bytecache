@@ -93,9 +93,9 @@ struct AIProviderSection: View {
     }
 
     private var footer: String {
-        let key = provider.needsKey ? " Your API key is kept in the Keychain on this device; it isn't synced or sent anywhere but \(provider.recipient)." : ""
-        let test = " Test Connection asks \(provider.recipient) for its models; it sends no code."
-        return provider.consentMessage + key + test
+        provider.needsKey
+            ? "Your key stays in this device's Keychain and goes only to \(provider.name). Test Connection sends no code."
+            : "Test Connection sends no code."
     }
 
     private func saveKey() {
