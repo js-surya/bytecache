@@ -9,15 +9,13 @@ public struct MacSettingsView: View {
     @State private var page: MacSettingsPage? = .account
     @Environment(AppSettings.self) private var settings
     @Environment(AppLockModel.self) private var lock
-    @Environment(AINoteStore.self) private var aiNotes: AINoteStore?
 
     public init(session: SessionManager) {
         self.session = session
     }
 
-    /// Smart Suggestions also shows where Apple Intelligence can't run, when there are AI Notes to manage.
     private func shows(_ page: MacSettingsPage) -> Bool {
-        page == .suggestions && (aiNotes?.count ?? 0) > 0 ? true : page.isAvailable(session)
+        page.isAvailable(session)
     }
 
     public var body: some View {
@@ -74,6 +72,7 @@ public struct MacSettingsView: View {
         case .haptics: HapticsSettingsView()
         case .search: MacSearchPage()
         case .suggestions: SuggestionsSettingsView()
+        case .aiNotes: AINotesSettingsView()
         case .appLock: AppLockSettingsView(lock: lock)
         case .privacy: PrivacyInfoView()
         case .iCloud: ICloudSyncSettingsView()
@@ -86,9 +85,10 @@ public struct MacSettingsView: View {
 }
 
 enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
-    case account, apiKeys, password, servers, assistants
+    case account, apiKeys, password, servers
     case appearance, codeTheme, haptics
-    case search, suggestions
+    case search
+    case suggestions, aiNotes, assistants
     case appLock, privacy
     case iCloud, handoff
     case backup
@@ -98,9 +98,10 @@ enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
 
     var section: SettingsSection {
         switch self {
-        case .account, .apiKeys, .password, .servers, .assistants: .account
+        case .account, .apiKeys, .password, .servers: .account
         case .appearance, .codeTheme, .haptics: .lookAndFeel
-        case .search, .suggestions: .snippets
+        case .search: .snippets
+        case .suggestions, .aiNotes, .assistants: .ai
         case .appLock, .privacy: .privacy
         case .iCloud, .handoff, .backup: .sync
         case .reportBug, .about: .support
@@ -119,6 +120,7 @@ enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
         case .haptics: "Haptics"
         case .search: "Search"
         case .suggestions: "Smart Suggestions"
+        case .aiNotes: "AI Notes"
         case .appLock: "App Lock"
         case .privacy: "Privacy"
         case .iCloud: "iCloud Sync"
@@ -142,6 +144,7 @@ enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
         case .haptics: .haptics
         case .search: .search
         case .suggestions: .sparkles
+        case .aiNotes: .document
         case .appLock: lock.biometry.symbol
         case .privacy: .privacy
         case .iCloud: .icloud
@@ -164,6 +167,7 @@ enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
         case .haptics: .red
         case .search: .indigo
         case .suggestions: .pink
+        case .aiNotes: .orange
         case .appLock: .green
         case .privacy: .blue
         case .iCloud: .cyan
@@ -181,9 +185,6 @@ enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
         case .account, .apiKeys, .password, .assistants:
             if case .signedIn = session.state { return true }
             return false
-        case .suggestions:
-            // Macs that can't run Apple Intelligence (Intel) don't show it at all.
-            return !AIAvailability.current.hidesFeatures
         default:
             return true
         }
@@ -205,7 +206,7 @@ private struct MacSearchPage: View {
             Section {
                 Toggle("Search Inside Code", isOn: $settings.searchInCode)
             } footer: {
-                FooterText("When on, searching also matches the code in your snippets, not just titles and descriptions.")
+                InfoFooter("When on, searching also matches the code in your snippets, not just titles and descriptions.")
             }
             Section {
                 Toggle("Show in Menu Bar", isOn: $settings.quickSearchInMenuBar)
@@ -216,7 +217,7 @@ private struct MacSearchPage: View {
             } header: {
                 Text("Quick Search")
             } footer: {
-                FooterText("Find a snippet from anywhere: press the shortcut or click the menu bar icon, type, then choose a snippet with Return. ⌘Return always opens it in ByteCache.")
+                InfoFooter("Find a snippet from anywhere: press the shortcut or click the menu bar icon, type, then choose a snippet with Return. ⌘Return always opens it in ByteCache.")
             }
             Section {
                 Picker("Return", selection: $settings.quickSearchReturnAction) {
@@ -251,7 +252,7 @@ private struct MacSearchPage: View {
             } header: {
                 Text("Menu Bar")
             } footer: {
-                FooterText("Menu Bar Only hides ByteCache from the Dock and the app switcher; open the main window from the menu bar icon. Takes effect right away.")
+                InfoFooter("Menu Bar Only hides ByteCache from the Dock and the app switcher; open the main window from the menu bar icon. Takes effect right away.")
             }
         }
         .navigationTitle("Search")

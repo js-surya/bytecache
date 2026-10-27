@@ -24,6 +24,21 @@ final class CaptureModelTests: XCTestCase {
         try XCTUnwrap(JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as? [String: Any])
     }
 
+    /// CP-93: a cloud provider only gets code when the person taps Suggest.
+    func testOnlyOnDeviceSuggestersRunOnOpen() {
+        struct OnDevice: SnippetSuggester {
+            func suggest(code: String, language: String, knownCategories: [String]) async throws -> SnippetSuggestion {
+                SnippetSuggestion(title: "", description: "", categories: [])
+            }
+        }
+        let remote = RemoteSuggester(client: RemoteAIClient(provider: .openAI, model: "m", keys: MemoryAIKeyStore()))
+        XCTAssertTrue(CaptureModel(text: "x", client: nil, detector: detector, suggester: OnDevice()).suggestsOnOpen)
+        let cloud = CaptureModel(text: "x", client: nil, detector: detector, suggester: remote)
+        XCTAssertTrue(cloud.canSuggest)
+        XCTAssertFalse(cloud.suggestsOnOpen)
+        XCTAssertFalse(CaptureModel(text: "x", client: nil, detector: detector).suggestsOnOpen)
+    }
+
     func testPreselectsDetectedLanguageWithCandidates() {
         let model = CaptureModel(text: "print('hi')", client: nil, detector: detector)
         XCTAssertEqual(model.language, "python")

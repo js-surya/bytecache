@@ -25,13 +25,8 @@ extension SnippetSuggesters {
 @available(iOS 26.0, macOS 26.0, *)
 struct AppleIntelligenceExplainer: SnippetExplainer {
     func explain(code: String, language: String, title: String) async throws -> String {
-        let session = LanguageModelSession(instructions: """
-        Explain code snippets to a developer in plain language. Start with one sentence on what it does, \
-        then a short bullet list of the key steps or flags. Mention anything risky (deleting data, sudo, \
-        network calls, secrets). Use Markdown. Keep it under 150 words.
-        """)
-        let prompt = "Title: \(title)\nLanguage: \(language)\nCode:\n\(code)"
-        return try await session.respond(to: prompt).content
+        let session = LanguageModelSession(instructions: AIPrompts.explainInstructions)
+        return try await session.respond(to: AIPrompts.explainPrompt(code: code, language: language, title: title)).content
     }
 }
 #endif
@@ -43,9 +38,12 @@ public final class ExplainModel {
     public static let maxCharacters = 6_000
     public private(set) var state = State.idle
     private let explainer: any SnippetExplainer
+    /// Who writes the explanation (named in messages).
+    public let provider: AIProvider
 
-    public init(explainer: any SnippetExplainer) {
+    public init(explainer: any SnippetExplainer, provider: AIProvider = .appleIntelligence) {
         self.explainer = explainer
+        self.provider = provider
     }
 
     static func prepared(_ code: String) -> String { String(code.prefix(maxCharacters)) }
@@ -54,8 +52,10 @@ public final class ExplainModel {
         state = .loading
         do {
             state = .done(try await explainer.explain(code: Self.prepared(code), language: language, title: title))
+        } catch let error as RemoteAIError {
+            state = .failed(error.localizedDescription)
         } catch {
-            state = .failed("Apple Intelligence couldn't explain this snippet right now. Try again in a moment.")
+            state = .failed("\(provider.name) couldn't explain this snippet right now. Try again in a moment.")
         }
     }
 }
@@ -75,7 +75,9 @@ struct ExplainSheet: View {
                 ProgressView("Thinking…").frame(maxWidth: .infinity).padding(.top, 60)
             case .done(let text):
                 MarkdownView(text)
-                Text("Generated on this device by Apple Intelligence. It can be wrong — check before running code. Kept as an AI Note under the code.")
+                Text(model.provider.isOnDevice
+                     ? "Generated on this device by Apple Intelligence. It can be wrong — check before running code. Kept as an AI Note under the code."
+                     : "Written by \(model.provider.name) with your API key. It can be wrong — check before running code. Kept as an AI Note under the code.")
                     .font(.footnote).foregroundStyle(.secondary).padding(.horizontal, 14)
             case .failed(let message):
                 ContentUnavailableView("No Explanation", symbol: .warning, description: Text(message))

@@ -102,6 +102,18 @@ public final class AppSettings {
     public var iCloudSyncEnabled: Bool { didSet { defaults.set(iCloudSyncEnabled, forKey: Key.iCloudSync) } }
     public var handoffEnabled: Bool { didSet { defaults.set(handoffEnabled, forKey: Key.handoff) } }
     public var suggestionsEnabled: Bool { didSet { defaults.set(suggestionsEnabled, forKey: Key.suggestions) } }
+    /// Device-only: who writes suggestions and explanations (CP-93). Anything but Apple Intelligence is
+    /// chosen only after the person agrees to send code there.
+    public var aiProvider: AIProvider { didSet { defaults.set(aiProvider.rawValue, forKey: Key.aiProvider) } }
+    /// Device-only: the model picked for each provider (provider raw value → model id).
+    public var aiModels: [String: String] { didSet { defaults.set(aiModels, forKey: Key.aiModels) } }
+    /// Device-only: the address of an Ollama or other local server.
+    public var aiServerAddress: String { didSet { defaults.set(aiServerAddress, forKey: Key.aiServerAddress) } }
+    /// Providers with a key saved in the Keychain, so views needn't read the Keychain to know.
+    public private(set) var aiKeysSaved: Set<AIProvider> {
+        didSet { defaults.set(aiKeysSaved.map(\.rawValue).sorted(), forKey: Key.aiKeysSaved) }
+    }
+    @ObservationIgnored public let aiKeys: any AIKeyStore
     /// Device-only: how many AI Notes to keep (the oldest go first).
     public var aiNotesLimit: Int { didSet { defaults.set(aiNotesLimit, forKey: Key.aiNotesLimit) } }
     /// Device-only: phones differ, so haptics aren't synced.
@@ -142,11 +154,13 @@ public final class AppSettings {
         static let snippetExpiries = "snippetExpiries"
         static let aiNotesLimit = "aiNotesLimit"
         static let iCloudSync = "iCloudSyncEnabled", handoff = "handoffEnabled", suggestions = "suggestionsEnabled"
+        static let aiProvider = "aiProvider", aiModels = "aiModels", aiServerAddress = "aiServerAddress", aiKeysSaved = "aiKeysSaved"
         static let haptics = "hapticsEnabled", hapticStrength = "hapticStrength"
     }
 
-    public init(defaults: UserDefaults = AppEnvironment.sharedDefaults) {
+    public init(defaults: UserDefaults = AppEnvironment.sharedDefaults, aiKeys: any AIKeyStore = KeychainAIKeyStore()) {
         self.defaults = defaults
+        self.aiKeys = aiKeys
         appearance = defaults.string(forKey: Key.appearance).flatMap(AppAppearance.init) ?? .system
         accent = defaults.string(forKey: Key.accent).flatMap(AccentChoice.init) ?? .blue
         languageIconStyle = defaults.string(forKey: Key.languageIconStyle).flatMap(LanguageIconStyle.init) ?? .color
@@ -171,15 +185,64 @@ public final class AppSettings {
         iCloudSyncEnabled = defaults.object(forKey: Key.iCloudSync) as? Bool ?? true
         handoffEnabled = defaults.object(forKey: Key.handoff) as? Bool ?? true
         suggestionsEnabled = defaults.object(forKey: Key.suggestions) as? Bool ?? true
+        aiProvider = defaults.string(forKey: Key.aiProvider).flatMap(AIProvider.init) ?? .appleIntelligence
+        aiModels = defaults.dictionary(forKey: Key.aiModels) as? [String: String] ?? [:]
+        aiServerAddress = defaults.string(forKey: Key.aiServerAddress) ?? AIProvider.defaultLocalServer
+        aiKeysSaved = Set((defaults.stringArray(forKey: Key.aiKeysSaved) ?? []).compactMap(AIProvider.init))
         aiNotesLimit = (defaults.object(forKey: Key.aiNotesLimit) as? Int).flatMap { AINoteStore.limits.contains($0) ? $0 : nil } ?? 50
         hapticsEnabled = defaults.object(forKey: Key.haptics) as? Bool ?? true
         hapticStrength = defaults.string(forKey: Key.hapticStrength).flatMap(HapticStrength.init) ?? .medium
         Haptics.configure(enabled: hapticsEnabled, strength: hapticStrength)
     }
 
-    /// The on-device suggester when available and switched on.
+    /// The chosen provider's suggester when it's ready and Smart Suggestions are switched on.
     public var suggester: (any SnippetSuggester)? {
-        suggestionsEnabled ? SnippetSuggesters.onDevice() : nil
+        guard suggestionsEnabled else { return nil }
+        if aiProvider.isOnDevice { return SnippetSuggesters.onDevice() }
+        return remoteAIClient().map(RemoteSuggester.init)
+    }
+
+    /// The chosen provider's explainer, like `suggester`.
+    public var explainer: (any SnippetExplainer)? {
+        guard suggestionsEnabled else { return nil }
+        if aiProvider.isOnDevice { return SnippetSuggesters.explainer() }
+        return remoteAIClient().map(RemoteExplainer.init)
+    }
+
+    /// Whether the chosen provider can be used: Apple Intelligence is available, or the person's own
+    /// provider has its key (when it needs one) and a model.
+    public var aiIsReady: Bool {
+        if aiProvider.isOnDevice { return AIAvailability.current == .available }
+        return remoteAIClient() != nil
+    }
+
+    public func aiModel(for provider: AIProvider) -> String {
+        aiModels[provider.rawValue] ?? provider.defaultModel
+    }
+
+    public func setAIModel(_ model: String, for provider: AIProvider) {
+        aiModels[provider.rawValue] = model.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// Saves (or, when empty, removes) the key for a provider.
+    public func setAIKey(_ key: String, for provider: AIProvider) {
+        let key = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        if key.isEmpty {
+            aiKeys.removeKey(for: provider)
+            aiKeysSaved.remove(provider)
+        } else {
+            aiKeys.setKey(key, for: provider)
+            aiKeysSaved.insert(provider)
+        }
+    }
+
+    /// A client for a provider with the saved settings, or nil when it's missing its key or model.
+    public func remoteAIClient(for provider: AIProvider? = nil, transport: any HTTPTransport = URLSession.shared) -> RemoteAIClient? {
+        let provider = provider ?? aiProvider
+        guard !provider.isOnDevice, !aiModel(for: provider).isEmpty,
+              !provider.needsKey || aiKeysSaved.contains(provider) else { return nil }
+        return RemoteAIClient(provider: provider, model: aiModel(for: provider), serverAddress: aiServerAddress,
+                              keys: aiKeys, transport: transport)
     }
 
     /// The preferences shared through iCloud.

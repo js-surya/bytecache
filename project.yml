@@ -11,7 +11,7 @@ configFiles:
 settings:
   base:
     MARKETING_VERSION: "1.3.0"
-    CURRENT_PROJECT_VERSION: "11"
+    CURRENT_PROJECT_VERSION: "12"
     SWIFT_VERSION: "6.0"
     BC_APP_GROUP_ID: group.me.suryajs.bytecache
     BC_APP_GROUP_ID[sdk=macosx*]: $(TeamIdentifierPrefix)me.suryajs.bytecache
