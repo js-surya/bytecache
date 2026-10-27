@@ -3,7 +3,7 @@
 **Name:** ByteCache
 **Subtitle:** Save code from anywhere
 **Category:** Developer Tools
-**Platforms:** iOS / iPadOS 17+, macOS 14+ (one App Store record, universal purchase)
+**Platforms:** iOS / iPadOS 18+, macOS 15+ (one App Store record, universal purchase)
 **Bundle ID:** `me.suryajs.bytecache` · **SKU:** `bytecache`
 **Export compliance:** `ITSAppUsesNonExemptEncryption = NO` in Info.plist (HTTPS only, exempt)
 

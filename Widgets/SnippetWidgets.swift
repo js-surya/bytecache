@@ -249,7 +249,6 @@ struct RecentSnippetsWidget: Widget {
 }
 
 #if os(iOS)
-@available(iOS 18.0, *)
 struct SaveClipboardControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: "me.suryajs.bytecache.saveClipboard") {
@@ -264,7 +263,6 @@ struct SaveClipboardControl: ControlWidget {
 #endif
 
 #if os(iOS)
-@available(iOS 18.0, *)
 struct ScanCodeControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: "me.suryajs.bytecache.scanCode") {
@@ -350,10 +348,8 @@ struct ByteCacheWidgets: WidgetBundle {
         PinnedSnippetsWidget()
         RecentSnippetsWidget()
         #if os(iOS)
-        if #available(iOS 18.0, *) {
-            SaveClipboardControl()
-            ScanCodeControl()
-        }
+        SaveClipboardControl()
+        ScanCodeControl()
         #endif
     }
 }

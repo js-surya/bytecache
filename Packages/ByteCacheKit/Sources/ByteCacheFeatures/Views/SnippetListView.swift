@@ -238,19 +238,15 @@ public struct SnippetActions: View {
     }
 }
 
-/// `searchFocused` needs iOS 18 / macOS 15; on older systems ⌘F is a no-op.
+/// ⌘F focuses the search field.
 private struct SearchFocus: ViewModifier {
     let request: Int
     @FocusState private var focused: Bool
 
     func body(content: Content) -> some View {
-        if #available(iOS 18, macOS 15, *) {
-            content
-                .searchFocused($focused)
-                .onChange(of: request) { focused = true }
-        } else {
-            content
-        }
+        content
+            .searchFocused($focused)
+            .onChange(of: request) { focused = true }
     }
 }
 
