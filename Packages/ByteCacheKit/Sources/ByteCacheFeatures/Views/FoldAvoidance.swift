@@ -21,8 +21,7 @@ struct FoldAvoidingCenter: ViewModifier {
 
     private static func area(in proxy: GeometryProxy) -> CGRect {
         let bounds = CGRect(origin: .zero, size: proxy.size)
-        // Reserved regions need the Xcode 27.1 SDK (Swift 6.4); Xcode 26 builds centre plainly.
-        #if os(iOS) && compiler(>=6.4)
+        #if os(iOS)
         guard #available(iOS 27.1, *) else { return bounds }
         let folds = proxy.reservedRegions(kind: .division).filter { $0.isActive }.map { $0.frame }
         return largestPart(of: bounds, avoiding: folds)

@@ -12,7 +12,7 @@ cat <<'NOTES'
 ## Install
 Get ByteCache for iPhone, iPad and Mac from the **[TestFlight beta](https://testflight.apple.com/join/rpmeVJW6)**: open the link on your device and follow the steps.
 
-Requires iOS / iPadOS 17 or macOS 14 or later, and a [ByteStash](https://github.com/jordan-dalby/ByteStash) server (or the public demo).
+Requires iOS / iPadOS 18 or macOS 15 or later, and a [ByteStash](https://github.com/jordan-dalby/ByteStash) server (or the public demo).
 NOTES
 
 # Features land on develop, so pull-request-based notes would miss them: read the commit log.
