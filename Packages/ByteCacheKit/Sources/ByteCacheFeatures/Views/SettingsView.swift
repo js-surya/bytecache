@@ -20,6 +20,9 @@ enum SettingsSection: CaseIterable {
 /// Settings in the style of the iOS Settings app: grouped rows with coloured icons.
 public struct SettingsView: View {
     let session: SessionManager
+    #if os(iOS)
+    @AppStorage(ScanTip.seenKey) private var scanTipSeen = false
+    #endif
     @Environment(AINoteStore.self) private var aiNotes: AINoteStore?
     @Environment(AppSettings.self) private var settings
     @Environment(AppLockModel.self) private var lock
@@ -83,6 +86,12 @@ public struct SettingsView: View {
                 Toggle(isOn: Binding(get: { settings.searchInCode }, set: { settings.searchInCode = $0 })) {
                     SettingsLabel(title: "Search Inside Code", symbol: .search, color: .indigo)
                 }
+                #if os(iOS)
+                // The scanner's hint shows once; this brings it back (CP-84).
+                Toggle(isOn: Binding(get: { !scanTipSeen }, set: { scanTipSeen = !$0 })) {
+                    SettingsLabel(title: "Show Scan Tip", symbol: .scan, color: .teal)
+                }
+                #endif
                 // Devices that can't run Apple Intelligence don't show it, unless notes from another device
                 // are here to manage.
                 if !AIAvailability.current.hidesFeatures || (aiNotes?.count ?? 0) > 0 {
@@ -96,7 +105,11 @@ public struct SettingsView: View {
             } header: {
                 Text(SettingsSection.snippets.title)
             } footer: {
+                #if os(iOS)
+                FooterText("Search Inside Code also matches the code itself, not just titles and descriptions. Show Scan Tip shows the scanner's tip again the next time you scan.")
+                #else
                 FooterText("Search Inside Code also matches the code itself, not just titles and descriptions.")
+                #endif
             }
 
             Section {

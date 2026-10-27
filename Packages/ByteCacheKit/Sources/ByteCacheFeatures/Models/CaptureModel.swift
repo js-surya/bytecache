@@ -22,6 +22,8 @@ public final class CaptureModel {
     public private(set) var didQueue = false
 
     public let fileName: String?
+    /// The code was read from a picture (Scan): the review screen reminds to check brackets (CP-84).
+    public var readFromImage = false
     public let sourceURL: URL?
     public var signedOut: Bool { client == nil }
 
