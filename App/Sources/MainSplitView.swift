@@ -16,6 +16,8 @@ struct MainSplitView: View {
     @State private var clipboard = ClipboardWatcher()
     @State private var clipboardEmpty = false
     @State private var scanning = false
+    /// "Choose Photo" from the Scan button's menu (CP-84).
+    @State private var scanningPhoto = false
     @State private var history = NavigationHistory(start: .all)
     @State private var toolbarID = WindowToolbarID(base: "main")
     /// Going Back/Forward into another section: the snippet to open once that section is loaded.
@@ -116,7 +118,7 @@ struct MainSplitView: View {
             AppNavigator.shared.pendingScan = false
             scanning = true
         }
-        .scanCodeFlow(isPresented: $scanning) { startCapture($0) }
+        .scanCodeFlow(isPresented: $scanning, choosingPhoto: $scanningPhoto) { startCapture($0, fromImage: true) }
         .alert("Nothing to Save", isPresented: $clipboardEmpty) {
             Button("OK", role: .cancel) {}
         } message: {
@@ -199,7 +201,7 @@ struct MainSplitView: View {
         if #available(iOS 26.1, *), horizontalSizeClass == .compact {
             PhoneTabsView(services: services, all: list, sidebar: sidebar, clipboard: clipboard,
                           allSelection: $selectedSnippet,
-                          onNew: { startEditing(nil) }, onScan: { scanning = true },
+                          onNew: { startEditing(nil) }, onScan: { scanning = true }, onScanPhoto: { scanningPhoto = true },
                           onEdit: { startEditing($0) }, onCapture: { startCapture($0) })
         } else {
             splitView
@@ -246,6 +248,7 @@ struct MainSplitView: View {
                     }
                     ToolbarItem(id: "scan", placement: .primaryAction) {
                         Button { scanning = true } label: { Label("Scan Code", symbol: .scan) }
+                            .scanButtonMenu(camera: { scanning = true }, photo: { scanningPhoto = true })
                             .toolbarIcon()
                     }
                 }
@@ -323,13 +326,15 @@ struct MainSplitView: View {
         selectedSnippet = entry.snippet
     }
 
-    private func startCapture(_ text: String) {
+    private func startCapture(_ text: String, fromImage: Bool = false) {
         let session = services.session
-        capture = CaptureModel(text: text, client: session.client, detector: services.detector,
-                               suggester: services.settings.suggester, knownCategories: sidebar.categories,
-                               queue: .shared) {
+        let model = CaptureModel(text: text, client: session.client, detector: services.detector,
+                                 suggester: services.settings.suggester, knownCategories: sidebar.categories,
+                                 queue: .shared) {
             session.handleUnauthorized()
         }
+        model.readFromImage = fromImage
+        capture = model
     }
 
     private func startEditing(_ snippet: Snippet?) {

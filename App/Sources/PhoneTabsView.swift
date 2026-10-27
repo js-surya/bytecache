@@ -15,6 +15,7 @@ struct PhoneTabsView: View {
     let clipboard: ClipboardWatcher
     let onNew: () -> Void
     let onScan: () -> Void
+    let onScanPhoto: () -> Void
     let onEdit: (Snippet) -> Void
     let onCapture: (String) -> Void
 
@@ -49,7 +50,7 @@ struct PhoneTabsView: View {
 
     init(services: AppServices, all: SnippetListModel, sidebar: SidebarModel, clipboard: ClipboardWatcher,
          allSelection: Binding<Snippet.ID?>, onNew: @escaping () -> Void, onScan: @escaping () -> Void,
-         onEdit: @escaping (Snippet) -> Void, onCapture: @escaping (String) -> Void) {
+         onScanPhoto: @escaping () -> Void, onEdit: @escaping (Snippet) -> Void, onCapture: @escaping (String) -> Void) {
         self.services = services
         self.all = all
         self.sidebar = sidebar
@@ -57,6 +58,7 @@ struct PhoneTabsView: View {
         _allSelection = allSelection
         self.onNew = onNew
         self.onScan = onScan
+        self.onScanPhoto = onScanPhoto
         self.onEdit = onEdit
         self.onCapture = onCapture
         func model(_ item: SidebarItem) -> SnippetListModel {
@@ -205,6 +207,7 @@ struct PhoneTabsView: View {
             .toolbar(overflowPriority: .high) {
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button(action: onScan) { Label("Scan Code", symbol: .scan) }
+                        .scanButtonMenu(camera: onScan, photo: onScanPhoto)
                         .toolbarIcon()
                     Button(action: onNew) { Label("New Snippet", symbol: .newSnippet) }
                         .primaryToolbarAction()
