@@ -41,6 +41,11 @@ public struct CaptureSheet: View {
                     .onChange(of: model.text) { model.textChanged() }
                 if !model.text.contains(where: { !$0.isWhitespace }) {
                     Text(emptyHint).font(.footnote).foregroundStyle(.secondary)
+                } else if model.readFromImage {
+                    // Where it matters: next to the text that was read (CP-84).
+                    Label("Read from a picture: check brackets and indentation before saving.", symbol: .warning)
+                        .font(.footnote)
+                        .foregroundStyle(.orange)
                 }
             }
             Section {
@@ -73,7 +78,7 @@ public struct CaptureSheet: View {
         }
         .formStyle(.grouped)
         .navigationTitle("Save to ByteCache")
-        .task { if model.canSuggest { await model.suggest() } }
+        .task { if model.suggestsOnOpen { await model.suggest() } }
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

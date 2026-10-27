@@ -3,13 +3,14 @@ import SwiftUI
 
 /// The groups on the Settings screen, in order.
 enum SettingsSection: CaseIterable {
-    case account, lookAndFeel, snippets, privacy, sync, support
+    case account, lookAndFeel, snippets, ai, privacy, sync, support
 
     var title: String {
         switch self {
         case .account: "Account"
         case .lookAndFeel: "Look & Feel"
         case .snippets: "Snippets"
+        case .ai: "AI"
         case .privacy: "Privacy & Security"
         case .sync: "Sync & Backup"
         case .support: "Support"
@@ -20,6 +21,9 @@ enum SettingsSection: CaseIterable {
 /// Settings in the style of the iOS Settings app: grouped rows with coloured icons.
 public struct SettingsView: View {
     let session: SessionManager
+    #if os(iOS)
+    @AppStorage(ScanTip.seenKey) private var scanTipSeen = false
+    #endif
     @Environment(AINoteStore.self) private var aiNotes: AINoteStore?
     @Environment(AppSettings.self) private var settings
     @Environment(AppLockModel.self) private var lock
@@ -46,13 +50,6 @@ public struct SettingsView: View {
                 } label: {
                     SettingsLabel(title: "Servers", symbol: .server, color: .green,
                                   value: session.accounts.count > 1 ? "\(session.accounts.count)" : nil)
-                }
-                if case .signedIn = session.state {
-                    NavigationLink {
-                        MCPSettingsView(model: MCPSettingsModel(session: session))
-                    } label: {
-                        SettingsLabel(title: "AI Assistants", symbol: .assistant, color: .indigo)
-                    }
                 }
             }
 
@@ -83,20 +80,46 @@ public struct SettingsView: View {
                 Toggle(isOn: Binding(get: { settings.searchInCode }, set: { settings.searchInCode = $0 })) {
                     SettingsLabel(title: "Search Inside Code", symbol: .search, color: .indigo)
                 }
-                // Devices that can't run Apple Intelligence don't show it, unless notes from another device
-                // are here to manage.
-                if !AIAvailability.current.hidesFeatures || (aiNotes?.count ?? 0) > 0 {
-                    NavigationLink {
-                        SuggestionsSettingsView()
-                    } label: {
-                        SettingsLabel(title: "Smart Suggestions", symbol: .sparkles, color: .pink,
-                                      value: settings.suggestionsEnabled && AIAvailability.current == .available ? "On" : "Off")
-                    }
+                #if os(iOS)
+                // The scanner's hint shows once; this brings it back (CP-84).
+                Toggle(isOn: Binding(get: { !scanTipSeen }, set: { scanTipSeen = !$0 })) {
+                    SettingsLabel(title: "Show Scan Tip", symbol: .scan, color: .teal)
                 }
+                #endif
             } header: {
                 Text(SettingsSection.snippets.title)
             } footer: {
-                FooterText("Search Inside Code also matches the code itself, not just titles and descriptions.")
+                #if os(iOS)
+                InfoFooter("Search Inside Code also matches the code itself, not just titles and descriptions. Show Scan Tip shows the scanner's tip again the next time you scan.")
+                #else
+                InfoFooter("Search Inside Code also matches the code itself, not just titles and descriptions.")
+                #endif
+            }
+
+            Section {
+                // Shown everywhere: devices without Apple Intelligence can use their own API key (CP-93).
+                NavigationLink {
+                    SuggestionsSettingsView()
+                } label: {
+                    SettingsLabel(title: "Smart Suggestions", symbol: .sparkles, color: .pink, value: settings.suggestionsSummary)
+                }
+                if let aiNotes {
+                    NavigationLink {
+                        AINotesSettingsView()
+                    } label: {
+                        SettingsLabel(title: "AI Notes", symbol: .document, color: .orange,
+                                      value: aiNotes.count == 0 ? nil : "\(aiNotes.count)")
+                    }
+                }
+                if case .signedIn = session.state {
+                    NavigationLink {
+                        MCPSettingsView(model: MCPSettingsModel(session: session))
+                    } label: {
+                        SettingsLabel(title: "AI Assistants", symbol: .assistant, color: .indigo)
+                    }
+                }
+            } header: {
+                Text(SettingsSection.ai.title)
             }
 
             Section {
@@ -219,9 +242,9 @@ struct HapticsSettingsView: View {
                 }
             } footer: {
                 #if os(macOS)
-                FooterText("Gentle taps when you scan code, when a scan works or fails, and when you change a setting. On Mac you feel them on a Force Touch trackpad.")
+                InfoFooter("Gentle taps when you scan code, when a scan works or fails, and when you change a setting. On Mac you feel them on a Force Touch trackpad.")
                 #else
-                FooterText("Gentle taps when you scan code, when a scan works or fails, and when you change a setting. Changing the strength plays a sample.")
+                InfoFooter("Gentle taps when you scan code, when a scan works or fails, and when you change a setting. Changing the strength plays a sample.")
                 #endif
             }
         }
@@ -292,9 +315,9 @@ struct AppearanceSettingsView: View {
                         Text(error).foregroundStyle(.red)
                     } else {
                         #if os(macOS)
-                        FooterText("Shown in the Dock while ByteCache is open. Finder and Launchpad keep the default icon.")
+                        InfoFooter("Shown in the Dock while ByteCache is open. Finder and Launchpad keep the default icon.")
                         #else
-                        FooterText("Each icon has its own look for the Home Screen's Dark, Tinted and Clear styles.")
+                        InfoFooter("Each icon has its own look for the Home Screen's Dark, Tinted and Clear styles.")
                         #endif
                     }
                 }
@@ -323,7 +346,7 @@ struct AppearanceSettingsView: View {
             } header: {
                 Text("Language Icons")
             } footer: {
-                FooterText("Shown next to languages in the sidebar, snippet lists, files and the language picker. Logos from Devicon; where a logo is black or missing, Colour uses the language's colour from GitHub Linguist. Trademarks belong to their owners.")
+                InfoFooter("Shown next to languages in the sidebar, snippet lists, files and the language picker. Logos from Devicon; where a logo is black or missing, Colour uses the language's colour from GitHub Linguist. Trademarks belong to their owners.")
             }
             Section("Accent Color") {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 14) {
@@ -452,6 +475,7 @@ struct PrivacyInfoView: View {
                 Label("Language detection runs on this device.", symbol: .cpu)
                 Label("Bug reports leave the device only when you send one, after you've seen what's in it.", symbol: .bug)
                 Label("After an update, What's New loads that version's notes from GitHub.", symbol: .download)
+                Label("Smart Suggestions use Apple Intelligence on this device. If you choose your own AI provider instead, code you ask about goes straight to it, with your key.", symbol: .sparkles)
                 Label("AI Notes stay on your devices and in your iCloud, never on your server.", symbol: .sparkles)
             } footer: {
                 FooterText(AboutText.privacy)
@@ -480,7 +504,7 @@ struct AboutView: View {
                 Section {
                     LabeledContent("Widgets", value: WidgetSnapshotStore().sharing)
                 } footer: {
-                    FooterText("How widgets get your snippets on this install.")
+                    InfoFooter("How widgets get your snippets on this install.")
                 }
             }
             #endif
@@ -649,7 +673,7 @@ struct ICloudSyncSettingsView: View {
             } header: {
                 Text("Stays on this device")
             } footer: {
-                FooterText("Servers added on another device appear here signed out — sign in once on each device. Removing a server removes it from all your devices.")
+                InfoFooter("Servers added on another device appear here signed out — sign in once on each device. Removing a server removes it from all your devices.")
             }
         }
         .navigationTitle("iCloud Sync")
@@ -665,7 +689,7 @@ struct HandoffSettingsView: View {
             Section {
                 Toggle("Handoff", isOn: $settings.handoffEnabled)
             } footer: {
-                FooterText("Pick up the snippet you're viewing on your other iPhone, iPad or Mac. Your devices need the same Apple Account, with Bluetooth and Wi-Fi on. Devices without ByteCache open the snippet in the ByteStash web app. Handoff also needs to be on in the system settings (General → AirPlay & Continuity on iPhone and iPad, General → AirDrop & Handoff on Mac).")
+                InfoFooter("Pick up the snippet you're viewing on your other iPhone, iPad or Mac. Your devices need the same Apple Account, with Bluetooth and Wi-Fi on. Devices without ByteCache open the snippet in the ByteStash web app. Handoff also needs to be on in the system settings (General → AirPlay & Continuity on iPhone and iPad, General → AirDrop & Handoff on Mac).")
             }
         }
         .navigationTitle("Handoff")
@@ -674,32 +698,90 @@ struct HandoffSettingsView: View {
 
 struct SuggestionsSettingsView: View {
     @Environment(AppSettings.self) private var settings
-    @Environment(AINoteStore.self) private var aiNotes: AINoteStore?
-    @State private var confirmingClear = false
     @Environment(\.scenePhase) private var scenePhase
     /// Read again on returning to the app: turning Apple Intelligence on, or its download finishing,
     /// happens outside ByteCache.
     @State private var availability = AIAvailability.current
+    /// A provider that sends code elsewhere, waiting for the person to agree.
+    @State private var askingAbout: AIProvider?
+
+    private var isReady: Bool {
+        settings.aiProvider.isOnDevice ? availability == .available : settings.aiIsReady
+    }
+
+    var body: some View {
+        SettingsList {
+            Section {
+                // Shown off while the provider can't be used; the choice itself is kept for later.
+                Toggle("Smart Suggestions", isOn: Binding(
+                    get: { settings.suggestionsEnabled && isReady },
+                    set: { settings.suggestionsEnabled = $0 }
+                ))
+                .disabled(!isReady)
+            } footer: {
+                InfoFooter("Suggest fills an empty title, description and categories when you save code, and Explain describes what a snippet does. What you type always wins.")
+            }
+
+            Section {
+                Picker("Provider", selection: Binding(
+                    get: { settings.aiProvider },
+                    set: { provider in
+                        if provider.isOnDevice { settings.aiProvider = provider } else { askingAbout = provider }
+                    }
+                )) {
+                    Text("Apple Intelligence").tag(AIProvider.appleIntelligence)
+                    Section("Your Own API Key") {
+                        ForEach(AIProvider.allCases.filter { !$0.isOnDevice }) { Text($0.name).tag($0) }
+                    }
+                }
+            } footer: {
+                VStack(alignment: .leading, spacing: 6) {
+                    if settings.aiProvider.isOnDevice {
+                        if let why = availability.explanation {
+                            Label(availability.hidesFeatures
+                                  ? "Apple Intelligence isn't available on this device. Choose a provider with your own API key instead."
+                                  : why, symbol: .warning)
+                                .foregroundStyle(.orange)
+                        } else {
+                            InfoFooter("Runs on this device. Your code never leaves it.")
+                        }
+                    } else {
+                        FooterText("Code is sent to \(settings.aiProvider.recipient) only when you tap Suggest or Explain.")
+                    }
+                }
+            }
+
+            if !settings.aiProvider.isOnDevice {
+                AIProviderSection(provider: settings.aiProvider)
+            }
+        }
+        .navigationTitle("Smart Suggestions")
+        .alert(askingAbout?.consentTitle ?? "",
+               isPresented: Binding(get: { askingAbout != nil }, set: { if !$0 { askingAbout = nil } }),
+               presenting: askingAbout) { provider in
+            Button("Use \(provider.name)") {
+                settings.aiProvider = provider
+                settings.suggestionsEnabled = true
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: { provider in
+            Text(provider.consentMessage)
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { availability = AIAvailability.current }
+        }
+    }
+}
+
+/// Explain's saved answers.
+struct AINotesSettingsView: View {
+    @Environment(AppSettings.self) private var settings
+    @Environment(AINoteStore.self) private var aiNotes: AINoteStore?
+    @State private var confirmingClear = false
 
     var body: some View {
         @Bindable var settings = settings
         SettingsList {
-            Section {
-                // Shown off while Apple Intelligence can't be used; the choice itself is kept for later.
-                Toggle("Suggest Titles & Tags", isOn: Binding(
-                    get: { settings.suggestionsEnabled && availability == .available },
-                    set: { settings.suggestionsEnabled = $0 }
-                ))
-                .disabled(availability != .available)
-            } footer: {
-                VStack(alignment: .leading, spacing: 6) {
-                    FooterText("When you save code, ByteCache suggests a title, a one-line description and categories, and the Explain button describes what a snippet does — all with Apple Intelligence on this device. Your code never leaves it. Suggestions only fill empty fields; what you type always wins.")
-                    if let why = availability.explanation {
-                        Label(why, symbol: .warning)
-                            .foregroundStyle(.orange)
-                    }
-                }
-            }
             if let aiNotes {
                 Section {
                     LabeledContent("Saved Notes", value: aiNotes.count == 0 ? "None"
@@ -708,24 +790,28 @@ struct SuggestionsSettingsView: View {
                         ForEach(AINoteStore.limits, id: \.self) { Text("\($0) notes").tag($0) }
                     }
                     .onChange(of: settings.aiNotesLimit) { aiNotes.applyLimit() }
+                } footer: {
+                    InfoFooter("Explain keeps its answer as a note under the code. Notes stay on this device and, with iCloud Sync on, your other devices; never on your ByteStash server. When the limit is reached, the oldest note makes room.")
+                }
+                Section {
                     Button("Clear All AI Notes", role: .destructive) { confirmingClear = true }
                         .disabled(aiNotes.count == 0)
-                } header: {
-                    Text("AI Notes")
-                } footer: {
-                    FooterText("Explain keeps its answer as an AI Note under the code. Notes stay on this device and, with iCloud Sync on, sync to your other devices; they're never sent to your ByteStash server. When the limit is reached, the oldest note makes room.")
                 }
             }
         }
-        .navigationTitle("Smart Suggestions")
+        .navigationTitle("AI Notes")
         .confirmationDialog("Clear All AI Notes?", isPresented: $confirmingClear, titleVisibility: .visible) {
             Button("Clear All AI Notes", role: .destructive) { aiNotes?.clearAll() }
         } message: {
             Text(settings.iCloudSyncEnabled ? "They're removed from this device and your other devices." : "They're removed from this device.")
         }
-        .onChange(of: scenePhase) { _, phase in
-            if phase == .active { availability = AIAvailability.current }
-        }
+    }
+}
+
+extension AppSettings {
+    /// The Smart Suggestions row's value: Off, On (Apple Intelligence) or the provider's name.
+    var suggestionsSummary: String {
+        !suggestionsEnabled || !aiIsReady ? "Off" : aiProvider.isOnDevice ? "On" : aiProvider.name
     }
 }
 
@@ -826,7 +912,7 @@ struct AccountSettingsView: View {
                     }
                     .frame(maxWidth: .infinity)
                 } footer: {
-                    FooterText("Signing out keeps the server in Servers, so signing in again is one step.")
+                    InfoFooter("Signing out keeps the server in Servers, so signing in again is one step.")
                 }
             }
         }

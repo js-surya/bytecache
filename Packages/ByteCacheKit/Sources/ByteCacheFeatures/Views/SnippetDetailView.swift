@@ -65,7 +65,7 @@ public struct SnippetDetailView: View {
 
     /// AI Notes belong to the signed-in server's snippets (not someone else's public ones).
     private var noteServer: String? { readOnly ? nil : list?.session.client?.server.cacheKey }
-    private var canExplain: Bool { settings.suggestionsEnabled && SnippetSuggesters.explainer() != nil }
+    private var canExplain: Bool { settings.explainer != nil }
     private var shownFile: Fragment? {
         fragments.first { $0.id == selectedFile } ?? fragments.first
     }
@@ -175,13 +175,13 @@ public struct SnippetDetailView: View {
                 .toolbarIcon()
                 .help("Wrap Long Lines")
             }
-            if settings.suggestionsEnabled, let explainer = SnippetSuggesters.explainer() {
+            if let explainer = settings.explainer {
                 ToolbarItem(id: "explain", placement: .primaryAction) {
                     Button { explaining = true } label: { Label("Explain", symbol: .sparkles) }
                         .toolbarIcon()
                         .sheet(isPresented: $explaining) {
                             NavigationStack {
-                                ExplainSheet(model: ExplainModel(explainer: explainer),
+                                ExplainSheet(model: ExplainModel(explainer: explainer, provider: settings.aiProvider),
                                              snippet: (allCode, fragments.first?.language ?? "plaintext", snippet.title)) { text in
                                     if let server = noteServer {
                                         aiNotes?.save(text, code: allCode, server: server, snippetID: snippet.id)

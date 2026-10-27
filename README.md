@@ -53,7 +53,7 @@
 **Edit**
 - A real code editor: live colouring, line numbers, auto-indent, auto-closing brackets, matching-bracket highlight, find and replace
 - Multi-file snippets, categories, public snippets, bulk actions
-- Title and tag suggestions and "Explain this snippet" with Apple Intelligence (iOS / macOS 26)
+- Title and tag suggestions and "Explain this snippet" with Apple Intelligence (iOS / macOS 26), or your own OpenAI, Anthropic, Gemini, OpenRouter or Ollama key on any device
 
 **Yours**
 - Several servers, password or API-key login, App Lock with Face ID or Touch ID
@@ -68,11 +68,11 @@ Join the **[TestFlight beta](https://testflight.apple.com/join/rpmeVJW6)** on yo
 ## Requirements
 
 - A [ByteStash](https://github.com/jordan-dalby/ByteStash) server (tested with v1.6), or the public demo to try it out
-- iOS / iPadOS 17 or later, macOS 14 or later; some features need iOS / macOS 18 or 26
+- iOS / iPadOS 18 or later, macOS 15 or later; some features need iOS / macOS 26 or 27
 
 ## Build
 
-You need Xcode 27.1 or later and [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`). Xcode 26 also builds it, without the iPhone Duo refinements (toolbar priorities and fold handling).
+You need Xcode 27.1 or later and [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`).
 
 ```sh
 git clone https://github.com/js-surya/bytecache.git

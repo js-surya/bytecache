@@ -25,7 +25,7 @@ struct ServerEditView: View {
             Section {
                 TextField("Name", text: $name, prompt: Text(account.address))
             } footer: {
-                FooterText("Optional. Shown instead of the address in Servers and the sidebar.")
+                InfoFooter("Optional. Shown instead of the address in Servers and the sidebar.")
             }
             Section {
                 TextField("Server address", text: $address)
@@ -41,7 +41,7 @@ struct ServerEditView: View {
                 if let error {
                     Text(error).foregroundStyle(.red)
                 } else {
-                    FooterText("Use this when your server moves to a new address. ByteCache checks the new address and keeps your login.")
+                    InfoFooter("Use this when your server moves to a new address. ByteCache checks the new address and keeps your login.")
                 }
             }
             Section("Login") {

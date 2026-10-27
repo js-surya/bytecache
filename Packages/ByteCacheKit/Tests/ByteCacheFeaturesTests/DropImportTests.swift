@@ -1,0 +1,138 @@
+import XCTest
+import UniformTypeIdentifiers
+@testable import ByteCacheFeatures
+import ByteCacheCore
+
+/// CP-92: files dropped on the snippet list.
+final class DropImportTests: XCTestCase {
+    private let folder = FileManager.default.temporaryDirectory.appending(path: "DropImportTests-\(UUID().uuidString)")
+
+    override func setUpWithError() throws {
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    }
+
+    override func tearDownWithError() throws {
+        try? FileManager.default.removeItem(at: folder)
+    }
+
+    private func file(_ name: String, _ data: Data) throws -> URL {
+        let url = folder.appending(path: name)
+        try data.write(to: url)
+        return url
+    }
+
+    func testCodeFileKeepsItsNameAndText() throws {
+        let url = try file("retry.py", Data("import time\nprint('hi')\n".utf8))
+        XCTAssertEqual(try DropImport.read(url).get(), DroppedFile(name: "retry.py", text: "import time\nprint('hi')\n"))
+    }
+
+    func testBinaryFileIsRefused() throws {
+        let url = try file("logo.png", Data([0x89, 0x50, 0x4E, 0x47, 0x00, 0x00, 0x00, 0x0D]))
+        XCTAssertEqual(DropImport.read(url), .failure(.noText))
+    }
+
+    func testEmptyFileIsRefused() throws {
+        let url = try file("empty.txt", Data("  \n".utf8))
+        XCTAssertEqual(DropImport.read(url), .failure(.noText))
+    }
+
+    func testTooLargeFileIsRefused() throws {
+        let url = try file("big.txt", Data(repeating: 0x61, count: SharedItemLoader.maxFileBytes + 1))
+        XCTAssertEqual(DropImport.read(url), .failure(.tooLarge))
+    }
+
+    /// What Finder hands over: a drag item for the file (CP-92: a CSV was refused).
+    @MainActor
+    private func dropped(_ name: String, _ data: Data) async throws -> Result<[DroppedFile], ShareProblem> {
+        let url = try file(name, data)
+        return await DropImport.load([try XCTUnwrap(NSItemProvider(contentsOf: url))])
+    }
+
+    @MainActor
+    func testCSVFromFinderIsAccepted() async throws {
+        let csv = "name,price\nTea,3.50\nCafé,4.00\n"
+        let result = try await dropped("prices.csv", Data(csv.utf8))
+        XCTAssertEqual(try result.get(), [DroppedFile(name: "prices.csv", text: csv)])
+    }
+
+    @MainActor
+    func testCSVInExcelEncodingsIsAccepted() async throws {
+        let csv = "name,price\nTea,3.50\nCafé,4.00\n"
+        // Excel's "Unicode text" (UTF-16 with a byte order mark) and Windows Latin.
+        var utf16 = Data([0xFF, 0xFE]); utf16.append(csv.data(using: .utf16LittleEndian)!)
+        let fromUTF16 = try await dropped("utf16.csv", utf16)
+        XCTAssertEqual(try fromUTF16.get().first?.text, csv)
+        let fromLatin = try await dropped("latin.csv", csv.data(using: .windowsCP1252)!)
+        XCTAssertEqual(try fromLatin.get().first?.text, csv)
+    }
+
+    /// Finder described the CSV as text but its text was the file's location (CP-92): the file's contents
+    /// are read, under its name.
+    @MainActor
+    func testFileOfferedAsContentsOnlyIsRead() async throws {
+        let csv = "X,Y,Z\n1,2,3\n"
+        let provider = NSItemProvider()
+        provider.suggestedName = "point_cloud.csv"
+        provider.registerFileRepresentation(forTypeIdentifier: UTType.commaSeparatedText.identifier, visibility: .all) { done in
+            let url = try? self.file("copy-\(UUID().uuidString).csv", Data(csv.utf8))
+            done(url, false, nil)
+            return nil
+        }
+        let result = await DropImport.load([provider])
+        XCTAssertEqual(try result.get(), [DroppedFile(name: "point_cloud.csv", text: csv)])
+    }
+
+    /// The real Finder drag (from the app's log): only the CSV type, no path and no name.
+    @MainActor
+    func testFileOfferedOnlyAsItsTypeIsRead() async throws {
+        let csv = "X,Y,Z\n1,2,3\n"
+        let provider = NSItemProvider()
+        provider.registerFileRepresentation(forTypeIdentifier: UTType.commaSeparatedText.identifier, visibility: .all) { done in
+            let url = try? self.file("point_cloud.csv", Data(csv.utf8))
+            done(url, false, nil)
+            return nil
+        }
+        XCTAssertEqual(provider.registeredTypeIdentifiers, ["public.comma-separated-values-text"])
+        let result = await DropImport.load([provider])
+        XCTAssertEqual(try result.get().first?.text, csv)
+        XCTAssertEqual(try result.get().first?.name?.hasSuffix(".csv"), true)
+    }
+
+    @MainActor
+    func testSelectedTextIsStillText() async throws {
+        let result = await DropImport.load([NSItemProvider(object: "let x = 1" as NSString)])
+        XCTAssertEqual(try result.get(), [DroppedFile(name: nil, text: "let x = 1")])
+    }
+
+    func testFolderIsRefused() {
+        XCTAssertEqual(DropImport.read(folder), .failure(.noText))
+    }
+}
+
+/// CP-92: a snippet dragged out as code or as its file.
+final class SnippetDragItemTests: XCTestCase {
+    private func snippet(_ fragments: [(String, String, String)]) -> Snippet {
+        Snippet(id: 1, title: "Retry helper", description: "", updatedAt: nil, expiryDate: nil, isPublic: false,
+                isPinned: false, isFavorite: false, categories: [],
+                fragments: fragments.enumerated().map { i, f in
+                    Fragment(id: i + 1, fileName: f.0, code: f.1, language: f.2, position: i)
+                }, shareCount: 0)
+    }
+
+    func testOneFileIsWrittenUnderItsName() throws {
+        let item = SnippetDragItem(snippet([("retry.py", "import time", "python")]))
+        XCTAssertEqual(item.code, "import time")
+        let url = try item.writeFile()
+        XCTAssertEqual(url.lastPathComponent, "Retry helper.py")
+        XCTAssertEqual(try String(contentsOf: url, encoding: .utf8), "import time")
+    }
+
+    func testSeveralFilesBecomeAFolder() throws {
+        let item = SnippetDragItem(snippet([("Card.tsx", "a", "tsx"), ("card.css", "b", "css")]))
+        XCTAssertEqual(item.code, "a\n\nb")
+        let url = try item.writeFile()
+        var isFolder: ObjCBool = false
+        XCTAssertTrue(FileManager.default.fileExists(atPath: url.path, isDirectory: &isFolder) && isFolder.boolValue)
+        XCTAssertEqual(Set(try FileManager.default.contentsOfDirectory(atPath: url.path)), ["Card.tsx", "card.css"])
+    }
+}

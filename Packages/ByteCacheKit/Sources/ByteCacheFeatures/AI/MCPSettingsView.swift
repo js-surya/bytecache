@@ -39,7 +39,7 @@ struct MCPSettingsView: View {
             } header: {
                 Text("Your MCP endpoint")
             } footer: {
-                FooterText("Your ByteStash server has an MCP endpoint. AI assistants use it to search, read, create and edit your snippets with an API key. They talk to your server directly, not through ByteCache.")
+                InfoFooter("Your ByteStash server has an MCP endpoint. AI assistants use it to search, read, create and edit your snippets with an API key. They talk to your server directly, not through ByteCache.")
             }
 
             Section {

@@ -39,6 +39,6 @@ final class SettingsPersistenceTests: XCTestCase {
 
     func testSettingsSectionsHaveHeaders() {
         XCTAssertEqual(SettingsSection.allCases.map(\.title),
-                       ["Account", "Look & Feel", "Snippets", "Privacy & Security", "Sync & Backup", "Support"])
+                       ["Account", "Look & Feel", "Snippets", "AI", "Privacy & Security", "Sync & Backup", "Support"])
     }
 }

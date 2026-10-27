@@ -1,39 +1,65 @@
 import PhotosUI
 import SwiftUI
+#if os(iOS)
+import AVFoundation
+#endif
 import UniformTypeIdentifiers
 #if canImport(VisionKit) && os(iOS)
 import VisionKit
 #endif
 
-/// "Scan Code": camera (iPhone/iPad), photo library, or an image file / pasted image (Mac).
+/// "Scan Code" (CP-84). On iPhone and iPad, Scan opens the camera straight away, with a button for
+/// the photo library next to the shutter; "Choose Photo" (long-press Scan) opens the library. Camera
+/// access is asked for by the system the first time; if it's off, an alert offers Settings or a photo.
+/// On Mac, Scan picks an image file, or offers to paste an image when one is copied.
 /// Recognised text is handed to `onText`, usually to open the capture sheet.
 struct ScanCodeFlow: ViewModifier {
     @Binding var isPresented: Bool
+    @Binding var choosingPhoto: Bool
     let onText: (String) -> Void
 
     @State private var model = ScanCodeModel()
     @State private var pickingPhoto = false
     @State private var photo: PhotosPickerItem?
     @State private var usingCamera = false
+    @State private var cameraOff = false
     @State private var importingFile = false
+    @State private var choosingMacSource = false
+    @Environment(\.openURL) private var openURL
 
     func body(content: Content) -> some View {
         content
-            .confirmationDialog("Scan Code", isPresented: $isPresented, titleVisibility: .visible) {
+            .onChange(of: isPresented) {
+                guard isPresented else { return }
+                isPresented = false
+                start()
+            }
+            .onChange(of: choosingPhoto) {
+                guard choosingPhoto else { return }
+                choosingPhoto = false
                 #if os(iOS)
-                if CameraScanner.isAvailable || Self.previewCamera {
-                    Button("Camera") { usingCamera = true }
+                pickingPhoto = true
+                #else
+                importingFile = true
+                #endif
+            }
+            #if os(iOS)
+            .alert("Camera Access Is Off", isPresented: $cameraOff) {
+                Button("Open Settings") {
+                    if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
                 }
                 Button("Choose Photo") { pickingPhoto = true }
-                #else
-                Button("Choose Image…") { importingFile = true }
-                if Self.pastedImage() != nil {
-                    Button("Paste Image") { if let data = Self.pastedImage() { run(data) } }
-                }
-                #endif
+                Button("Cancel", role: .cancel) {}
             } message: {
-                Text("ByteCache reads the code on this device. Check it before saving — a lone closing bracket on its own line can be missed.")
+                Text("To scan code with the camera, turn on Camera for ByteCache in Settings. You can also choose a photo of the code.")
             }
+            #else
+            .confirmationDialog("Scan Code", isPresented: $choosingMacSource) {
+                Button("Choose Image…") { importingFile = true }
+                Button("Paste Image") { if let data = Self.pastedImage() { run(data) } }
+                Button("Cancel", role: .cancel) {}
+            }
+            #endif
             .photosPicker(isPresented: $pickingPhoto, selection: $photo, matching: .images)
             .onChange(of: photo) {
                 guard let photo else { return }
@@ -71,6 +97,28 @@ struct ScanCodeFlow: ViewModifier {
             }
     }
 
+    /// Scan was tapped.
+    private func start() {
+        #if os(iOS)
+        if Self.previewCamera { usingCamera = true; return }
+        // No camera here (simulator, or a device VisionKit can't scan on): the photo library instead.
+        guard DataScannerViewController.isSupported else { pickingPhoto = true; return }
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            usingCamera = true
+        case .notDetermined:
+            // The system asks, in context, the first time the camera is needed.
+            Task {
+                if await AVCaptureDevice.requestAccess(for: .video) { usingCamera = true } else { cameraOff = true }
+            }
+        default:
+            cameraOff = true
+        }
+        #else
+        if Self.pastedImage() != nil { choosingMacSource = true } else { importingFile = true }
+        #endif
+    }
+
     private func run(_ data: Data) {
         Task {
             if let text = await model.recognize(imageData: data) { onText(text) }
@@ -97,8 +145,24 @@ struct ScanCodeFlow: ViewModifier {
 }
 
 extension View {
-    public func scanCodeFlow(isPresented: Binding<Bool>, onText: @escaping (String) -> Void) -> some View {
-        modifier(ScanCodeFlow(isPresented: isPresented, onText: onText))
+    /// Long-press (iPhone/iPad) on the Scan button: "Scan with Camera" or "Choose Photo" (CP-84).
+    /// The Mac has no camera, and right-click there customises the toolbar, so nothing is added.
+    @ViewBuilder
+    public func scanButtonMenu(camera: @escaping () -> Void, photo: @escaping () -> Void) -> some View {
+        #if os(iOS)
+        contextMenu {
+            Button(action: camera) { Label("Scan with Camera", symbol: .scan) }
+            Button(action: photo) { Label("Choose Photo", symbol: .image) }
+        }
+        #else
+        self
+        #endif
+    }
+
+    /// `isPresented`: Scan was tapped (camera on iPhone/iPad). `choosingPhoto`: "Choose Photo".
+    public func scanCodeFlow(isPresented: Binding<Bool>, choosingPhoto: Binding<Bool> = .constant(false),
+                             onText: @escaping (String) -> Void) -> some View {
+        modifier(ScanCodeFlow(isPresented: isPresented, choosingPhoto: choosingPhoto, onText: onText))
     }
 }
 
@@ -109,6 +173,10 @@ struct CameraScanner: View {
     let onFinish: (Data?) -> Void
     @State private var handle = ScannerHandle()
     @State private var capturing = false
+    @State private var photo: PhotosPickerItem?
+    /// The on-device / check-brackets hint shows until dismissed or the first capture (CP-84);
+    /// Settings → Show Scan Tip brings it back.
+    @AppStorage(ScanTip.seenKey) private var tipSeen = false
 
     static var isAvailable: Bool {
         DataScannerViewController.isSupported && DataScannerViewController.isAvailable
@@ -136,18 +204,58 @@ struct CameraScanner: View {
                 }
                 .padding(.horizontal)
                 .padding(.top, 8)
+                if !tipSeen { tip.padding(.top, 10) }
                 Spacer()
-                shutter
-                    .padding(.top, 18)
-                    .padding(.bottom, 10)
-                    .frame(maxWidth: .infinity)
-                    .background(.black.opacity(0.45))
+                HStack {
+                    libraryButton.frame(maxWidth: .infinity)
+                    shutter
+                    // Balances the library button so the shutter stays centred.
+                    Color.clear.frame(maxWidth: .infinity, maxHeight: 1)
+                }
+                .padding(.top, 18)
+                .padding(.bottom, 10)
+                .frame(maxWidth: .infinity)
+                .background(.black.opacity(0.45))
             }
             // Partially folded (iPhone Duo), the controls take one half so the shutter isn't on the hinge.
             .centeredAwayFromFold()
         }
         .preferredColorScheme(.dark)
         .onAppear { Haptics.prepare() }
+    }
+
+    private var tip: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Icon(.infoCircle)
+            Text(ScanTip.text).font(.footnote).fixedSize(horizontal: false, vertical: true)
+            Button { tipSeen = true } label: { Icon(.close) }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Hide Tip")
+        }
+        .foregroundStyle(.white)
+        .padding(12)
+        .background(.black.opacity(0.55), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .padding(.horizontal)
+    }
+
+    /// The photo library, next to the shutter as in the Camera app (CP-84).
+    private var libraryButton: some View {
+        PhotosPicker(selection: $photo, matching: .images) {
+            Icon(.image)
+                .font(.title2)
+                .foregroundStyle(.white)
+                .frame(width: 52, height: 52)
+                .background(.white.opacity(0.18), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+        .accessibilityLabel("Choose Photo")
+        .onChange(of: photo) {
+            guard let photo else { return }
+            Task {
+                let data = try? await photo.loadTransferable(type: Data.self)
+                self.photo = nil
+                if let data { onFinish(data) }
+            }
+        }
     }
 
     private var shutter: some View {
@@ -171,12 +279,19 @@ struct CameraScanner: View {
         guard let scanner = handle.scanner else { return }
         Haptics.play(.tap)
         capturing = true
+        tipSeen = true
         Task { @MainActor in
             let image = try? await scanner.capturePhoto()
             capturing = false
             onFinish(image?.jpegData(compressionQuality: 0.95))
         }
     }
+}
+
+/// The scanner's one-time hint (CP-84).
+enum ScanTip {
+    static let seenKey = "scanTipSeen"
+    static let text = "ByteCache reads the code on this device. Check it before saving: a lone closing bracket on its own line can be missed."
 }
 
 @MainActor

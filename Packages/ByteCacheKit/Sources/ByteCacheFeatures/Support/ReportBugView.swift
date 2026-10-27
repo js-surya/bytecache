@@ -120,7 +120,7 @@ public struct ReportBugView: View {
             } header: {
                 Text("Sent with the report")
             } footer: {
-                FooterText("App details are your settings and counts, like the number of servers. The activity lists what ByteCache did recently, like requests and their results, screens and errors. Neither contains your code, searches, server addresses or passwords. Crash reports come from iOS or macOS and contain no personal data.")
+                InfoFooter("App details are your settings and counts, like the number of servers. The activity lists what ByteCache did recently, like requests and their results, screens and errors. Neither contains your code, searches, server addresses or passwords. Crash reports come from iOS or macOS and contain no personal data.")
             }
             Section {
                 sendButton("Open GitHub Issue", detail: "Needs a GitHub account", symbol: .bug, color: .black) {

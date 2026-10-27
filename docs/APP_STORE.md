@@ -3,7 +3,7 @@
 **Name:** ByteCache
 **Subtitle:** Save code from anywhere
 **Category:** Developer Tools
-**Platforms:** iOS / iPadOS 17+, macOS 14+ (one App Store record, universal purchase)
+**Platforms:** iOS / iPadOS 18+, macOS 15+ (one App Store record, universal purchase)
 **Bundle ID:** `me.suryajs.bytecache` · **SKU:** `bytecache`
 **Export compliance:** `ITSAppUsesNonExemptEncryption = NO` in Info.plist (HTTPS only, exempt)
 
@@ -18,6 +18,7 @@ ByteCache is an unofficial client for ByteStash (github.com/jordan-dalby/ByteSta
 ## Privacy
 - Privacy policy: docs/PRIVACY.md (host it, e.g. GitHub Pages, and link it in App Store Connect).
 - App Privacy questionnaire: "Data Not Collected".
+  - Using your own AI provider (CP-93) doesn't change this: the code goes straight from the device to the provider the person picked, on their own account and key, never to us or a partner of ours. Guideline 5.1.2(i): the app names the provider and asks before sending anything to it (Settings → Smart Suggestions).
 - Privacy manifests ship in the app, the widgets and both share extensions (`PrivacyInfo.xcprivacy`).
 
 ## Before uploading

@@ -22,6 +22,8 @@ public final class CaptureModel {
     public private(set) var didQueue = false
 
     public let fileName: String?
+    /// The code was read from a picture (Scan): the review screen reminds to check brackets (CP-84).
+    public var readFromImage = false
     public let sourceURL: URL?
     public var signedOut: Bool { client == nil }
 
@@ -69,6 +71,8 @@ public final class CaptureModel {
     }
 
     public var canSuggest: Bool { suggester != nil }
+    /// Suggest as soon as the sheet opens: only on device, never sending code without a tap.
+    public var suggestsOnOpen: Bool { suggester?.runsOnDevice ?? false }
 
     /// Fills the title (if still the default), description and categories (if empty).
     public func suggest() async {

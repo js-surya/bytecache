@@ -39,6 +39,7 @@
 		A4137A1A3811E335A4147088 /* SnippetIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31B029EDF2F3CF30E816DE4A /* SnippetIntents.swift */; };
 		B344819E8E58AB1F39806F61 /* CopyToastWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8C8EFCD0268D6C0B45AFC0C /* CopyToastWindow.swift */; };
 		B9D1B89181E1E48F963760E3 /* ByteCacheUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E36EE23461C8F99AE8BA83AB /* ByteCacheUITests.swift */; };
+		C6866690BBBA25C4D658AEFF /* ServicesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 387ADB597A03A0BC10144747 /* ServicesProvider.swift */; };
 		C7CD13EB204B578681633864 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17972E61B4760BDAF57D8C17 /* ShareViewController.swift */; };
 		C90FB439F45CCA0A3524BDA3 /* CaptureIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ACD1D351BD1F41237F48DAC /* CaptureIntents.swift */; };
 		D80FEA4CBC5047637FB9CE0D /* PhoneTabsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B2FE666D74E00213F8F8F0F /* PhoneTabsView.swift */; };
@@ -110,6 +111,7 @@
 		31B029EDF2F3CF30E816DE4A /* SnippetIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetIntents.swift; sourceTree = "<group>"; };
 		33E4BE438EFEE3536D9B0D57 /* ByteCacheApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ByteCacheApp.swift; sourceTree = "<group>"; };
 		37F7D1F71F99D1948602B698 /* SnippetWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetWindow.swift; sourceTree = "<group>"; };
+		387ADB597A03A0BC10144747 /* ServicesProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServicesProvider.swift; sourceTree = "<group>"; };
 		3C4D6B6B9A17D93D3850B091 /* ShareExtension-macOS.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "ShareExtension-macOS.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		48B08E0D98346BBDFA3CD218 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		4A5033703E0E7C11332907CB /* ByteCache.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ByteCache.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -316,6 +318,7 @@
 				0B2FE666D74E00213F8F8F0F /* PhoneTabsView.swift */,
 				21BB7A9CA0A0B9DC59C39FF5 /* QuickSearchMac.swift */,
 				F9367137F32B48ABE54F0F9E /* RootView.swift */,
+				387ADB597A03A0BC10144747 /* ServicesProvider.swift */,
 				D132C6DCD693053E8D76A755 /* SnippetDestination.swift */,
 				37F7D1F71F99D1948602B698 /* SnippetWindow.swift */,
 				2A3B2C0C3F17E94329F158DE /* Intents */,
@@ -568,6 +571,7 @@
 				D80FEA4CBC5047637FB9CE0D /* PhoneTabsView.swift in Sources */,
 				90B3576DDC493CF4CF9D955F /* QuickSearchMac.swift in Sources */,
 				E8123D5FE9E7532AE8F9C9B0 /* RootView.swift in Sources */,
+				C6866690BBBA25C4D658AEFF /* ServicesProvider.swift in Sources */,
 				3B03DD7B3CBF1E2309E14C32 /* SnippetDestination.swift in Sources */,
 				ED4B7E6F8FFAC5B65E8CD0B6 /* SnippetEntity.swift in Sources */,
 				A4137A1A3811E335A4147088 /* SnippetIntents.swift in Sources */,
@@ -821,7 +825,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -833,8 +837,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.3.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -925,7 +929,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -943,8 +947,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.3.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;

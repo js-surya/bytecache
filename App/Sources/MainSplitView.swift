@@ -15,7 +15,11 @@ struct MainSplitView: View {
     @State private var capture: CaptureModel?
     @State private var clipboard = ClipboardWatcher()
     @State private var clipboardEmpty = false
+    /// Why a drop couldn't be used (an image, an app, a folder…).
+    @State private var dropProblem: String?
     @State private var scanning = false
+    /// "Choose Photo" from the Scan button's menu (CP-84).
+    @State private var scanningPhoto = false
     @State private var history = NavigationHistory(start: .all)
     @State private var toolbarID = WindowToolbarID(base: "main")
     /// Going Back/Forward into another section: the snippet to open once that section is loaded.
@@ -111,12 +115,22 @@ struct MainSplitView: View {
                 clipboardEmpty = true
             }
         }
+        .task(id: AppNavigator.shared.pendingCaptureText) {
+            guard let text = AppNavigator.shared.pendingCaptureText else { return }
+            AppNavigator.shared.pendingCaptureText = nil
+            startCapture(text)
+        }
         .task(id: AppNavigator.shared.pendingScan) {
             guard AppNavigator.shared.pendingScan else { return }
             AppNavigator.shared.pendingScan = false
             scanning = true
         }
-        .scanCodeFlow(isPresented: $scanning) { startCapture($0) }
+        .scanCodeFlow(isPresented: $scanning, choosingPhoto: $scanningPhoto) { startCapture($0, fromImage: true) }
+        .alert("Can't Save That", isPresented: Binding(get: { dropProblem != nil }, set: { if !$0 { dropProblem = nil } })) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(dropProblem ?? "")
+        }
         .alert("Nothing to Save", isPresented: $clipboardEmpty) {
             Button("OK", role: .cancel) {}
         } message: {
@@ -199,8 +213,9 @@ struct MainSplitView: View {
         if #available(iOS 26.1, *), horizontalSizeClass == .compact {
             PhoneTabsView(services: services, all: list, sidebar: sidebar, clipboard: clipboard,
                           allSelection: $selectedSnippet,
-                          onNew: { startEditing(nil) }, onScan: { scanning = true },
-                          onEdit: { startEditing($0) }, onCapture: { startCapture($0) })
+                          onNew: { startEditing(nil) }, onScan: { scanning = true }, onScanPhoto: { scanningPhoto = true },
+                          onEdit: { startEditing($0) }, onCapture: { startCapture($0) },
+                          onDrop: { handleDrop($0) })
         } else {
             splitView
         }
@@ -222,10 +237,9 @@ struct MainSplitView: View {
                         ClipboardBanner(watcher: clipboard) { startCapture($0) }
                     }
                 }
-                .dropDestination(for: String.self) { items, _ in
-                    let text = items.joined(separator: "\n")
-                    guard text.contains(where: { !$0.isWhitespace }) else { return false }
-                    startCapture(text)
+                // Code files or text dropped here become a new snippet (CP-92).
+                .onDrop(of: DropImport.types, isTargeted: nil) { providers in
+                    handleDrop(providers)
                     return true
                 }
                 // Right-click the toolbar (Mac) or long-press it (iPad) to customise it.
@@ -246,6 +260,7 @@ struct MainSplitView: View {
                     }
                     ToolbarItem(id: "scan", placement: .primaryAction) {
                         Button { scanning = true } label: { Label("Scan Code", symbol: .scan) }
+                            .scanButtonMenu(camera: { scanning = true }, photo: { scanningPhoto = true })
                             .toolbarIcon()
                     }
                 }
@@ -323,13 +338,38 @@ struct MainSplitView: View {
         selectedSnippet = entry.snippet
     }
 
-    private func startCapture(_ text: String) {
+    /// Dropped files or text (CP-92): one becomes a new snippet in the capture sheet (Smart Suggestions
+    /// run there when they're on); several become one snippet with several files, in the editor.
+    private func handleDrop(_ providers: [NSItemProvider]) {
+        Task {
+            switch await DropImport.load(providers) {
+            case .success(let files) where files.count == 1:
+                startCapture(files[0].text, fileName: files[0].name)
+            case .success(let files):
+                startEditing(dropped: files)
+            case .failure(let problem):
+                dropProblem = DropImport.message(for: problem)
+            }
+        }
+    }
+
+    private func startEditing(dropped files: [DroppedFile]) {
+        let model = SnippetEditorModel(existing: nil, session: services.session, detector: services.detector,
+                                       suggester: services.settings.suggester, knownCategories: sidebar.categories)
+        model.draft.fragments = files.map { FragmentDraft(fileName: $0.name ?? "", code: $0.text, language: "plaintext") }
+        for index in model.draft.fragments.indices { model.codeChanged(fragment: index) }
+        editor = model
+    }
+
+    private func startCapture(_ text: String, fromImage: Bool = false, fileName: String? = nil) {
         let session = services.session
-        capture = CaptureModel(text: text, client: session.client, detector: services.detector,
-                               suggester: services.settings.suggester, knownCategories: sidebar.categories,
-                               queue: .shared) {
+        let model = CaptureModel(text: text, fileName: fileName, client: session.client, detector: services.detector,
+                                 suggester: services.settings.suggester, knownCategories: sidebar.categories,
+                                 queue: .shared) {
             session.handleUnauthorized()
         }
+        model.readFromImage = fromImage
+        capture = model
     }
 
     private func startEditing(_ snippet: Snippet?) {
