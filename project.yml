@@ -60,6 +60,14 @@ targets:
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: true
           NSAllowsLocalNetworking: true
+        # Mac Services menu → "Add to ByteCache" (CP-92); iOS ignores it.
+        NSServices:
+          - NSMenuItem:
+              default: Add to ByteCache
+            NSMessage: addToByteCache
+            NSPortName: ByteCache
+            NSSendTypes: [public.utf8-plain-text, NSStringPboardType]
+            NSRequiredContext: {}
         NSLocalNetworkUsageDescription: ByteCache connects to the ByteStash server you enter, which may be on your local network.
         BCAppGroupID: $(BC_APP_GROUP_ID)
         BCKeychainGroup: $(AppIdentifierPrefix)me.suryajs.bytecache.shared

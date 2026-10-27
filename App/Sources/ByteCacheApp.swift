@@ -22,6 +22,7 @@ struct ByteCacheApp: App {
                 #if os(macOS)
                 .task {
                     QuickSearchPanel.shared.configure(services)
+                    ServicesProvider.shared.register()
                     SystemAppIconSwitcher.shared.apply()
                     ActiveAppPaster.shared.start()
                     applyDockPolicy(menuBarOnly: services.settings.menuBarOnly)
