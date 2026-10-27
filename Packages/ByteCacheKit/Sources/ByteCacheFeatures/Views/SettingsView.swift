@@ -3,13 +3,14 @@ import SwiftUI
 
 /// The groups on the Settings screen, in order.
 enum SettingsSection: CaseIterable {
-    case account, lookAndFeel, snippets, privacy, sync, support
+    case account, lookAndFeel, snippets, ai, privacy, sync, support
 
     var title: String {
         switch self {
         case .account: "Account"
         case .lookAndFeel: "Look & Feel"
         case .snippets: "Snippets"
+        case .ai: "AI"
         case .privacy: "Privacy & Security"
         case .sync: "Sync & Backup"
         case .support: "Support"
@@ -50,13 +51,6 @@ public struct SettingsView: View {
                     SettingsLabel(title: "Servers", symbol: .server, color: .green,
                                   value: session.accounts.count > 1 ? "\(session.accounts.count)" : nil)
                 }
-                if case .signedIn = session.state {
-                    NavigationLink {
-                        MCPSettingsView(model: MCPSettingsModel(session: session))
-                    } label: {
-                        SettingsLabel(title: "AI Assistants", symbol: .assistant, color: .indigo)
-                    }
-                }
             }
 
             Section {
@@ -92,14 +86,6 @@ public struct SettingsView: View {
                     SettingsLabel(title: "Show Scan Tip", symbol: .scan, color: .teal)
                 }
                 #endif
-                // Shown everywhere: devices without Apple Intelligence can use their own API key (CP-93).
-                NavigationLink {
-                    SuggestionsSettingsView()
-                } label: {
-                    SettingsLabel(title: "Smart Suggestions", symbol: .sparkles, color: .pink,
-                                  value: !settings.suggestionsEnabled || !settings.aiIsReady ? "Off"
-                                      : settings.aiProvider.isOnDevice ? "On" : settings.aiProvider.name)
-                }
             } header: {
                 Text(SettingsSection.snippets.title)
             } footer: {
@@ -108,6 +94,32 @@ public struct SettingsView: View {
                 #else
                 FooterText("Search Inside Code also matches the code itself, not just titles and descriptions.")
                 #endif
+            }
+
+            Section {
+                // Shown everywhere: devices without Apple Intelligence can use their own API key (CP-93).
+                NavigationLink {
+                    SuggestionsSettingsView()
+                } label: {
+                    SettingsLabel(title: "Smart Suggestions", symbol: .sparkles, color: .pink, value: settings.suggestionsSummary)
+                }
+                if let aiNotes {
+                    NavigationLink {
+                        AINotesSettingsView()
+                    } label: {
+                        SettingsLabel(title: "AI Notes", symbol: .document, color: .orange,
+                                      value: aiNotes.count == 0 ? nil : "\(aiNotes.count)")
+                    }
+                }
+                if case .signedIn = session.state {
+                    NavigationLink {
+                        MCPSettingsView(model: MCPSettingsModel(session: session))
+                    } label: {
+                        SettingsLabel(title: "AI Assistants", symbol: .assistant, color: .indigo)
+                    }
+                }
+            } header: {
+                Text(SettingsSection.ai.title)
             }
 
             Section {
@@ -686,8 +698,6 @@ struct HandoffSettingsView: View {
 
 struct SuggestionsSettingsView: View {
     @Environment(AppSettings.self) private var settings
-    @Environment(AINoteStore.self) private var aiNotes: AINoteStore?
-    @State private var confirmingClear = false
     @Environment(\.scenePhase) private var scenePhase
     /// Read again on returning to the app: turning Apple Intelligence on, or its download finishing,
     /// happens outside ByteCache.
@@ -700,8 +710,18 @@ struct SuggestionsSettingsView: View {
     }
 
     var body: some View {
-        @Bindable var settings = settings
         SettingsList {
+            Section {
+                // Shown off while the provider can't be used; the choice itself is kept for later.
+                Toggle("Smart Suggestions", isOn: Binding(
+                    get: { settings.suggestionsEnabled && isReady },
+                    set: { settings.suggestionsEnabled = $0 }
+                ))
+                .disabled(!isReady)
+            } footer: {
+                FooterText("Suggest fills an empty title, description and categories when you save code, and Explain describes what a snippet does. What you type always wins.")
+            }
+
             Section {
                 Picker("Provider", selection: Binding(
                     get: { settings.aiProvider },
@@ -709,47 +729,32 @@ struct SuggestionsSettingsView: View {
                         if provider.isOnDevice { settings.aiProvider = provider } else { askingAbout = provider }
                     }
                 )) {
-                    ForEach(AIProvider.allCases) { provider in
-                        Text(provider.isOnDevice ? "Apple Intelligence (On Device)" : provider.name).tag(provider)
+                    Text("Apple Intelligence").tag(AIProvider.appleIntelligence)
+                    Section("Your Own API Key") {
+                        ForEach(AIProvider.allCases.filter { !$0.isOnDevice }) { Text($0.name).tag($0) }
                     }
                 }
-                // Shown off while the provider can't be used; the choice itself is kept for later.
-                Toggle("Suggest Titles & Tags", isOn: Binding(
-                    get: { settings.suggestionsEnabled && isReady },
-                    set: { settings.suggestionsEnabled = $0 }
-                ))
-                .disabled(!isReady)
+            } header: {
+                Text("Provider")
             } footer: {
                 VStack(alignment: .leading, spacing: 6) {
-                    FooterText(settings.aiProvider.isOnDevice
-                        ? "When you save code, ByteCache suggests a title, a one-line description and categories, and the Explain button describes what a snippet does — all with Apple Intelligence on this device. Your code never leaves it. Suggestions only fill empty fields; what you type always wins. You can also use your own API key with another provider."
-                        : "When you save code, tap Suggest for a title, a one-line description and categories, and the Explain button describes what a snippet does, using \(settings.aiProvider.name). Code is sent only when you tap one of them. Suggestions only fill empty fields; what you type always wins.")
-                    if settings.aiProvider.isOnDevice, let why = availability.explanation {
-                        Label(availability.hidesFeatures
-                              ? "Apple Intelligence isn't available on this device. To use Smart Suggestions, choose another provider and add your API key."
-                              : why, symbol: .warning)
-                            .foregroundStyle(.orange)
+                    if settings.aiProvider.isOnDevice {
+                        if let why = availability.explanation {
+                            Label(availability.hidesFeatures
+                                  ? "Apple Intelligence isn't available on this device. Choose a provider with your own API key instead."
+                                  : why, symbol: .warning)
+                                .foregroundStyle(.orange)
+                        } else {
+                            FooterText("Runs on this device. Your code never leaves it.")
+                        }
+                    } else {
+                        FooterText("Code is sent to \(settings.aiProvider.recipient) only when you tap Suggest or Explain.")
                     }
                 }
             }
+
             if !settings.aiProvider.isOnDevice {
                 AIProviderSection(provider: settings.aiProvider)
-            }
-            if let aiNotes {
-                Section {
-                    LabeledContent("Saved Notes", value: aiNotes.count == 0 ? "None"
-                                   : "\(aiNotes.count) · \(ByteCountFormatter.string(fromByteCount: Int64(aiNotes.byteSize), countStyle: .file))")
-                    Picker("Keep Up To", selection: $settings.aiNotesLimit) {
-                        ForEach(AINoteStore.limits, id: \.self) { Text("\($0) notes").tag($0) }
-                    }
-                    .onChange(of: settings.aiNotesLimit) { aiNotes.applyLimit() }
-                    Button("Clear All AI Notes", role: .destructive) { confirmingClear = true }
-                        .disabled(aiNotes.count == 0)
-                } header: {
-                    Text("AI Notes")
-                } footer: {
-                    FooterText("Explain keeps its answer as an AI Note under the code. Notes stay on this device and, with iCloud Sync on, sync to your other devices; they're never sent to your ByteStash server. When the limit is reached, the oldest note makes room.")
-                }
             }
         }
         .navigationTitle("Smart Suggestions")
@@ -764,14 +769,51 @@ struct SuggestionsSettingsView: View {
         } message: { provider in
             Text(provider.consentMessage)
         }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { availability = AIAvailability.current }
+        }
+    }
+}
+
+/// Explain's saved answers.
+struct AINotesSettingsView: View {
+    @Environment(AppSettings.self) private var settings
+    @Environment(AINoteStore.self) private var aiNotes: AINoteStore?
+    @State private var confirmingClear = false
+
+    var body: some View {
+        @Bindable var settings = settings
+        SettingsList {
+            if let aiNotes {
+                Section {
+                    LabeledContent("Saved Notes", value: aiNotes.count == 0 ? "None"
+                                   : "\(aiNotes.count) · \(ByteCountFormatter.string(fromByteCount: Int64(aiNotes.byteSize), countStyle: .file))")
+                    Picker("Keep Up To", selection: $settings.aiNotesLimit) {
+                        ForEach(AINoteStore.limits, id: \.self) { Text("\($0) notes").tag($0) }
+                    }
+                    .onChange(of: settings.aiNotesLimit) { aiNotes.applyLimit() }
+                } footer: {
+                    FooterText("Explain keeps its answer as a note under the code. Notes stay on this device and, with iCloud Sync on, your other devices; never on your ByteStash server. When the limit is reached, the oldest note makes room.")
+                }
+                Section {
+                    Button("Clear All AI Notes", role: .destructive) { confirmingClear = true }
+                        .disabled(aiNotes.count == 0)
+                }
+            }
+        }
+        .navigationTitle("AI Notes")
         .confirmationDialog("Clear All AI Notes?", isPresented: $confirmingClear, titleVisibility: .visible) {
             Button("Clear All AI Notes", role: .destructive) { aiNotes?.clearAll() }
         } message: {
             Text(settings.iCloudSyncEnabled ? "They're removed from this device and your other devices." : "They're removed from this device.")
         }
-        .onChange(of: scenePhase) { _, phase in
-            if phase == .active { availability = AIAvailability.current }
-        }
+    }
+}
+
+extension AppSettings {
+    /// The Smart Suggestions row's value: Off, On (Apple Intelligence) or the provider's name.
+    var suggestionsSummary: String {
+        !suggestionsEnabled || !aiIsReady ? "Off" : aiProvider.isOnDevice ? "On" : aiProvider.name
     }
 }
 

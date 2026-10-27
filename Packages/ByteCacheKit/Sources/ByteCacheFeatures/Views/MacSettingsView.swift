@@ -72,6 +72,7 @@ public struct MacSettingsView: View {
         case .haptics: HapticsSettingsView()
         case .search: MacSearchPage()
         case .suggestions: SuggestionsSettingsView()
+        case .aiNotes: AINotesSettingsView()
         case .appLock: AppLockSettingsView(lock: lock)
         case .privacy: PrivacyInfoView()
         case .iCloud: ICloudSyncSettingsView()
@@ -84,9 +85,10 @@ public struct MacSettingsView: View {
 }
 
 enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
-    case account, apiKeys, password, servers, assistants
+    case account, apiKeys, password, servers
     case appearance, codeTheme, haptics
-    case search, suggestions
+    case search
+    case suggestions, aiNotes, assistants
     case appLock, privacy
     case iCloud, handoff
     case backup
@@ -96,9 +98,10 @@ enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
 
     var section: SettingsSection {
         switch self {
-        case .account, .apiKeys, .password, .servers, .assistants: .account
+        case .account, .apiKeys, .password, .servers: .account
         case .appearance, .codeTheme, .haptics: .lookAndFeel
-        case .search, .suggestions: .snippets
+        case .search: .snippets
+        case .suggestions, .aiNotes, .assistants: .ai
         case .appLock, .privacy: .privacy
         case .iCloud, .handoff, .backup: .sync
         case .reportBug, .about: .support
@@ -117,6 +120,7 @@ enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
         case .haptics: "Haptics"
         case .search: "Search"
         case .suggestions: "Smart Suggestions"
+        case .aiNotes: "AI Notes"
         case .appLock: "App Lock"
         case .privacy: "Privacy"
         case .iCloud: "iCloud Sync"
@@ -140,6 +144,7 @@ enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
         case .haptics: .haptics
         case .search: .search
         case .suggestions: .sparkles
+        case .aiNotes: .document
         case .appLock: lock.biometry.symbol
         case .privacy: .privacy
         case .iCloud: .icloud
@@ -162,6 +167,7 @@ enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
         case .haptics: .red
         case .search: .indigo
         case .suggestions: .pink
+        case .aiNotes: .orange
         case .appLock: .green
         case .privacy: .blue
         case .iCloud: .cyan
