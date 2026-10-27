@@ -206,7 +206,7 @@ private struct MacSearchPage: View {
             Section {
                 Toggle("Search Inside Code", isOn: $settings.searchInCode)
             } footer: {
-                FooterText("When on, searching also matches the code in your snippets, not just titles and descriptions.")
+                InfoFooter("When on, searching also matches the code in your snippets, not just titles and descriptions.")
             }
             Section {
                 Toggle("Show in Menu Bar", isOn: $settings.quickSearchInMenuBar)
@@ -217,7 +217,7 @@ private struct MacSearchPage: View {
             } header: {
                 Text("Quick Search")
             } footer: {
-                FooterText("Find a snippet from anywhere: press the shortcut or click the menu bar icon, type, then choose a snippet with Return. ⌘Return always opens it in ByteCache.")
+                InfoFooter("Find a snippet from anywhere: press the shortcut or click the menu bar icon, type, then choose a snippet with Return. ⌘Return always opens it in ByteCache.")
             }
             Section {
                 Picker("Return", selection: $settings.quickSearchReturnAction) {
@@ -252,7 +252,7 @@ private struct MacSearchPage: View {
             } header: {
                 Text("Menu Bar")
             } footer: {
-                FooterText("Menu Bar Only hides ByteCache from the Dock and the app switcher; open the main window from the menu bar icon. Takes effect right away.")
+                InfoFooter("Menu Bar Only hides ByteCache from the Dock and the app switcher; open the main window from the menu bar icon. Takes effect right away.")
             }
         }
         .navigationTitle("Search")

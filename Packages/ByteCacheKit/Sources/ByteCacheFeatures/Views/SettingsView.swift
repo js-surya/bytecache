@@ -90,9 +90,9 @@ public struct SettingsView: View {
                 Text(SettingsSection.snippets.title)
             } footer: {
                 #if os(iOS)
-                FooterText("Search Inside Code also matches the code itself, not just titles and descriptions. Show Scan Tip shows the scanner's tip again the next time you scan.")
+                InfoFooter("Search Inside Code also matches the code itself, not just titles and descriptions. Show Scan Tip shows the scanner's tip again the next time you scan.")
                 #else
-                FooterText("Search Inside Code also matches the code itself, not just titles and descriptions.")
+                InfoFooter("Search Inside Code also matches the code itself, not just titles and descriptions.")
                 #endif
             }
 
@@ -242,9 +242,9 @@ struct HapticsSettingsView: View {
                 }
             } footer: {
                 #if os(macOS)
-                FooterText("Gentle taps when you scan code, when a scan works or fails, and when you change a setting. On Mac you feel them on a Force Touch trackpad.")
+                InfoFooter("Gentle taps when you scan code, when a scan works or fails, and when you change a setting. On Mac you feel them on a Force Touch trackpad.")
                 #else
-                FooterText("Gentle taps when you scan code, when a scan works or fails, and when you change a setting. Changing the strength plays a sample.")
+                InfoFooter("Gentle taps when you scan code, when a scan works or fails, and when you change a setting. Changing the strength plays a sample.")
                 #endif
             }
         }
@@ -315,9 +315,9 @@ struct AppearanceSettingsView: View {
                         Text(error).foregroundStyle(.red)
                     } else {
                         #if os(macOS)
-                        FooterText("Shown in the Dock while ByteCache is open. Finder and Launchpad keep the default icon.")
+                        InfoFooter("Shown in the Dock while ByteCache is open. Finder and Launchpad keep the default icon.")
                         #else
-                        FooterText("Each icon has its own look for the Home Screen's Dark, Tinted and Clear styles.")
+                        InfoFooter("Each icon has its own look for the Home Screen's Dark, Tinted and Clear styles.")
                         #endif
                     }
                 }
@@ -346,7 +346,7 @@ struct AppearanceSettingsView: View {
             } header: {
                 Text("Language Icons")
             } footer: {
-                FooterText("Shown next to languages in the sidebar, snippet lists, files and the language picker. Logos from Devicon; where a logo is black or missing, Colour uses the language's colour from GitHub Linguist. Trademarks belong to their owners.")
+                InfoFooter("Shown next to languages in the sidebar, snippet lists, files and the language picker. Logos from Devicon; where a logo is black or missing, Colour uses the language's colour from GitHub Linguist. Trademarks belong to their owners.")
             }
             Section("Accent Color") {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 14) {
@@ -504,7 +504,7 @@ struct AboutView: View {
                 Section {
                     LabeledContent("Widgets", value: WidgetSnapshotStore().sharing)
                 } footer: {
-                    FooterText("How widgets get your snippets on this install.")
+                    InfoFooter("How widgets get your snippets on this install.")
                 }
             }
             #endif
@@ -673,7 +673,7 @@ struct ICloudSyncSettingsView: View {
             } header: {
                 Text("Stays on this device")
             } footer: {
-                FooterText("Servers added on another device appear here signed out — sign in once on each device. Removing a server removes it from all your devices.")
+                InfoFooter("Servers added on another device appear here signed out — sign in once on each device. Removing a server removes it from all your devices.")
             }
         }
         .navigationTitle("iCloud Sync")
@@ -689,7 +689,7 @@ struct HandoffSettingsView: View {
             Section {
                 Toggle("Handoff", isOn: $settings.handoffEnabled)
             } footer: {
-                FooterText("Pick up the snippet you're viewing on your other iPhone, iPad or Mac. Your devices need the same Apple Account, with Bluetooth and Wi-Fi on. Devices without ByteCache open the snippet in the ByteStash web app. Handoff also needs to be on in the system settings (General → AirPlay & Continuity on iPhone and iPad, General → AirDrop & Handoff on Mac).")
+                InfoFooter("Pick up the snippet you're viewing on your other iPhone, iPad or Mac. Your devices need the same Apple Account, with Bluetooth and Wi-Fi on. Devices without ByteCache open the snippet in the ByteStash web app. Handoff also needs to be on in the system settings (General → AirPlay & Continuity on iPhone and iPad, General → AirDrop & Handoff on Mac).")
             }
         }
         .navigationTitle("Handoff")
@@ -719,7 +719,7 @@ struct SuggestionsSettingsView: View {
                 ))
                 .disabled(!isReady)
             } footer: {
-                FooterText("Suggest fills an empty title, description and categories when you save code, and Explain describes what a snippet does. What you type always wins.")
+                InfoFooter("Suggest fills an empty title, description and categories when you save code, and Explain describes what a snippet does. What you type always wins.")
             }
 
             Section {
@@ -734,8 +734,6 @@ struct SuggestionsSettingsView: View {
                         ForEach(AIProvider.allCases.filter { !$0.isOnDevice }) { Text($0.name).tag($0) }
                     }
                 }
-            } header: {
-                Text("Provider")
             } footer: {
                 VStack(alignment: .leading, spacing: 6) {
                     if settings.aiProvider.isOnDevice {
@@ -745,7 +743,7 @@ struct SuggestionsSettingsView: View {
                                   : why, symbol: .warning)
                                 .foregroundStyle(.orange)
                         } else {
-                            FooterText("Runs on this device. Your code never leaves it.")
+                            InfoFooter("Runs on this device. Your code never leaves it.")
                         }
                     } else {
                         FooterText("Code is sent to \(settings.aiProvider.recipient) only when you tap Suggest or Explain.")
@@ -793,7 +791,7 @@ struct AINotesSettingsView: View {
                     }
                     .onChange(of: settings.aiNotesLimit) { aiNotes.applyLimit() }
                 } footer: {
-                    FooterText("Explain keeps its answer as a note under the code. Notes stay on this device and, with iCloud Sync on, your other devices; never on your ByteStash server. When the limit is reached, the oldest note makes room.")
+                    InfoFooter("Explain keeps its answer as a note under the code. Notes stay on this device and, with iCloud Sync on, your other devices; never on your ByteStash server. When the limit is reached, the oldest note makes room.")
                 }
                 Section {
                     Button("Clear All AI Notes", role: .destructive) { confirmingClear = true }
@@ -914,7 +912,7 @@ struct AccountSettingsView: View {
                     }
                     .frame(maxWidth: .infinity)
                 } footer: {
-                    FooterText("Signing out keeps the server in Servers, so signing in again is one step.")
+                    InfoFooter("Signing out keeps the server in Servers, so signing in again is one step.")
                 }
             }
         }

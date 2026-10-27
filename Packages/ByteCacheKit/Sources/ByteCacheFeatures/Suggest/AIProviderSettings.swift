@@ -78,7 +78,7 @@ struct AIProviderSection: View {
                 if case .failed(let message) = check {
                     Label(message, symbol: .warning).foregroundStyle(.orange)
                 }
-                FooterText(footer)
+                InfoFooter(footer)
             }
         }
         .sheet(isPresented: $choosingModel) {

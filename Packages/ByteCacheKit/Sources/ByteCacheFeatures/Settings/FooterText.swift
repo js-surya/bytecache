@@ -21,6 +21,39 @@ public struct FooterText: View {
     }
 }
 
+/// A section note that stays out of the way: a small ⓘ that shows the text in a popover when tapped.
+/// For explanations people can live without; warnings, consent and steps they need stay `FooterText`.
+public struct InfoFooter: View {
+    let text: String
+    @State private var showing = false
+
+    public init(_ text: String) {
+        self.text = text
+    }
+
+    public var body: some View {
+        Button { showing = true } label: {
+            Icon(.infoCircle)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .padding(.vertical, 2)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("More Info")
+        .accessibilityHint(text)
+        .help(text)
+        .popover(isPresented: $showing, arrowEdge: .top) {
+            Text(text)
+                .font(.callout)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(width: 300, alignment: .leading)
+                .padding(16)
+                .presentationCompactAdaptation(.popover)
+        }
+    }
+}
+
 private func justifiedString(_ text: String, font: Any, color: Any) -> NSAttributedString {
     let paragraph = NSMutableParagraphStyle()
     paragraph.alignment = .justified
