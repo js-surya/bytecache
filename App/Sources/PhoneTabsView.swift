@@ -16,6 +16,7 @@ struct PhoneTabsView: View {
     let onNew: () -> Void
     let onScan: () -> Void
     let onScanPhoto: () -> Void
+    let onDrop: ([NSItemProvider]) -> Void
     let onEdit: (Snippet) -> Void
     let onCapture: (String) -> Void
 
@@ -50,7 +51,8 @@ struct PhoneTabsView: View {
 
     init(services: AppServices, all: SnippetListModel, sidebar: SidebarModel, clipboard: ClipboardWatcher,
          allSelection: Binding<Snippet.ID?>, onNew: @escaping () -> Void, onScan: @escaping () -> Void,
-         onScanPhoto: @escaping () -> Void, onEdit: @escaping (Snippet) -> Void, onCapture: @escaping (String) -> Void) {
+         onScanPhoto: @escaping () -> Void, onEdit: @escaping (Snippet) -> Void, onCapture: @escaping (String) -> Void,
+         onDrop: @escaping ([NSItemProvider]) -> Void) {
         self.services = services
         self.all = all
         self.sidebar = sidebar
@@ -59,6 +61,7 @@ struct PhoneTabsView: View {
         self.onNew = onNew
         self.onScan = onScan
         self.onScanPhoto = onScanPhoto
+        self.onDrop = onDrop
         self.onEdit = onEdit
         self.onCapture = onCapture
         func model(_ item: SidebarItem) -> SnippetListModel {
@@ -202,6 +205,11 @@ struct PhoneTabsView: View {
 
     private func list(_ model: SnippetListModel, selection: Binding<Snippet.ID?>) -> some View {
         SnippetListView(model: model, selection: selection, showsSearchField: false)
+            // Code files or text dragged in from another app (iPhone, and iPhone Duo's Split View) (CP-92).
+            .onDrop(of: DropImport.types, isTargeted: nil) { providers in
+                onDrop(providers)
+                return true
+            }
             .toolbar { settingsButton }
             // Stay in the bar when it's short of room (vertical bars on iPhone Duo); Sort goes first.
             .toolbar(overflowPriority: .high) {

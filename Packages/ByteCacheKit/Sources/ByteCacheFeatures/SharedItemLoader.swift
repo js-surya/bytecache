@@ -63,7 +63,7 @@ public enum SharedItemLoader {
         return .failure(tooLarge ? .tooLarge : .noText)
     }
 
-    @MainActor private static func loadURL(_ provider: NSItemProvider, type: UTType) async -> URL? {
+    @MainActor static func loadURL(_ provider: NSItemProvider, type: UTType) async -> URL? {
         let item = try? await provider.loadItem(forTypeIdentifier: type.identifier)
         switch item {
         case let url as URL: return url
@@ -73,7 +73,7 @@ public enum SharedItemLoader {
         }
     }
 
-    @MainActor private static func loadText(_ provider: NSItemProvider) async -> String? {
+    @MainActor static func loadText(_ provider: NSItemProvider) async -> String? {
         let item = try? await provider.loadItem(forTypeIdentifier: UTType.plainText.identifier)
         switch item {
         case let string as String: return string
@@ -83,7 +83,7 @@ public enum SharedItemLoader {
         }
     }
 
-    private static func readTextFile(_ url: URL) -> Result<String, ShareProblem> {
+    static func readTextFile(_ url: URL) -> Result<String, ShareProblem> {
         let scoped = url.startAccessingSecurityScopedResource()
         defer { if scoped { url.stopAccessingSecurityScopedResource() } }
         let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0

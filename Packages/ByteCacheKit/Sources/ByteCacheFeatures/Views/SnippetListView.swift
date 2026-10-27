@@ -132,6 +132,8 @@ public struct SnippetListView: View {
     private func row(_ snippet: Snippet) -> some View {
         rowLabel(snippet)
             .tag(snippet.id)
+            // Drag a snippet out: its code into other apps, its file into Finder or Files (CP-92).
+            .draggable(SnippetDragItem(snippet))
             .task { await model.loadMoreIfNeeded(current: snippet) }
             .contextMenu { SnippetActions(snippet: snippet, model: model) }
             #if os(iOS)
