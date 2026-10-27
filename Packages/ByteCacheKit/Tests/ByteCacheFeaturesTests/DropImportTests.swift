@@ -1,4 +1,5 @@
 import XCTest
+import UniformTypeIdentifiers
 @testable import ByteCacheFeatures
 import ByteCacheCore
 
@@ -63,6 +64,28 @@ final class DropImportTests: XCTestCase {
         XCTAssertEqual(try fromUTF16.get().first?.text, csv)
         let fromLatin = try await dropped("latin.csv", csv.data(using: .windowsCP1252)!)
         XCTAssertEqual(try fromLatin.get().first?.text, csv)
+    }
+
+    /// Finder described the CSV as text but its text was the file's location (CP-92): the file's contents
+    /// are read, under its name.
+    @MainActor
+    func testFileOfferedAsContentsOnlyIsRead() async throws {
+        let csv = "X,Y,Z\n1,2,3\n"
+        let provider = NSItemProvider()
+        provider.suggestedName = "point_cloud.csv"
+        provider.registerFileRepresentation(forTypeIdentifier: UTType.commaSeparatedText.identifier, visibility: .all) { done in
+            let url = try? self.file("copy-\(UUID().uuidString).csv", Data(csv.utf8))
+            done(url, false, nil)
+            return nil
+        }
+        let result = await DropImport.load([provider])
+        XCTAssertEqual(try result.get(), [DroppedFile(name: "point_cloud.csv", text: csv)])
+    }
+
+    @MainActor
+    func testSelectedTextIsStillText() async throws {
+        let result = await DropImport.load([NSItemProvider(object: "let x = 1" as NSString)])
+        XCTAssertEqual(try result.get(), [DroppedFile(name: nil, text: "let x = 1")])
     }
 
     func testFolderIsRefused() {

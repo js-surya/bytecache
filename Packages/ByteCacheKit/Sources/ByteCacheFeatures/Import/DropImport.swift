@@ -17,7 +17,7 @@ public struct DroppedFile: Equatable, Sendable {
 /// One file becomes a new snippet; several become one snippet with several files.
 public enum DropImport {
     /// What the list accepts.
-    public static let types: [UTType] = [.fileURL, .plainText]
+    public static let types: [UTType] = [.fileURL, .plainText, .data]
     /// More files than this in one drop is more likely a mistake than a snippet.
     public static let maxFiles = 20
 
@@ -26,31 +26,58 @@ public enum DropImport {
         var files: [DroppedFile] = []
         var problem: ShareProblem?
         for provider in providers.prefix(maxFiles) {
-            let types = provider.registeredTypeIdentifiers.joined(separator: ", ")
-            if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
-                // A sandboxed Mac app can't always open the dragged file's path, so the file itself is
-                // asked for first (the system hands over a readable copy); the path is the fallback.
-                let url = await SharedItemLoader.loadURL(provider, type: .fileURL)
-                var result = await readFileRepresentation(provider)
-                if case .success(var file) = result, let url, !url.hasDirectoryPath {
-                    file.name = url.lastPathComponent // the copy has a generic name; keep the original's
-                    result = .success(file)
-                } else if case .failure = result, let url {
-                    result = read(url)
-                }
-                switch result {
-                case .success(let file): files.append(file)
-                case .failure(let error):
-                    AppLog.shared.record("drop", "couldn't read a dropped file (\(error)); types: \(types)")
-                    problem = problem ?? error
-                }
-            } else if provider.hasItemConformingToTypeIdentifier(UTType.plainText.identifier),
-                      let text = await SharedItemLoader.loadText(provider), text.contains(where: { !$0.isWhitespace }) {
-                files.append(DroppedFile(name: nil, text: text))
+            switch await loadOne(provider) {
+            case .success(let file):
+                files.append(file)
+            case .failure(let error):
+                let types = provider.registeredTypeIdentifiers.joined(separator: ", ")
+                AppLog.shared.record("drop", "couldn't use a dropped item (\(error)); types: \(types)")
+                problem = problem ?? error
             }
         }
         if !files.isEmpty { return .success(files) }
         return .failure(problem ?? .noText)
+    }
+
+    /// One dropped item, however the dragging app offers it. Finder may describe a CSV as text yet hand
+    /// over its location, and a sandboxed Mac app can't always open that path; so, in order: the file's
+    /// contents (a readable copy the system makes) named after the original, the file's path, text.
+    @MainActor
+    static func loadOne(_ provider: NSItemProvider) async -> Result<DroppedFile, ShareProblem> {
+        let url = provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier)
+            ? await SharedItemLoader.loadURL(provider, type: .fileURL) : nil
+        if url?.hasDirectoryPath == true { return .failure(.noText) }
+        var firstProblem: ShareProblem?
+        if offersFileContents(provider) {
+            switch await readFileRepresentation(provider) {
+            case .success(var file):
+                // The copy has a generic name; keep the original's.
+                file.name = url?.lastPathComponent ?? provider.suggestedName ?? file.name
+                return .success(file)
+            case .failure(let error): firstProblem = error
+            }
+        }
+        if let url {
+            switch read(url) {
+            case .success(let file): return .success(file)
+            case .failure(let error): firstProblem = firstProblem ?? error
+            }
+        }
+        if provider.hasItemConformingToTypeIdentifier(UTType.plainText.identifier),
+           let text = await SharedItemLoader.loadText(provider), text.contains(where: { !$0.isWhitespace }) {
+            return .success(DroppedFile(name: nil, text: text))
+        }
+        return .failure(firstProblem ?? .noText)
+    }
+
+    /// Whether the item carries a file's contents (not just text from a selection, or a link).
+    static func offersFileContents(_ provider: NSItemProvider) -> Bool {
+        if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) { return true }
+        // Text from a selection is plain text with no file behind it; a file has a more specific type
+        // (CSV, source code…) or a name.
+        return provider.suggestedName != nil && provider.registeredTypeIdentifiers.contains {
+            UTType($0)?.conforms(to: .data) == true && $0 != UTType.url.identifier
+        }
     }
 
     /// The dropped file's contents, copied by the system so the app may read it.
