@@ -51,7 +51,7 @@ public enum DropImport {
         if offersFileContents(provider) {
             switch await readFileRepresentation(provider) {
             case .success(var file):
-                // The copy has a generic name; keep the original's.
+                // Keep the original's name: the path's, the one offered, or the copy's (usually the same).
                 file.name = url?.lastPathComponent ?? provider.suggestedName ?? file.name
                 return .success(file)
             case .failure(let error): firstProblem = error
@@ -70,13 +70,15 @@ public enum DropImport {
         return .failure(firstProblem ?? .noText)
     }
 
-    /// Whether the item carries a file's contents (not just text from a selection, or a link).
+    /// Whether the item carries a file's contents, not just text from a selection or a link. A Finder
+    /// drag can offer nothing but the file's type, e.g. only `public.comma-separated-values-text`.
     static func offersFileContents(_ provider: NSItemProvider) -> Bool {
         if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) { return true }
-        // Text from a selection is plain text with no file behind it; a file has a more specific type
-        // (CSV, source code…) or a name.
-        return provider.suggestedName != nil && provider.registeredTypeIdentifiers.contains {
-            UTType($0)?.conforms(to: .data) == true && $0 != UTType.url.identifier
+        return provider.registeredTypeIdentifiers.contains { identifier in
+            guard let type = UTType(identifier), type.conforms(to: .data), !type.conforms(to: .url) else { return false }
+            // Plain text without a name is a selection; a named item, or a more specific type
+            // (CSV, source code, JSON…), is a file.
+            return provider.suggestedName != nil || (type != .plainText && type != .utf8PlainText)
         }
     }
 

@@ -82,6 +82,22 @@ final class DropImportTests: XCTestCase {
         XCTAssertEqual(try result.get(), [DroppedFile(name: "point_cloud.csv", text: csv)])
     }
 
+    /// The real Finder drag (from the app's log): only the CSV type, no path and no name.
+    @MainActor
+    func testFileOfferedOnlyAsItsTypeIsRead() async throws {
+        let csv = "X,Y,Z\n1,2,3\n"
+        let provider = NSItemProvider()
+        provider.registerFileRepresentation(forTypeIdentifier: UTType.commaSeparatedText.identifier, visibility: .all) { done in
+            let url = try? self.file("point_cloud.csv", Data(csv.utf8))
+            done(url, false, nil)
+            return nil
+        }
+        XCTAssertEqual(provider.registeredTypeIdentifiers, ["public.comma-separated-values-text"])
+        let result = await DropImport.load([provider])
+        XCTAssertEqual(try result.get().first?.text, csv)
+        XCTAssertEqual(try result.get().first?.name?.hasSuffix(".csv"), true)
+    }
+
     @MainActor
     func testSelectedTextIsStillText() async throws {
         let result = await DropImport.load([NSItemProvider(object: "let x = 1" as NSString)])
