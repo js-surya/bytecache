@@ -92,15 +92,13 @@ public struct SettingsView: View {
                     SettingsLabel(title: "Show Scan Tip", symbol: .scan, color: .teal)
                 }
                 #endif
-                // Devices that can't run Apple Intelligence don't show it, unless notes from another device
-                // are here to manage.
-                if !AIAvailability.current.hidesFeatures || (aiNotes?.count ?? 0) > 0 {
-                    NavigationLink {
-                        SuggestionsSettingsView()
-                    } label: {
-                        SettingsLabel(title: "Smart Suggestions", symbol: .sparkles, color: .pink,
-                                      value: settings.suggestionsEnabled && AIAvailability.current == .available ? "On" : "Off")
-                    }
+                // Shown everywhere: devices without Apple Intelligence can use their own API key (CP-93).
+                NavigationLink {
+                    SuggestionsSettingsView()
+                } label: {
+                    SettingsLabel(title: "Smart Suggestions", symbol: .sparkles, color: .pink,
+                                  value: !settings.suggestionsEnabled || !settings.aiIsReady ? "Off"
+                                      : settings.aiProvider.isOnDevice ? "On" : settings.aiProvider.name)
                 }
             } header: {
                 Text(SettingsSection.snippets.title)
@@ -465,6 +463,7 @@ struct PrivacyInfoView: View {
                 Label("Language detection runs on this device.", symbol: .cpu)
                 Label("Bug reports leave the device only when you send one, after you've seen what's in it.", symbol: .bug)
                 Label("After an update, What's New loads that version's notes from GitHub.", symbol: .download)
+                Label("Smart Suggestions use Apple Intelligence on this device. If you choose your own AI provider instead, code you ask about goes straight to it, with your key.", symbol: .sparkles)
                 Label("AI Notes stay on your devices and in your iCloud, never on your server.", symbol: .sparkles)
             } footer: {
                 FooterText(AboutText.privacy)
@@ -693,25 +692,48 @@ struct SuggestionsSettingsView: View {
     /// Read again on returning to the app: turning Apple Intelligence on, or its download finishing,
     /// happens outside ByteCache.
     @State private var availability = AIAvailability.current
+    /// A provider that sends code elsewhere, waiting for the person to agree.
+    @State private var askingAbout: AIProvider?
+
+    private var isReady: Bool {
+        settings.aiProvider.isOnDevice ? availability == .available : settings.aiIsReady
+    }
 
     var body: some View {
         @Bindable var settings = settings
         SettingsList {
             Section {
-                // Shown off while Apple Intelligence can't be used; the choice itself is kept for later.
+                Picker("Provider", selection: Binding(
+                    get: { settings.aiProvider },
+                    set: { provider in
+                        if provider.isOnDevice { settings.aiProvider = provider } else { askingAbout = provider }
+                    }
+                )) {
+                    ForEach(AIProvider.allCases) { provider in
+                        Text(provider.isOnDevice ? "Apple Intelligence (On Device)" : provider.name).tag(provider)
+                    }
+                }
+                // Shown off while the provider can't be used; the choice itself is kept for later.
                 Toggle("Suggest Titles & Tags", isOn: Binding(
-                    get: { settings.suggestionsEnabled && availability == .available },
+                    get: { settings.suggestionsEnabled && isReady },
                     set: { settings.suggestionsEnabled = $0 }
                 ))
-                .disabled(availability != .available)
+                .disabled(!isReady)
             } footer: {
                 VStack(alignment: .leading, spacing: 6) {
-                    FooterText("When you save code, ByteCache suggests a title, a one-line description and categories, and the Explain button describes what a snippet does — all with Apple Intelligence on this device. Your code never leaves it. Suggestions only fill empty fields; what you type always wins.")
-                    if let why = availability.explanation {
-                        Label(why, symbol: .warning)
+                    FooterText(settings.aiProvider.isOnDevice
+                        ? "When you save code, ByteCache suggests a title, a one-line description and categories, and the Explain button describes what a snippet does — all with Apple Intelligence on this device. Your code never leaves it. Suggestions only fill empty fields; what you type always wins. You can also use your own API key with another provider."
+                        : "When you save code, tap Suggest for a title, a one-line description and categories, and the Explain button describes what a snippet does, using \(settings.aiProvider.name). Code is sent only when you tap one of them. Suggestions only fill empty fields; what you type always wins.")
+                    if settings.aiProvider.isOnDevice, let why = availability.explanation {
+                        Label(availability.hidesFeatures
+                              ? "Apple Intelligence isn't available on this device. To use Smart Suggestions, choose another provider and add your API key."
+                              : why, symbol: .warning)
                             .foregroundStyle(.orange)
                     }
                 }
+            }
+            if !settings.aiProvider.isOnDevice {
+                AIProviderSection(provider: settings.aiProvider)
             }
             if let aiNotes {
                 Section {
@@ -731,6 +753,17 @@ struct SuggestionsSettingsView: View {
             }
         }
         .navigationTitle("Smart Suggestions")
+        .alert(askingAbout?.consentTitle ?? "",
+               isPresented: Binding(get: { askingAbout != nil }, set: { if !$0 { askingAbout = nil } }),
+               presenting: askingAbout) { provider in
+            Button("Use \(provider.name)") {
+                settings.aiProvider = provider
+                settings.suggestionsEnabled = true
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: { provider in
+            Text(provider.consentMessage)
+        }
         .confirmationDialog("Clear All AI Notes?", isPresented: $confirmingClear, titleVisibility: .visible) {
             Button("Clear All AI Notes", role: .destructive) { aiNotes?.clearAll() }
         } message: {

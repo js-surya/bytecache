@@ -78,7 +78,7 @@ public struct CaptureSheet: View {
         }
         .formStyle(.grouped)
         .navigationTitle("Save to ByteCache")
-        .task { if model.canSuggest { await model.suggest() } }
+        .task { if model.suggestsOnOpen { await model.suggest() } }
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

@@ -1,6 +1,6 @@
 # ByteCache Privacy Policy
 
-_Last updated: 2026-10-21_
+_Last updated: 2026-10-27_
 
 ByteCache is an unofficial client for ByteStash, the self-hosted code snippet manager.
 
@@ -12,7 +12,8 @@ ByteCache is an unofficial client for ByteStash, the self-hosted code snippet ma
 - **Clipboard:** ByteCache only checks whether the clipboard contains text. It reads the text only when you tap Paste.
 - **Language detection** runs entirely on your device.
 - **Scanning code** (camera, photos, images) uses Apple's on-device text recognition. Pictures are not stored or sent anywhere; only the text you choose to save goes to your server.
-- **Smart suggestions** (optional) use Apple Intelligence on your device to propose a title, description and categories. Your code is not sent anywhere.
+- **Smart suggestions** (optional) propose a title, description and categories, and Explain describes a snippet. By default they use Apple Intelligence on your device, and your code is not sent anywhere.
+- **Your own AI provider** (optional; Settings → Smart Suggestions → Provider): you can instead use OpenAI, Anthropic, Google Gemini, OpenRouter, or an Ollama or other server you run, with your own API key. ByteCache asks before turning this on. Then, each time it suggests a title or explains a snippet, it sends that snippet's code, language and title directly from your device to the provider you chose; that provider's terms and privacy policy apply, and it may charge your account. Test Connection asks the provider for its list of models and sends no code. Your API key is stored in the Apple Keychain on your device, is not synced to iCloud, and is sent only to that provider. Nothing goes to ByteCache's developer. Choosing Apple Intelligence again stops all of this; Remove API Key deletes the key.
 - **App Lock** uses Face ID / Touch ID / Optic ID or your passcode through iOS/macOS; ByteCache never sees biometric data.
 - **Widgets** show pinned and recent snippets from a small file stored only on your device. While App Lock is on they show titles only, unless you choose to hide everything or show everything (Settings → App Lock → Widgets).
 - **iCloud sync** (optional, on by default; Settings → iCloud Sync): your display settings and the list of server addresses are stored in your private iCloud key-value storage so your other devices match. Logins, API keys, user names and snippets are never put in iCloud.
@@ -24,7 +25,7 @@ ByteCache is an unofficial client for ByteStash, the self-hosted code snippet ma
 - **Backups** you export are files you choose where to put; ByteCache keeps no copy.
 - **Bug reports** (only when you send one; Settings → Report a Bug, or the prompt after ByteCache closed unexpectedly): you choose to open a GitHub issue, write an email to hello@suryajs.me or copy the report, and you see all of it first. Besides what you type, it can include the app version, system and device model; app details (your settings, the number of servers and how you sign in, network type, Low Power Mode); a recent activity log of requests with their status and timing, screen names and errors; and, after a crash or hang, the report iOS or macOS made (call stacks, no personal data), which stays on your device until you send a report. None of it contains your code, searches, server addresses, passwords or tokens, and you can leave the details out with one switch. On the device the activity log keeps only the latest 400 lines.
 - **What's New:** once after you update, ByteCache asks GitHub's public API (`api.github.com`) for that version's release notes, to show you what changed. The request carries nothing about you or your snippets; GitHub sees your IP address, as with any web request. Updates themselves come through TestFlight and the App Store.
-- **AI Notes:** when you use Explain, Apple Intelligence writes the explanation on your device and ByteCache keeps it as a note under the snippet's code. Notes are kept on your device and, with iCloud Sync on, in your private iCloud so your other devices show them. They're never sent to your ByteStash server. You can delete one, or clear them all in Settings → Smart Suggestions; only the newest (25, 50 or 100, your choice) are kept.
+- **AI Notes:** when you use Explain, the explanation (written by Apple Intelligence on your device, or by your own provider) is kept as a note under the snippet's code. Notes are kept on your device and, with iCloud Sync on, in your private iCloud so your other devices show them. They're never sent to your ByteStash server. You can delete one, or clear them all in Settings → Smart Suggestions; only the newest (25, 50 or 100, your choice) are kept.
 - **Spotlight:** titles and the first lines of recently viewed snippets are indexed on your device so Spotlight can find them. Signing out removes them from the index.
 
 Questions: email hello@suryajs.me or open an issue in the ByteCache repository.

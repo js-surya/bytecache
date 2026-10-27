@@ -71,6 +71,8 @@ public final class CaptureModel {
     }
 
     public var canSuggest: Bool { suggester != nil }
+    /// Suggest as soon as the sheet opens: only on device, never sending code without a tap.
+    public var suggestsOnOpen: Bool { suggester?.runsOnDevice ?? false }
 
     /// Fills the title (if still the default), description and categories (if empty).
     public func suggest() async {

@@ -27,6 +27,13 @@ public struct SnippetSuggestion: Equatable, Sendable {
 /// Suggests a title, description and categories for a piece of code.
 public protocol SnippetSuggester: Sendable {
     func suggest(code: String, language: String, knownCategories: [String]) async throws -> SnippetSuggestion
+    /// On-device suggesters may run on their own when code is captured; others only when the person
+    /// taps Suggest, so code isn't sent anywhere without asking (CP-93).
+    var runsOnDevice: Bool { get }
+}
+
+extension SnippetSuggester {
+    public var runsOnDevice: Bool { true }
 }
 
 public enum SnippetSuggesters {
@@ -57,12 +64,8 @@ struct GeneratedSnippetInfo {
 @available(iOS 26.0, macOS 26.0, *)
 struct AppleIntelligenceSuggester: SnippetSuggester {
     func suggest(code: String, language: String, knownCategories: [String]) async throws -> SnippetSuggestion {
-        let known = knownCategories.prefix(40).joined(separator: ", ")
-        let session = LanguageModelSession(instructions: """
-        You label code snippets for a developer's snippet library. Be concise and specific to what the code does.
-        \(known.isEmpty ? "" : "Prefer these existing categories when they fit: \(known).")
-        """)
-        let prompt = "Language: \(language)\nCode:\n\(String(code.prefix(4000)))"
+        let session = LanguageModelSession(instructions: AIPrompts.suggestInstructions(knownCategories: knownCategories))
+        let prompt = AIPrompts.suggestPrompt(code: code, language: language)
         let info = try await session.respond(to: prompt, generating: GeneratedSnippetInfo.self).content
         return SnippetSuggestion(title: info.title, description: info.summary, categories: info.categories)
     }

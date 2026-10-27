@@ -9,15 +9,13 @@ public struct MacSettingsView: View {
     @State private var page: MacSettingsPage? = .account
     @Environment(AppSettings.self) private var settings
     @Environment(AppLockModel.self) private var lock
-    @Environment(AINoteStore.self) private var aiNotes: AINoteStore?
 
     public init(session: SessionManager) {
         self.session = session
     }
 
-    /// Smart Suggestions also shows where Apple Intelligence can't run, when there are AI Notes to manage.
     private func shows(_ page: MacSettingsPage) -> Bool {
-        page == .suggestions && (aiNotes?.count ?? 0) > 0 ? true : page.isAvailable(session)
+        page.isAvailable(session)
     }
 
     public var body: some View {
@@ -181,9 +179,6 @@ enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
         case .account, .apiKeys, .password, .assistants:
             if case .signedIn = session.state { return true }
             return false
-        case .suggestions:
-            // Macs that can't run Apple Intelligence (Intel) don't show it at all.
-            return !AIAvailability.current.hidesFeatures
         default:
             return true
         }

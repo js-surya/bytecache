@@ -53,7 +53,7 @@
 **Edit**
 - A real code editor: live colouring, line numbers, auto-indent, auto-closing brackets, matching-bracket highlight, find and replace
 - Multi-file snippets, categories, public snippets, bulk actions
-- Title and tag suggestions and "Explain this snippet" with Apple Intelligence (iOS / macOS 26)
+- Title and tag suggestions and "Explain this snippet" with Apple Intelligence (iOS / macOS 26), or your own OpenAI, Anthropic, Gemini, OpenRouter or Ollama key on any device
 
 **Yours**
 - Several servers, password or API-key login, App Lock with Face ID or Touch ID
