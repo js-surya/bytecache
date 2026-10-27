@@ -115,6 +115,11 @@ struct MainSplitView: View {
                 clipboardEmpty = true
             }
         }
+        .task(id: AppNavigator.shared.pendingCaptureText) {
+            guard let text = AppNavigator.shared.pendingCaptureText else { return }
+            AppNavigator.shared.pendingCaptureText = nil
+            startCapture(text)
+        }
         .task(id: AppNavigator.shared.pendingScan) {
             guard AppNavigator.shared.pendingScan else { return }
             AppNavigator.shared.pendingScan = false
