@@ -40,6 +40,31 @@ final class DropImportTests: XCTestCase {
         XCTAssertEqual(DropImport.read(url), .failure(.tooLarge))
     }
 
+    /// What Finder hands over: a drag item for the file (CP-92: a CSV was refused).
+    @MainActor
+    private func dropped(_ name: String, _ data: Data) async throws -> Result<[DroppedFile], ShareProblem> {
+        let url = try file(name, data)
+        return await DropImport.load([try XCTUnwrap(NSItemProvider(contentsOf: url))])
+    }
+
+    @MainActor
+    func testCSVFromFinderIsAccepted() async throws {
+        let csv = "name,price\nTea,3.50\nCafé,4.00\n"
+        let result = try await dropped("prices.csv", Data(csv.utf8))
+        XCTAssertEqual(try result.get(), [DroppedFile(name: "prices.csv", text: csv)])
+    }
+
+    @MainActor
+    func testCSVInExcelEncodingsIsAccepted() async throws {
+        let csv = "name,price\nTea,3.50\nCafé,4.00\n"
+        // Excel's "Unicode text" (UTF-16 with a byte order mark) and Windows Latin.
+        var utf16 = Data([0xFF, 0xFE]); utf16.append(csv.data(using: .utf16LittleEndian)!)
+        let fromUTF16 = try await dropped("utf16.csv", utf16)
+        XCTAssertEqual(try fromUTF16.get().first?.text, csv)
+        let fromLatin = try await dropped("latin.csv", csv.data(using: .windowsCP1252)!)
+        XCTAssertEqual(try fromLatin.get().first?.text, csv)
+    }
+
     func testFolderIsRefused() {
         XCTAssertEqual(DropImport.read(folder), .failure(.noText))
     }

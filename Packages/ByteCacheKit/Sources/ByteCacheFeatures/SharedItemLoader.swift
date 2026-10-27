@@ -88,9 +88,30 @@ public enum SharedItemLoader {
         defer { if scoped { url.stopAccessingSecurityScopedResource() } }
         let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
         guard size <= maxFileBytes else { return .failure(.tooLarge) }
-        guard let data = try? Data(contentsOf: url), let text = String(data: data, encoding: .utf8) else {
+        guard let data = try? Data(contentsOf: url), let text = decodeText(data) else {
             return .failure(.noText)
         }
         return .success(text)
+    }
+
+    /// Text in the encodings code and CSV files come in: UTF-8, UTF-16 with a byte-order mark (Excel's
+    /// "Unicode Text"), or Windows Latin (Excel's CSV and older editors). Nil for binary data
+    /// (images, apps), which has control bytes text doesn't (CP-92: a CSV was refused).
+    static func decodeText(_ data: Data) -> String? {
+        let bytes = [UInt8](data.prefix(3))
+        if bytes.starts(with: [0xEF, 0xBB, 0xBF]) { return String(data: data.dropFirst(3), encoding: .utf8) }
+        if bytes.starts(with: [0xFF, 0xFE]) || bytes.starts(with: [0xFE, 0xFF]) { return String(data: data, encoding: .utf16) }
+        guard looksLikeText(data) else { return nil }
+        return String(data: data, encoding: .utf8) ?? String(data: data, encoding: .windowsCP1252)
+    }
+
+    /// No NUL bytes and almost no other control characters (tabs and line breaks are fine).
+    static func looksLikeText(_ data: Data) -> Bool {
+        var control = 0
+        for byte in data {
+            if byte == 0 { return false }
+            if byte < 0x20, byte != 0x09, byte != 0x0A, byte != 0x0D, byte != 0x0C { control += 1 }
+        }
+        return control * 200 <= data.count
     }
 }
