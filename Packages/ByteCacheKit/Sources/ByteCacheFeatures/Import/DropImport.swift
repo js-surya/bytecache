@@ -1,3 +1,4 @@
+import ByteCacheCore
 import Foundation
 import UniformTypeIdentifiers
 
@@ -25,11 +26,23 @@ public enum DropImport {
         var files: [DroppedFile] = []
         var problem: ShareProblem?
         for provider in providers.prefix(maxFiles) {
-            if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier),
-               let url = await SharedItemLoader.loadURL(provider, type: .fileURL) {
-                switch read(url) {
+            let types = provider.registeredTypeIdentifiers.joined(separator: ", ")
+            if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
+                // A sandboxed Mac app can't always open the dragged file's path, so the file itself is
+                // asked for first (the system hands over a readable copy); the path is the fallback.
+                let url = await SharedItemLoader.loadURL(provider, type: .fileURL)
+                var result = await readFileRepresentation(provider)
+                if case .success(var file) = result, let url, !url.hasDirectoryPath {
+                    file.name = url.lastPathComponent // the copy has a generic name; keep the original's
+                    result = .success(file)
+                } else if case .failure = result, let url {
+                    result = read(url)
+                }
+                switch result {
                 case .success(let file): files.append(file)
-                case .failure(let error): problem = problem ?? error
+                case .failure(let error):
+                    AppLog.shared.record("drop", "couldn't read a dropped file (\(error)); types: \(types)")
+                    problem = problem ?? error
                 }
             } else if provider.hasItemConformingToTypeIdentifier(UTType.plainText.identifier),
                       let text = await SharedItemLoader.loadText(provider), text.contains(where: { !$0.isWhitespace }) {
@@ -38,6 +51,20 @@ public enum DropImport {
         }
         if !files.isEmpty { return .success(files) }
         return .failure(problem ?? .noText)
+    }
+
+    /// The dropped file's contents, copied by the system so the app may read it.
+    @MainActor
+    static func readFileRepresentation(_ provider: NSItemProvider) async -> Result<DroppedFile, ShareProblem> {
+        let type = provider.registeredTypeIdentifiers.first { $0 != UTType.fileURL.identifier
+            && UTType($0)?.conforms(to: .data) == true } ?? UTType.data.identifier
+        return await withCheckedContinuation { continuation in
+            _ = provider.loadFileRepresentation(forTypeIdentifier: type) { url, _ in
+                // The copy only lasts until this returns, so it's read here.
+                guard let url else { return continuation.resume(returning: .failure(.noText)) }
+                continuation.resume(returning: read(url))
+            }
+        }
     }
 
     /// A dropped file as code: text only (no binaries such as images or apps), up to the share limit.
