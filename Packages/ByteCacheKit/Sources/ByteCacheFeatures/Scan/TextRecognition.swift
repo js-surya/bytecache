@@ -27,6 +27,12 @@ public struct VisionTextRecognizer: TextRecognizing {
         accurateTimeLimit = .seconds(12)
     }
 
+    /// For tests: the real recognizer with another time limit for the accurate model.
+    init(accurateTimeLimit: Duration) {
+        readLines = Self.visionLines
+        self.accurateTimeLimit = accurateTimeLimit
+    }
+
     /// For tests: a fake line reader and time limit.
     init(accurateTimeLimit: Duration = .seconds(12), readLines: @escaping LineReader) {
         self.readLines = readLines
