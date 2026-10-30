@@ -30,6 +30,7 @@ public struct CategoryField: View {
                             }
                             .buttonStyle(.bordered)
                             .controlSize(.small)
+                            .touchTarget()
                             .accessibilityLabel("Remove \(category)")
                         }
                     }

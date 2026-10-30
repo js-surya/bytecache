@@ -123,6 +123,10 @@ enum CopyToastWindow {
                 MainActor.assumeIsolated { interacted() }
                 return event
             }
+            // Touches on the touchscreen Mac never reach event monitors (CP-95); a recognizer sees them.
+            let watcher = TouchWatcher { interacted() }
+            parent.contentView?.addGestureRecognizer(watcher)
+            touchWatcher = watcher
         }
     }
 
@@ -139,6 +143,32 @@ enum CopyToastWindow {
     private static func stopWatchingInteraction() {
         if let monitor { NSEvent.removeMonitor(monitor) }
         monitor = nil
+        if let touchWatcher { touchWatcher.view?.removeGestureRecognizer(touchWatcher) }
+        touchWatcher = nil
+    }
+
+    private static var touchWatcher: TouchWatcher?
+
+    /// Notices a finger touching the window and fails at once, so it never takes a touch from the
+    /// controls underneath.
+    final class TouchWatcher: NSGestureRecognizer {
+        private let onTouch: @MainActor () -> Void
+
+        init(onTouch: @escaping @MainActor () -> Void) {
+            self.onTouch = onTouch
+            super.init(target: nil, action: nil)
+            allowedTouchTypes = .direct
+            delaysPrimaryMouseButtonEvents = false
+        }
+
+        required init?(coder: NSCoder) { nil }
+
+        override func touchesBegan(with event: NSEvent) {
+            onTouch()
+            state = .failed
+        }
+
+        override func location(in view: NSView?) -> NSPoint { .zero }
     }
 
     private static func makePanel() -> NSPanel {

@@ -53,6 +53,7 @@ public struct LanguagePicker: View {
                             .buttonStyle(.bordered)
                             .buttonBorderShape(.capsule)
                             .controlSize(.mini)
+                            .touchTarget()
                     }
                 }
             }

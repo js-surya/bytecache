@@ -190,6 +190,7 @@ public struct QuickSearchView: View {
                 }
                 .toggleStyle(.button)
                 .controlSize(.small)
+                .touchTarget()
                 .help("Wrap long lines")
             }
             .font(.caption)

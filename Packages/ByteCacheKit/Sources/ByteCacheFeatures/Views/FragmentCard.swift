@@ -11,6 +11,8 @@ public struct FragmentCard: View {
     @State private var exporting = false
     @State private var showSource = false
     @State private var sharingImage = false
+    @State private var pinchStartSize: Double?
+    @Environment(AppSettings.self) private var settings
     #if DEBUG
     /// `-BCShareImage`: open Share as Image once for the first file shown (screenshots).
     @MainActor private static var debugShareImageShown = false
@@ -47,6 +49,14 @@ public struct FragmentCard: View {
                 MarkdownView(fragment.code)
             } else {
                 CodeView(code: fragment.code, language: fragment.language)
+                    // Pinch to change the code size (touch screens and trackpads; CP-95).
+                    .simultaneousGesture(MagnifyGesture()
+                        .onChanged { value in
+                            let start = pinchStartSize ?? settings.codeFontSize
+                            pinchStartSize = start
+                            settings.codeFontSize = (start * value.magnification).rounded()
+                        }
+                        .onEnded { _ in pinchStartSize = nil })
             }
         }
         .background(.background.secondary)
@@ -107,6 +117,7 @@ public struct FragmentCard: View {
             .labelsHidden()
             .fixedSize()
             .controlSize(.small)
+            .touchTarget()
         }
     }
 
@@ -117,6 +128,7 @@ public struct FragmentCard: View {
         .buttonStyle(.bordered)
         .controlSize(.small)
         .fixedSize()
+        .touchTarget()
         .help("Share as Image")
         // The icon-only label isn't spoken on its own; give the button its name.
         .accessibilityLabel("Share as Image")
@@ -139,6 +151,7 @@ public struct FragmentCard: View {
         .buttonStyle(.bordered)
         .controlSize(.small)
         .fixedSize()
+        .touchTarget()
         .accessibilityLabel(copied ? "Copied" : "Copy code")
     }
 }
