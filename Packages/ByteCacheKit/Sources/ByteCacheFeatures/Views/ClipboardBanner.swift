@@ -60,8 +60,10 @@ public struct ClipboardBanner: View {
             }
             .labelStyle(.titleAndIcon)
             .controlSize(.small)
+            .touchTarget()
             Button { watcher.dismiss() } label: { Icon(.close) }
                 .buttonStyle(.borderless)
+                .touchTarget()
                 .accessibilityLabel("Dismiss")
         }
         // A one-line floating bar over the list; it stops growing at the largest standard size.
