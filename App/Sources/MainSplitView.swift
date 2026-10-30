@@ -125,7 +125,7 @@ struct MainSplitView: View {
             AppNavigator.shared.pendingScan = false
             scanning = true
         }
-        .scanCodeFlow(isPresented: $scanning, choosingPhoto: $scanningPhoto) { startCapture($0, fromImage: true) }
+        .scanCodeFlow(isPresented: $scanning, choosingPhoto: $scanningPhoto) { startCapture($0, scanImage: $1) }
         .alert("Can't Save That", isPresented: Binding(get: { dropProblem != nil }, set: { if !$0 { dropProblem = nil } })) {
             Button("OK", role: .cancel) {}
         } message: {
@@ -361,14 +361,16 @@ struct MainSplitView: View {
         editor = model
     }
 
-    private func startCapture(_ text: String, fromImage: Bool = false, fileName: String? = nil) {
+    private func startCapture(_ text: String, scanImage: Data? = nil, fileName: String? = nil) {
         let session = services.session
         let model = CaptureModel(text: text, fileName: fileName, client: session.client, detector: services.detector,
                                  suggester: services.settings.suggester, knownCategories: sidebar.categories,
                                  queue: .shared) {
             session.handleUnauthorized()
         }
-        model.readFromImage = fromImage
+        model.readFromImage = scanImage != nil
+        model.scanImage = scanImage
+        model.scanFixer = scanImage == nil ? nil : services.settings.scanFixer
         capture = model
     }
 

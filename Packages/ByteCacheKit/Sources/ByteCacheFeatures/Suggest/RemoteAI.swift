@@ -56,35 +56,46 @@ public struct RemoteAIClient: Sendable {
     /// One answer to one question.
     /// No token limit except Anthropic's required one, set high: a low cap cuts answers off, and reasoning
     /// models can spend all of it thinking and answer nothing. Length is asked for in the instructions.
-    public func complete(system: String, prompt: String, maxTokens: Int = 8_192) async throws -> String {
+    /// `jpeg`: a picture sent with the prompt (Fix Scan), for models that can see images.
+    public func complete(system: String, prompt: String, jpeg: Data? = nil, maxTokens: Int = 8_192) async throws -> String {
         guard !model.isEmpty else { throw RemoteAIError.missingModel }
         let key = try apiKey()
         var request: URLRequest
         let body: [String: Any]
+        let picture = jpeg?.base64EncodedString()
         switch provider {
         case .appleIntelligence:
             preconditionFailure("Apple Intelligence runs on device")
         case .anthropic:
             request = URLRequest(url: URL(string: "https://api.anthropic.com/v1/messages")!)
+            let content: Any = picture.map {
+                [["type": "image", "source": ["type": "base64", "media_type": "image/jpeg", "data": $0]],
+                 ["type": "text", "text": prompt]] as [[String: Any]]
+            } ?? prompt
             body = ["model": model, "max_tokens": maxTokens, "system": system,
-                    "messages": [["role": "user", "content": prompt]]]
+                    "messages": [["role": "user", "content": content]]]
         case .gemini:
             let name = model.hasPrefix("models/") ? String(model.dropFirst(7)) : model
             guard let path = name.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
                   let url = URL(string: "https://generativelanguage.googleapis.com/v1beta/models/\(path):generateContent")
             else { throw RemoteAIError.missingModel }
             request = URLRequest(url: url)
+            let image: [[String: Any]] = picture.map { [["inline_data": ["mime_type": "image/jpeg", "data": $0]]] } ?? []
             // Gemma models on this API reject system instructions, so theirs go with the prompt.
             if name.lowercased().hasPrefix("gemini") {
                 body = ["systemInstruction": ["parts": [["text": system]]],
-                        "contents": [["role": "user", "parts": [["text": prompt]]]]]
+                        "contents": [["role": "user", "parts": image + [["text": prompt]]]]]
             } else {
-                body = ["contents": [["role": "user", "parts": [["text": system + "\n\n" + prompt]]]]]
+                body = ["contents": [["role": "user", "parts": image + [["text": system + "\n\n" + prompt]]]]]
             }
         case .openAI, .openRouter, .localServer:
             request = URLRequest(url: try base().appending(path: "chat/completions"))
             // No max_tokens or temperature: newer OpenAI models reject both.
-            body = ["model": model, "messages": [["role": "system", "content": system], ["role": "user", "content": prompt]]]
+            let content: Any = picture.map {
+                [["type": "text", "text": prompt],
+                 ["type": "image_url", "image_url": ["url": "data:image/jpeg;base64,\($0)"]]] as [[String: Any]]
+            } ?? prompt
+            body = ["model": model, "messages": [["role": "system", "content": system], ["role": "user", "content": content]]]
         }
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
