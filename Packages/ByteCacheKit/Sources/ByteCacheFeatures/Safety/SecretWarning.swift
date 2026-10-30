@@ -24,6 +24,7 @@ struct SecretWarning: View {
                         .buttonStyle(.bordered)
                 }
                 .controlSize(.small)
+                .touchTarget()
             }
             .padding(.vertical, 4)
             .accessibilityElement(children: .contain)

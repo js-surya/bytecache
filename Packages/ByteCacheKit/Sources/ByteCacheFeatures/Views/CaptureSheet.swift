@@ -43,9 +43,30 @@ public struct CaptureSheet: View {
                     Text(emptyHint).font(.footnote).foregroundStyle(.secondary)
                 } else if model.readFromImage {
                     // Where it matters: next to the text that was read (CP-84).
-                    Label("Read from a picture: check brackets and indentation before saving.", symbol: .warning)
-                        .font(.footnote)
-                        .foregroundStyle(.orange)
+                    if model.textBeforeFix != nil {
+                        HStack {
+                            Label("Fixed with AI: compare with the picture before saving.", symbol: .sparkles)
+                                .font(.footnote)
+                            Spacer()
+                            Button("Undo") { model.undoFix() }.font(.footnote)
+                        }
+                    } else {
+                        Label("Read from a picture: check brackets and indentation before saving.", symbol: .warning)
+                            .font(.footnote)
+                            .foregroundStyle(.orange)
+                    }
+                    if model.canFixScan {
+                        Button { Task { await model.fixScan() } } label: {
+                            HStack {
+                                Label("Fix with AI", symbol: .sparkles)
+                                if model.isFixingScan { Spacer(); ProgressView().controlSize(.small) }
+                            }
+                        }
+                        .disabled(model.isFixingScan)
+                    }
+                    if let error = model.fixError {
+                        Label(error, symbol: .warning).font(.footnote).foregroundStyle(.orange)
+                    }
                 }
             }
             Section {

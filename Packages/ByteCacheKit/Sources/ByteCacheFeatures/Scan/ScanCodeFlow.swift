@@ -1,9 +1,11 @@
+import ByteCacheCore
 import PhotosUI
 import SwiftUI
 #if os(iOS)
 import AVFoundation
 #endif
 import UniformTypeIdentifiers
+import Vision
 #if canImport(VisionKit) && os(iOS)
 import VisionKit
 #endif
@@ -12,11 +14,11 @@ import VisionKit
 /// the photo library next to the shutter; "Choose Photo" (long-press Scan) opens the library. Camera
 /// access is asked for by the system the first time; if it's off, an alert offers Settings or a photo.
 /// On Mac, Scan picks an image file, or offers to paste an image when one is copied.
-/// Recognised text is handed to `onText`, usually to open the capture sheet.
+/// Recognised text and the picture are handed to `onScan`, usually to open the capture sheet.
 struct ScanCodeFlow: ViewModifier {
     @Binding var isPresented: Bool
     @Binding var choosingPhoto: Bool
-    let onText: (String) -> Void
+    let onScan: (String, Data) -> Void
 
     @State private var model = ScanCodeModel()
     @State private var pickingPhoto = false
@@ -55,9 +57,14 @@ struct ScanCodeFlow: ViewModifier {
             }
             #else
             .confirmationDialog("Scan Code", isPresented: $choosingMacSource) {
+                Button("Capture Screen Area…") { Task { await captureScreen() } }
                 Button("Choose Image…") { importingFile = true }
-                Button("Paste Image") { if let data = Self.pastedImage() { run(data) } }
+                if Self.pastedImage() != nil {
+                    Button("Paste Image") { if let data = Self.pastedImage() { run(data) } }
+                }
                 Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Capture code from a video, PDF or shared screen, or read an image.")
             }
             #endif
             .photosPicker(isPresented: $pickingPhoto, selection: $photo, matching: .images)
@@ -115,15 +122,39 @@ struct ScanCodeFlow: ViewModifier {
             cameraOff = true
         }
         #else
-        if Self.pastedImage() != nil { choosingMacSource = true } else { importingFile = true }
+        choosingMacSource = true
         #endif
     }
 
     private func run(_ data: Data) {
         Task {
-            if let text = await model.recognize(imageData: data) { onText(text) }
+            if let text = await model.recognize(imageData: data) { onScan(text, data) }
         }
     }
+
+    #if os(macOS)
+    /// macOS's own screenshot tool: the person drags over the code, it goes to the clipboard, and
+    /// ByteCache reads it from there. Cancelling (Esc) leaves the clipboard alone and does nothing.
+    private func captureScreen() async {
+        let board = NSPasteboard.general
+        let before = board.changeCount
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")
+        process.arguments = ["-i", "-c", "-x"]
+        do {
+            try await withCheckedThrowingContinuation { (done: CheckedContinuation<Void, any Error>) in
+                process.terminationHandler = { _ in done.resume() }
+                do { try process.run() } catch { done.resume(throwing: error) }
+            }
+        } catch {
+            AppLog.shared.record("scan", "screen capture couldn't start: \(type(of: error))")
+            model.error = "Screen capture couldn't start. Press ⌃⇧⌘4 to copy part of the screen, then choose Scan → Paste Image."
+            return
+        }
+        guard board.changeCount != before, let data = Self.pastedImage() else { return }
+        run(data)
+    }
+    #endif
 
     /// Debug builds: `-BCScanPreview` shows the camera screen on the simulator (no camera there).
     static var previewCamera: Bool {
@@ -161,8 +192,8 @@ extension View {
 
     /// `isPresented`: Scan was tapped (camera on iPhone/iPad). `choosingPhoto`: "Choose Photo".
     public func scanCodeFlow(isPresented: Binding<Bool>, choosingPhoto: Binding<Bool> = .constant(false),
-                             onText: @escaping (String) -> Void) -> some View {
-        modifier(ScanCodeFlow(isPresented: isPresented, choosingPhoto: choosingPhoto, onText: onText))
+                             onScan: @escaping (_ text: String, _ image: Data) -> Void) -> some View {
+        modifier(ScanCodeFlow(isPresented: isPresented, choosingPhoto: choosingPhoto, onScan: onScan))
     }
 }
 
@@ -177,6 +208,8 @@ struct CameraScanner: View {
     /// The on-device / check-brackets hint shows until dismissed or the first capture (CP-84);
     /// Settings → Show Scan Tip brings it back.
     @AppStorage(ScanTip.seenKey) private var tipSeen = false
+    /// A photo taken through a smudged lens, waiting for Retake or Use Photo.
+    @State private var smudgedPhoto: Data?
 
     static var isAvailable: Bool {
         DataScannerViewController.isSupported && DataScannerViewController.isAvailable
@@ -222,6 +255,16 @@ struct CameraScanner: View {
         }
         .preferredColorScheme(.dark)
         .onAppear { Haptics.prepare() }
+        .alert("Lens Looks Smudged", isPresented: Binding(get: { smudgedPhoto != nil }, set: { if !$0 { smudgedPhoto = nil } })) {
+            Button("Retake", role: .cancel) { smudgedPhoto = nil }
+            Button("Use Photo") {
+                let data = smudgedPhoto
+                smudgedPhoto = nil
+                onFinish(data)
+            }
+        } message: {
+            Text("A smudge on the camera lens blurs small characters. Wipe the lens and take the picture again.")
+        }
     }
 
     private var tip: some View {
@@ -282,9 +325,28 @@ struct CameraScanner: View {
         tipSeen = true
         Task { @MainActor in
             let image = try? await scanner.capturePhoto()
+            let data = image?.jpegData(compressionQuality: 0.95)
+            if let cgImage = image?.cgImage, await LensCheck.isSmudged(cgImage) {
+                capturing = false
+                Haptics.play(.error)
+                smudgedPhoto = data
+                return
+            }
             capturing = false
-            onFinish(image?.jpegData(compressionQuality: 0.95))
+            onFinish(data)
         }
+    }
+}
+
+/// Vision's lens smudge check (iOS 26), so a blurry scan isn't blamed on the code.
+enum LensCheck {
+    /// Only a confident result counts, so a clean lens never nags.
+    static let threshold: Float = 0.9
+
+    static func isSmudged(_ image: CGImage) async -> Bool {
+        guard #available(iOS 26.0, *) else { return false }
+        guard let observation = try? await DetectLensSmudgeRequest().perform(on: image) else { return false }
+        return observation.confidence >= threshold
     }
 }
 
@@ -303,8 +365,10 @@ private struct ScannerView: UIViewControllerRepresentable {
     let handle: ScannerHandle
 
     func makeUIViewController(context: Context) -> DataScannerViewController {
+        // Every line in view is highlighted, as Live Text does: the whole photo is read, so one boxed
+        // block (the default, recognizesMultipleItems false) wrongly suggested only that part counts.
         let scanner = DataScannerViewController(recognizedDataTypes: [.text()], qualityLevel: .accurate,
-                                                isHighlightingEnabled: true)
+                                                recognizesMultipleItems: true, isHighlightingEnabled: true)
         handle.scanner = scanner
         try? scanner.startScanning()
         return scanner

@@ -276,6 +276,70 @@ struct ScanCodeControl: ControlWidget {
 }
 #endif
 
+/// One tap to the scanner: a Home Screen / desktop button and a Lock Screen circle. Nothing to refresh,
+/// so it has a single entry.
+struct ScanCodeEntry: TimelineEntry {
+    let date: Date
+}
+
+struct ScanCodeProvider: TimelineProvider {
+    func placeholder(in context: Context) -> ScanCodeEntry { ScanCodeEntry(date: .now) }
+    func getSnapshot(in context: Context, completion: @escaping (ScanCodeEntry) -> Void) { completion(ScanCodeEntry(date: .now)) }
+    func getTimeline(in context: Context, completion: @escaping (Timeline<ScanCodeEntry>) -> Void) {
+        completion(Timeline(entries: [ScanCodeEntry(date: .now)], policy: .never))
+    }
+}
+
+struct ScanCodeWidgetView: View {
+    @Environment(\.widgetFamily) private var family
+
+    var body: some View {
+        Group {
+            switch family {
+            case .accessoryCircular:
+                ZStack {
+                    AccessoryWidgetBackground()
+                    Image(systemName: "camera.viewfinder").font(.title2)
+                }
+                .accessibilityLabel("Scan Code")
+            default:
+                VStack(alignment: .leading, spacing: 4) {
+                    Image(systemName: "camera.viewfinder")
+                        .font(.system(size: 26, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 52, height: 52)
+                        .background(.tint, in: .circle)
+                    Spacer(minLength: 0)
+                    Text("Scan Code").font(.headline)
+                    #if os(iOS)
+                    Text("Save code from paper or a screen").font(.caption).foregroundStyle(.secondary)
+                    #else
+                    Text("Save code from a picture").font(.caption).foregroundStyle(.secondary)
+                    #endif
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            }
+        }
+        .widgetURL(DeepLink.scanCode.url)
+    }
+}
+
+struct ScanCodeWidget: Widget {
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: "me.suryajs.bytecache.scanWidget", provider: ScanCodeProvider()) { _ in
+            ScanCodeWidgetView()
+                .containerBackground(.fill.tertiary, for: .widget)
+        }
+        .configurationDisplayName("Scan Code")
+        .description("Open the scanner in one tap and save code as a snippet.")
+        #if os(iOS)
+        .supportedFamilies([.systemSmall, .accessoryCircular])
+        #else
+        .supportedFamilies([.systemSmall])
+        #endif
+    }
+}
+
 /// A source the configurable widget can show; the choices come from the app's snapshot.
 struct WidgetSourceEntity: AppEntity {
     static let typeDisplayRepresentation: TypeDisplayRepresentation = "Snippets to Show"
@@ -347,6 +411,7 @@ struct ByteCacheWidgets: WidgetBundle {
         ConfigurableSnippetsWidget()
         PinnedSnippetsWidget()
         RecentSnippetsWidget()
+        ScanCodeWidget()
         #if os(iOS)
         SaveClipboardControl()
         ScanCodeControl()
