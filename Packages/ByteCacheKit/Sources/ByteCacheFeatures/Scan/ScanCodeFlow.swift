@@ -365,8 +365,10 @@ private struct ScannerView: UIViewControllerRepresentable {
     let handle: ScannerHandle
 
     func makeUIViewController(context: Context) -> DataScannerViewController {
+        // Every line in view is highlighted, as Live Text does: the whole photo is read, so one boxed
+        // block (the default, recognizesMultipleItems false) wrongly suggested only that part counts.
         let scanner = DataScannerViewController(recognizedDataTypes: [.text()], qualityLevel: .accurate,
-                                                isHighlightingEnabled: true)
+                                                recognizesMultipleItems: true, isHighlightingEnabled: true)
         handle.scanner = scanner
         try? scanner.startScanning()
         return scanner
