@@ -24,6 +24,41 @@ public final class CaptureModel {
     public let fileName: String?
     /// The code was read from a picture (Scan): the review screen reminds to check brackets (CP-84).
     public var readFromImage = false
+    /// The scanned picture, for Fix with AI.
+    public var scanImage: Data?
+    /// Compares the text with the picture and corrects it; nil when no provider can see pictures.
+    public var scanFixer: (any ScanFixer)?
+    public private(set) var isFixingScan = false
+    /// The text before Fix with AI, so it can be undone.
+    public private(set) var textBeforeFix: String?
+    public var fixError: String?
+
+    public var canFixScan: Bool { readFromImage && scanImage != nil && scanFixer != nil && textBeforeFix == nil }
+
+    /// Fix with AI: only when tapped, since with the person's own provider the picture is sent to it.
+    public func fixScan() async {
+        guard let scanFixer, let scanImage, !isFixingScan else { return }
+        isFixingScan = true
+        fixError = nil
+        defer { isFixingScan = false }
+        do {
+            let jpeg = ScanFix.jpeg(scanImage) ?? scanImage
+            let fixed = try await scanFixer.fix(code: text, jpeg: jpeg)
+            guard fixed != text else { return }
+            textBeforeFix = text
+            text = fixed
+            textChanged()
+        } catch {
+            fixError = (error as? LocalizedError)?.errorDescription ?? "The AI couldn't check this scan. Try again in a moment."
+        }
+    }
+
+    public func undoFix() {
+        guard let original = textBeforeFix else { return }
+        text = original
+        textBeforeFix = nil
+        textChanged()
+    }
     public let sourceURL: URL?
     public var signedOut: Bool { client == nil }
 

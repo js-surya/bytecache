@@ -21,6 +21,8 @@ public struct VisionTextRecognizer: TextRecognizing {
     /// Accurate mode normally answers in 1–3 s even for long screenshots. A stuck Neural Engine
     /// took ~50 s just to fail, so after this long the fast result is used instead.
     private let accurateTimeLimit: Duration
+    /// Flatten a photographed page before reading it (off for tests with fake line readers).
+    private var straightensPages = true
 
     public init() {
         readLines = Self.visionLines
@@ -37,6 +39,7 @@ public struct VisionTextRecognizer: TextRecognizing {
     init(accurateTimeLimit: Duration = .seconds(12), readLines: @escaping LineReader) {
         self.readLines = readLines
         self.accurateTimeLimit = accurateTimeLimit
+        straightensPages = false
     }
 
     public func recognize(imageData: Data) async throws -> String {
@@ -46,8 +49,16 @@ public struct VisionTextRecognizer: TextRecognizing {
             .flatMap(CGImagePropertyOrientation.init) ?? .up
         let recognizer = self
         let image = try Self.upright(raw, orientation)
+        let straightens = straightensPages
         // The accurate model can fail or stall, e.g. while the system rebuilds its Neural Engine models.
-        let accurate = Task.detached(priority: .userInitiated) { try recognizer.text(in: image, level: .accurate) }
+        let accurate = Task.detached(priority: .userInitiated) {
+            // A photo of a page or screen at an angle is flattened first; if that reads nothing, the whole photo is used.
+            if straightens, let page = PageStraightening.straightened(image),
+               let text = try? recognizer.text(in: page, level: .accurate), !text.isEmpty {
+                return text
+            }
+            return try recognizer.text(in: image, level: .accurate)
+        }
         var accurateError: (any Error)?
         switch await Self.first(of: accurate, within: accurateTimeLimit) {
         case .success(let text) where !text.isEmpty: return text

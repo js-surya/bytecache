@@ -75,9 +75,9 @@ public enum AIProvider: String, CaseIterable, Codable, Sendable, Identifiable {
         case .appleIntelligence:
             "Apple Intelligence runs on this device. Your code never leaves it."
         case .localServer:
-            "When ByteCache suggests a title or explains a snippet, it sends the code, its language and title to the server you enter. Only use a server you trust. Nothing is sent to ByteCache's developer."
+            "When you tap Suggest, Explain or Fix with AI, ByteCache sends the code, its language and title (and for Fix with AI, the scanned picture) to the server you enter. Only use a server you trust. Nothing is sent to ByteCache's developer."
         default:
-            "When ByteCache suggests a title or explains a snippet, it sends the code, its language and title to \(recipient) with your API key. \(recipient)'s terms and privacy policy apply, and your account may be charged for each request. Nothing is sent to ByteCache's developer."
+            "When you tap Suggest, Explain or Fix with AI, ByteCache sends the code, its language and title (and for Fix with AI, the scanned picture) to \(recipient) with your API key. \(recipient)'s terms and privacy policy apply, and your account may be charged for each request. Nothing is sent to ByteCache's developer."
         }
     }
 }

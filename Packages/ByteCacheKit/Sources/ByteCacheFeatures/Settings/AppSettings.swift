@@ -209,6 +209,14 @@ public final class AppSettings {
         return remoteAIClient().map(RemoteExplainer.init)
     }
 
+    /// Fix with AI for scans: the chosen provider when it can see pictures. Apple Intelligence needs
+    /// iOS / macOS 27; own providers are tried (their model must accept images, or it says so).
+    public var scanFixer: (any ScanFixer)? {
+        guard suggestionsEnabled else { return nil }
+        if aiProvider.isOnDevice { return ScanFix.onDevice() }
+        return remoteAIClient().map(RemoteScanFixer.init)
+    }
+
     /// Whether the chosen provider can be used: Apple Intelligence is available, or the person's own
     /// provider has its key (when it needs one) and a model.
     public var aiIsReady: Bool {
