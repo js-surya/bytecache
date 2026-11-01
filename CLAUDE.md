@@ -34,4 +34,4 @@ ByteCache ("Cache the bytes"; renamed from ByteCatch in CP-18 because of a name 
 - Auth header `bytestashauth: Bearer <jwt>`. Snippet PUT replaces everything — always send all fields incl. `is_public`.
 - Test server `https://bytestash-demo.pikapod.net` (`demo`/`demodemo`) is public: no real code.
 - Signing: copy `Config/Signing.xcconfig.example` → `Config/Signing.xcconfig` and set your Team ID.
-- No tip or donation links in the app (removed in 1.3.0; outside payment links break App Store guideline 3.1.1).
+- No outside tip or donation links in the app (removed in 1.3.0; they break App Store guideline 3.1.1). Tips go only through the in-app Tip Jar (CP-96, StoreKit 2, consumables `me.suryajs.bytecache.tip.small|medium|large`; local test prices in `App/StoreKit/ByteCache.storekit`, used when run from Xcode).

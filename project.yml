@@ -158,6 +158,8 @@ schemes:
     build:
       targets:
         ByteCache: all
+    run:
+      storeKitConfiguration: App/StoreKit/ByteCache.storekit
     test:
       targets:
         - package: ByteCacheKit/ByteCacheCoreTests

@@ -535,6 +535,7 @@ struct AboutView: View {
                 }
             }
             #endif
+            TipJarSection()
             Section {
                 // Buttons, not Links: a Link tints its whole row like a web link.
                 Button { openURL(AboutText.sourceCode) } label: {
