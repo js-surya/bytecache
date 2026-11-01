@@ -53,6 +53,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case assistant
     case refresh
     case infoCircle
+    case heart
     case database
     case terminal
     case plainText
@@ -144,6 +145,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .assistant: "brain.head.profile"
         case .refresh: "arrow.clockwise"
         case .infoCircle: "info.circle"
+        case .heart: "heart.fill"
         case .database: "cylinder.split.1x2"
         case .terminal: "terminal"
         case .plainText: "doc.plaintext"
