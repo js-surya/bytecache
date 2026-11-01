@@ -182,7 +182,11 @@ enum MacSettingsPage: String, CaseIterable, Identifiable, Hashable {
     @MainActor
     func isAvailable(_ session: SessionManager) -> Bool {
         switch self {
-        case .account, .apiKeys, .password, .assistants:
+        case .password:
+            // Single sign-on accounts have no password here (as on the ByteStash website).
+            if case .signedIn(_, let user) = session.state { return !user.usesSingleSignOn }
+            return false
+        case .account, .apiKeys, .assistants:
             if case .signedIn = session.state { return true }
             return false
         default:
