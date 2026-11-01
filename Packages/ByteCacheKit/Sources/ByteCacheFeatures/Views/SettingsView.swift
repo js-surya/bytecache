@@ -485,6 +485,22 @@ struct PrivacyInfoView: View {
     }
 }
 
+/// "Made with ♥ by SyntaxError", the heart gently pulsing.
+private struct MadeWithLove: View {
+    var body: some View {
+        HStack(spacing: 4) {
+            Text("Made with")
+            Icon(.heart)
+                .foregroundStyle(.pink)
+                .symbolEffect(.pulse)
+            Text("by SyntaxError")
+        }
+        .fontWeight(.medium)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(AboutText.credit.replacingOccurrences(of: "❤️", with: "love"))
+    }
+}
+
 struct AboutView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(\.openURL) private var openURL
@@ -535,7 +551,7 @@ struct AboutView: View {
                 }
             } footer: {
                 VStack(spacing: 6) {
-                    Text(AboutText.credit)
+                    MadeWithLove()
                     Text(AboutText.disclaimer)
                 }
                 .font(.footnote)
