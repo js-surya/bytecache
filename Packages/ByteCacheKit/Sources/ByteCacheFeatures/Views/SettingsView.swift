@@ -322,6 +322,17 @@ struct AppearanceSettingsView: View {
                     }
                 }
             }
+            #if os(macOS)
+            Section {
+                Toggle("Show in Menu Bar", isOn: $settings.quickSearchInMenuBar)
+                    .disabled(settings.menuBarOnly)
+                Toggle("Menu Bar Only", isOn: $settings.menuBarOnly)
+            } header: {
+                Text("Dock & Menu Bar")
+            } footer: {
+                InfoFooter("Menu Bar Only hides ByteCache from the Dock and the app switcher; open the main window from the menu bar icon. Takes effect right away.")
+            }
+            #endif
             Section {
                 ForEach(LanguageIconStyle.allCases) { style in
                     Button { settings.languageIconStyle = style } label: {
