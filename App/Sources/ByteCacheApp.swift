@@ -8,6 +8,7 @@ struct ByteCacheApp: App {
     init() {
         CopyToastWindow.install()
         CrashReporting.appLaunched()
+        TipJar.finishTipsInBackground()
     }
 
     var body: some Scene {
