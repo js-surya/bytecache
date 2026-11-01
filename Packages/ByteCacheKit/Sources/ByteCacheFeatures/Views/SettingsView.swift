@@ -895,10 +895,13 @@ struct AccountSettingsView: View {
                         } label: {
                             SettingsLabel(title: "API Keys", symbol: .key, color: .orange)
                         }
-                        NavigationLink {
-                            ChangePasswordView(model: AccountModel(session: session))
-                        } label: {
-                            SettingsLabel(title: "Change Password", symbol: .changePassword, color: .gray)
+                        // Single sign-on accounts have no password here (as on the ByteStash website).
+                        if !user.usesSingleSignOn {
+                            NavigationLink {
+                                ChangePasswordView(model: AccountModel(session: session))
+                            } label: {
+                                SettingsLabel(title: "Change Password", symbol: .changePassword, color: .gray)
+                            }
                         }
                     }
                 }
