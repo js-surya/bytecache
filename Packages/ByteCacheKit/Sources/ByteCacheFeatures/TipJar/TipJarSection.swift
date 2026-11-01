@@ -13,10 +13,18 @@ struct TipJarSection: View {
                     VStack(spacing: 2) {
                         Label { Text("Tip Jar") } icon: { Icon(.tipJar).foregroundStyle(.orange) }
                             .font(.headline)
-                        Text("Enjoying ByteCache? Buy me a coffee.")
+                        if model.isSupporter {
+                            Text("Thank you for supporting ByteCache!")
                             .font(.caption)
                             .foregroundStyle(.secondary)
+                            .transition(.blurReplace)
+                        } else {
+                            Text("Enjoying ByteCache? Buy me a coffee.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
+                    .animation(.smooth, value: model.isSupporter)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
                     HStack(spacing: 10) {
@@ -29,13 +37,9 @@ struct TipJarSection: View {
                     }
                 }
                 .padding(.vertical, 4)
+                .overlay { TipBurst(trigger: model.celebrations) }
             } footer: {
                 InfoFooter("ByteCache is free and open source. Tips are optional, unlock nothing and help keep it going.")
-            }
-            .alert("Thank You!", isPresented: $model.showsThanks) {
-                Button("OK") {}
-            } message: {
-                Text("Your tip means a lot and helps keep ByteCache going.")
             }
             .alert("Waiting for Approval", isPresented: $model.showsPending) {
                 Button("OK") {}
@@ -98,6 +102,68 @@ private struct TipButton: View {
     }
 }
 
+/// A coffee cup whose steam rises: the thank-you mark for people who tipped.
+struct SteamingCup: View {
+    var body: some View {
+        Icon(.tipThanks)
+            .foregroundStyle(.orange)
+            .symbolEffect(.variableColor.iterative, options: .repeating)
+            .accessibilityHidden(true)
+    }
+}
+
+/// Cups and sparkles that rise and fade from the Tip Jar after a tip. Skipped with Reduce Motion.
+private struct TipBurst: View {
+    let trigger: Int
+    @State private var pieces: [Piece] = []
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private struct Piece: Identifiable {
+        let id = UUID()
+        let symbol: AppSymbol
+        let color: Color
+        let size: CGFloat
+        let x: CGFloat, y: CGFloat, spin: Double
+        var flying = false
+    }
+
+    var body: some View {
+        ZStack {
+            ForEach(pieces) { piece in
+                Icon(piece.symbol)
+                    .font(.system(size: piece.size))
+                    .foregroundStyle(piece.color)
+                    .scaleEffect(piece.flying ? 1.1 : 0.3)
+                    .rotationEffect(.degrees(piece.flying ? piece.spin : 0))
+                    .offset(x: piece.flying ? piece.x : 0, y: piece.flying ? piece.y : 0)
+                    .opacity(piece.flying ? 0 : 1)
+            }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+        .onChange(of: trigger) { burst() }
+    }
+
+    private func burst() {
+        guard !reduceMotion else { return }
+        let symbols: [AppSymbol] = [.tipJar, .tipMedium, .sparkles, .tipThanks]
+        let colors: [Color] = [.orange, .yellow, .brown, .orange]
+        pieces = (0..<18).map { i in
+            Piece(symbol: symbols[i % symbols.count], color: colors[i % colors.count],
+                  size: .random(in: 14...24), x: .random(in: -160...160), y: .random(in: -170 ... -50),
+                  spin: .random(in: -40...40))
+        }
+        Task {
+            try? await Task.sleep(for: .milliseconds(30))
+            withAnimation(.easeOut(duration: 1.3)) {
+                for i in pieces.indices { pieces[i].flying = true }
+            }
+            try? await Task.sleep(for: .milliseconds(1400))
+            pieces = []
+        }
+    }
+}
+
 #if DEBUG
 /// `-BCTipJarPreview`: the Tip Jar with sample prices, for screenshots when the app isn't run from Xcode.
 private struct PreviewTipStore: TipStore {
@@ -108,5 +174,8 @@ private struct PreviewTipStore: TipStore {
     }
 
     func buy(_ id: String) async throws -> TipOutcome { .thanked }
+
+    /// `-BCTipJarSupporter` too: show the thank-you state.
+    func hasTipped() async -> Bool { ProcessInfo.processInfo.arguments.contains("-BCTipJarSupporter") }
 }
 #endif

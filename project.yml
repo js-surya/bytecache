@@ -56,6 +56,7 @@ targets:
           - CFBundleURLName: me.suryajs.bytecache
             CFBundleURLSchemes: [bytecache]
         NSCameraUsageDescription: ByteCache uses the camera to scan code so you can save it as a snippet.
+        SKIncludeConsumableInAppPurchaseHistory: true
         NSFaceIDUsageDescription: ByteCache uses Face ID to keep your snippets private when App Lock is on.
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: true

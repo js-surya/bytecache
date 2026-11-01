@@ -522,7 +522,7 @@ struct AboutView: View {
         @Bindable var settings = settings
         SettingsList {
             Section {
-                AboutHeader(icon: appIcon.current)
+                AboutHeader(icon: appIcon.current, supporter: tipJar.isSupporter)
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
             }
@@ -581,6 +581,8 @@ struct AboutView: View {
 /// The top of About: the app icon the person picked, name, tagline and version.
 private struct AboutHeader: View {
     let icon: AppIconChoice
+    /// Has tipped: a Supporter badge under the version, for good.
+    var supporter = false
 
     var body: some View {
         VStack(spacing: 6) {
@@ -601,7 +603,21 @@ private struct AboutHeader: View {
                 .background(.fill.tertiary, in: Capsule())
                 .padding(.top, 4)
                 .textSelection(.enabled)
+            if supporter {
+                HStack(spacing: 4) {
+                    SteamingCup()
+                    Text("Supporter")
+                }
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.orange)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(.orange.opacity(0.15), in: Capsule())
+                .transition(.scale.combined(with: .opacity))
+                .accessibilityElement(children: .combine)
+            }
         }
+        .animation(.spring(duration: 0.5, bounce: 0.4), value: supporter)
         .frame(maxWidth: .infinity)
     }
 }
