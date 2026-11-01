@@ -26,7 +26,7 @@ public enum IntentFailure: Error, Equatable {
 public enum IntentActions {
     public static func save(
         text: String, title: String?, language: String?, store: any CredentialStore,
-        transport: any HTTPTransport = URLSession.shared, detector: LanguageDetector,
+        transport: any HTTPTransport = URLSession.byteStash, detector: LanguageDetector,
         queue: PendingSaveQueue? = nil
     ) async throws(IntentFailure) -> Snippet {
         guard text.contains(where: { !$0.isWhitespace }) else { throw .emptyText }
@@ -46,7 +46,7 @@ public enum IntentActions {
     }
 
     public static func search(
-        _ term: String, store: any CredentialStore, transport: any HTTPTransport = URLSession.shared,
+        _ term: String, store: any CredentialStore, transport: any HTTPTransport = URLSession.byteStash,
         cache: SnippetCache?
     ) async -> [Snippet] {
         guard let credentials = store.load() else { return [] }
@@ -66,7 +66,7 @@ public enum IntentActions {
     /// Find Snippets: search text (with `lang:`, `#tag`… filters) plus optional language and tag.
     public static func find(
         _ term: String, language: String? = nil, tag: String? = nil, limit: Int = 20,
-        store: any CredentialStore, transport: any HTTPTransport = URLSession.shared, cache: SnippetCache?,
+        store: any CredentialStore, transport: any HTTPTransport = URLSession.byteStash, cache: SnippetCache?,
         isLocked: Bool = AppEnvironment.isAppLockEnabled
     ) async throws(IntentFailure) -> [Snippet] {
         guard !isLocked else { throw .locked }
@@ -93,7 +93,7 @@ public enum IntentActions {
     /// Get Snippet Code: the snippet's code, fresh from the server (or the cache when offline).
     public static func code(
         ofSnippet id: Int, allFiles: Bool, store: any CredentialStore,
-        transport: any HTTPTransport = URLSession.shared, cache: SnippetCache?,
+        transport: any HTTPTransport = URLSession.byteStash, cache: SnippetCache?,
         isLocked: Bool = AppEnvironment.isAppLockEnabled
     ) async throws(IntentFailure) -> String {
         guard !isLocked else { throw .locked }

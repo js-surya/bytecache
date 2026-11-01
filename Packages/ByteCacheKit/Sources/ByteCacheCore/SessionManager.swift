@@ -81,7 +81,7 @@ public final class SessionManager {
         return MCPClient(server: server, apiKey: apiKey, transport: transport)
     }
 
-    public init(store: any CredentialStore, transport: any HTTPTransport = URLSession.shared) {
+    public init(store: any CredentialStore, transport: any HTTPTransport = URLSession.byteStash) {
         self.store = store
         self.transport = transport
     }
@@ -391,9 +391,12 @@ public final class SessionManager {
                 _ = try await client.metadata()
                 state = .signedIn(server: stored.server, user: Self.displayUser(stored))
             } else {
-                let user = try await client.verify()
+                var user = try await client.verify()
+                // Servers before ByteStash 1.6.1 don't say the account uses single sign-on; remember it.
+                if stored.usesSingleSignOn { user = user.signedInWithSingleSignOn() }
                 var updated = stored
                 updated.username = user.username
+                updated.usesSingleSignOn = user.usesSingleSignOn
                 persist(updated)
                 state = .signedIn(server: stored.server, user: user)
             }
@@ -425,7 +428,7 @@ public final class SessionManager {
     public func signIn(ssoToken: String) async throws(APIError) {
         guard case .needsLogin(let server, _) = state else { throw .invalidServer }
         let user = try await APIClient(server: server, token: ssoToken, transport: transport).verify()
-        signIn(token: ssoToken, user: user, how: "single sign-on")
+        signIn(token: ssoToken, user: user.signedInWithSingleSignOn(), how: "single sign-on")
     }
 
     /// Reads whether the server on the sign-in screen offers single sign-on (the sign-in screen calls it).
@@ -447,6 +450,7 @@ public final class SessionManager {
         current.token = token
         current.apiKey = nil
         current.username = user.username
+        current.usesSingleSignOn = user.usesSingleSignOn
         persist(current)
         state = .signedIn(server: current.server, user: user)
     }

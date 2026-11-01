@@ -28,7 +28,7 @@ public final class AppServices {
 
     public init(
         store: any CredentialStore = AppEnvironment.makeCredentialStore(),
-        transport: any HTTPTransport = URLSession.shared,
+        transport: any HTTPTransport = URLSession.byteStash,
         cache: SnippetCache? = try? SnippetCache(),
         detector: LanguageDetector = LanguageDetector(),
         settings: AppSettings = AppSettings(),
@@ -36,6 +36,8 @@ public final class AppServices {
         lock: AppLockModel = AppLockModel(),
         pendingSaves: PendingSaveQueue = .shared
     ) {
+        // Before 1.3.0 (15) the shared cookie store kept ByteStash 1.6's login cookie; it's never used now.
+        ByteStashCookies.removeLeftovers()
         session = SessionManager(store: store, transport: transport)
         onboarding = OnboardingModel(session: session)
         self.cache = cache

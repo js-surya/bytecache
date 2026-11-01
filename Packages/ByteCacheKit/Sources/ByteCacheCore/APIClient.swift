@@ -10,7 +10,7 @@ public struct APIClient: Sendable {
     public let apiKey: String?
     private let transport: any HTTPTransport
 
-    public init(server: ServerURL, token: String?, apiKey: String? = nil, transport: any HTTPTransport = URLSession.shared,
+    public init(server: ServerURL, token: String?, apiKey: String? = nil, transport: any HTTPTransport = URLSession.byteStash,
                 log: AppLog = .shared) {
         self.server = server
         self.token = token

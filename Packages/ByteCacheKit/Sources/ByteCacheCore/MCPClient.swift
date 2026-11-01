@@ -21,7 +21,7 @@ public struct MCPClient: Sendable {
     private let transport: any HTTPTransport
     private let log: AppLog
 
-    public init(server: ServerURL, apiKey: String, transport: any HTTPTransport = URLSession.shared, log: AppLog = .shared) {
+    public init(server: ServerURL, apiKey: String, transport: any HTTPTransport = URLSession.byteStash, log: AppLog = .shared) {
         self.server = server
         self.apiKey = apiKey
         self.transport = transport

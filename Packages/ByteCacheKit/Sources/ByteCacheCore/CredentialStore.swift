@@ -17,6 +17,8 @@ public struct Credentials: Codable, Equatable, Identifiable, Sendable {
     public var backupKeyID: Int?
     /// The user chose "Stay signed in" for this login: only then is a backup key made (CP-91).
     public var staySignedIn = false
+    /// Signed in with single sign-on: the account has no password to change.
+    public var usesSingleSignOn = false
 
     public init(id: UUID = UUID(), server: ServerURL, token: String? = nil, username: String? = nil, apiKey: String? = nil,
                 name: String? = nil) {
@@ -34,7 +36,7 @@ public struct Credentials: Codable, Equatable, Identifiable, Sendable {
     public var isUsingBackupKey: Bool { apiKey != nil && apiKey == backupKey }
 
     /// A client for this login, or nil when not signed in.
-    public func makeClient(transport: any HTTPTransport = URLSession.shared) -> APIClient? {
+    public func makeClient(transport: any HTTPTransport = URLSession.byteStash) -> APIClient? {
         guard isSignedIn else { return nil }
         return APIClient(server: server, token: token, apiKey: apiKey, transport: transport)
     }
@@ -46,10 +48,11 @@ public struct Credentials: Codable, Equatable, Identifiable, Sendable {
         copy.apiKey = nil
         copy.backupKey = nil
         copy.backupKeyID = nil
+        copy.usesSingleSignOn = false
         return copy
     }
 
-    private enum CodingKeys: String, CodingKey { case id, server, token, username, apiKey, name, backupKey, backupKeyID, staySignedIn }
+    private enum CodingKeys: String, CodingKey { case id, server, token, username, apiKey, name, backupKey, backupKeyID, staySignedIn, usesSingleSignOn }
 
     public init(from decoder: any Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -64,6 +67,7 @@ public struct Credentials: Codable, Equatable, Identifiable, Sendable {
         backupKey = try c.decodeIfPresent(String.self, forKey: .backupKey)
         backupKeyID = try c.decodeIfPresent(Int.self, forKey: .backupKeyID)
         staySignedIn = try c.decodeIfPresent(Bool.self, forKey: .staySignedIn) ?? false
+        usesSingleSignOn = try c.decodeIfPresent(Bool.self, forKey: .usesSingleSignOn) ?? false
     }
 }
 
