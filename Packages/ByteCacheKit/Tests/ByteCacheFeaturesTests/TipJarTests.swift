@@ -11,6 +11,7 @@ final class TipJarTests: XCTestCase {
         ]
         var outcome: Result<TipOutcome, TipJarError> = .success(.thanked)
         var fails = false
+        var tippedBefore = false
 
         func tips() async throws -> [Tip] {
             if fails { throw TipJarError.unavailable }
@@ -18,6 +19,8 @@ final class TipJarTests: XCTestCase {
         }
 
         func buy(_ id: String) async throws -> TipOutcome { try outcome.get() }
+
+        func hasTipped() async -> Bool { tippedBefore }
     }
 
     func testTipsAreSortedCheapestFirst() async {
@@ -42,23 +45,42 @@ final class TipJarTests: XCTestCase {
 
         let thanked = TipJarModel(store: FakeStore())
         await thanked.buy(tip)
-        XCTAssertTrue(thanked.showsThanks)
+        XCTAssertTrue(thanked.isSupporter)
         XCTAssertNil(thanked.buying)
 
         let pending = TipJarModel(store: FakeStore(outcome: .success(.pending)))
         await pending.buy(tip)
         XCTAssertTrue(pending.showsPending)
-        XCTAssertFalse(pending.showsThanks)
+        XCTAssertFalse(pending.isSupporter)
 
         let cancelled = TipJarModel(store: FakeStore(outcome: .success(.cancelled)))
         await cancelled.buy(tip)
-        XCTAssertFalse(cancelled.showsThanks)
+        XCTAssertFalse(cancelled.isSupporter)
         XCTAssertNil(cancelled.errorMessage)
 
         let failed = TipJarModel(store: FakeStore(outcome: .failure(.unverified)))
         await failed.buy(tip)
         XCTAssertNotNil(failed.errorMessage)
-        XCTAssertFalse(failed.showsThanks)
+        XCTAssertFalse(failed.isSupporter)
+    }
+
+    func testSupporterComesFromPurchaseHistoryAndNewTips() async {
+        let past = TipJarModel(store: FakeStore(tippedBefore: true))
+        await past.load()
+        XCTAssertTrue(past.isSupporter)
+
+        let fresh = TipJarModel(store: FakeStore())
+        await fresh.load()
+        XCTAssertFalse(fresh.isSupporter)
+        await fresh.buy(fresh.tips[0])
+        XCTAssertTrue(fresh.isSupporter)
+        XCTAssertEqual(fresh.celebrations, 1)
+
+        let cancelled = TipJarModel(store: FakeStore(outcome: .success(.cancelled)))
+        await cancelled.load()
+        await cancelled.buy(cancelled.tips[0])
+        XCTAssertFalse(cancelled.isSupporter)
+        XCTAssertEqual(cancelled.celebrations, 0)
     }
 
     func testProductIDs() {

@@ -27,6 +27,8 @@ public enum TipOutcome: Sendable {
 public protocol TipStore: Sendable {
     func tips() async throws -> [Tip]
     func buy(_ id: String) async throws -> TipOutcome
+    /// Whether this Apple Account has ever tipped (on any device, and after reinstalling).
+    func hasTipped() async -> Bool
 }
 
 /// The Tip Jar's products (CP-96): consumables, so people can tip more than once. They unlock nothing.
@@ -73,6 +75,18 @@ public struct AppStoreTipStore: TipStore {
             return .cancelled
         }
     }
+
+    /// Consumables show up in `Transaction.all` because Info.plist sets
+    /// `SKIncludeConsumableInAppPurchaseHistory` (iOS 18 / macOS 15). Refunded tips don't count.
+    public func hasTipped() async -> Bool {
+        for await result in Transaction.all {
+            if case .verified(let transaction) = result, TipJar.productIDs.contains(transaction.productID),
+               transaction.revocationDate == nil {
+                return true
+            }
+        }
+        return false
+    }
 }
 
 public enum TipJarError: LocalizedError {
@@ -96,7 +110,10 @@ public final class TipJarModel {
     public private(set) var tips: [Tip] = []
     /// The tip being bought; its button shows progress and the others wait.
     public private(set) var buying: String?
-    public var showsThanks = false
+    /// Has tipped before: About shows a Supporter badge and a thank-you instead of the ask.
+    public private(set) var isSupporter = false
+    /// Goes up with each tip, so the Tip Jar can play its burst.
+    public private(set) var celebrations = 0
     public var showsPending = false
     public var errorMessage: String?
 
@@ -107,6 +124,7 @@ public final class TipJarModel {
     }
 
     public func load() async {
+        if !isSupporter { isSupporter = await store.hasTipped() }
         guard tips.isEmpty else { return }
         state = .loading
         do {
@@ -123,7 +141,10 @@ public final class TipJarModel {
         defer { buying = nil }
         do {
             switch try await store.buy(tip.id) {
-            case .thanked: showsThanks = true
+            case .thanked:
+                isSupporter = true
+                celebrations += 1
+                Haptics.play(.success)
             case .pending: showsPending = true
             case .cancelled: break
             }

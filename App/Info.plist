@@ -77,6 +77,8 @@
 	<array>
 		<string>me.suryajs.bytecache.snippet</string>
 	</array>
+	<key>SKIncludeConsumableInAppPurchaseHistory</key>
+	<true/>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
