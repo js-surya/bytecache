@@ -11,7 +11,7 @@ configFiles:
 settings:
   base:
     MARKETING_VERSION: "1.3.0"
-    CURRENT_PROJECT_VERSION: "15"
+    CURRENT_PROJECT_VERSION: "16"
     SWIFT_VERSION: "6.0"
     BC_APP_GROUP_ID: group.me.suryajs.bytecache
     BC_APP_GROUP_ID[sdk=macosx*]: $(TeamIdentifierPrefix)me.suryajs.bytecache
@@ -56,6 +56,7 @@ targets:
           - CFBundleURLName: me.suryajs.bytecache
             CFBundleURLSchemes: [bytecache]
         NSCameraUsageDescription: ByteCache uses the camera to scan code so you can save it as a snippet.
+        SKIncludeConsumableInAppPurchaseHistory: true
         NSFaceIDUsageDescription: ByteCache uses Face ID to keep your snippets private when App Lock is on.
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: true
@@ -158,6 +159,8 @@ schemes:
     build:
       targets:
         ByteCache: all
+    run:
+      storeKitConfiguration: App/StoreKit/ByteCache.storekit
     test:
       targets:
         - package: ByteCacheKit/ByteCacheCoreTests

@@ -213,8 +213,6 @@ private struct MacSearchPage: View {
                 InfoFooter("When on, searching also matches the code in your snippets, not just titles and descriptions.")
             }
             Section {
-                Toggle("Show in Menu Bar", isOn: $settings.quickSearchInMenuBar)
-                    .disabled(settings.menuBarOnly)
                 Picker("Keyboard Shortcut", selection: $settings.quickSearchShortcut) {
                     ForEach(QuickSearchShortcut.allCases) { Text($0.title).tag($0) }
                 }
@@ -252,11 +250,8 @@ private struct MacSearchPage: View {
                 Picker("Menu Bar Window Size", selection: $settings.menuBarPanelSize) {
                     ForEach(MenuBarPanelSize.allCases) { Text($0.rawValue.capitalized).tag($0) }
                 }
-                Toggle("Menu Bar Only", isOn: $settings.menuBarOnly)
             } header: {
                 Text("Menu Bar")
-            } footer: {
-                InfoFooter("Menu Bar Only hides ByteCache from the Dock and the app switcher; open the main window from the menu bar icon. Takes effect right away.")
             }
         }
         .navigationTitle("Search")

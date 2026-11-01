@@ -1,6 +1,6 @@
 # ByteCache Privacy Policy
 
-_Last updated: 2026-10-27_
+_Last updated: 2026-11-01_
 
 ByteCache is an unofficial client for ByteStash, the self-hosted code snippet manager.
 
@@ -27,5 +27,6 @@ ByteCache is an unofficial client for ByteStash, the self-hosted code snippet ma
 - **What's New:** once after you update, ByteCache asks GitHub's public API (`api.github.com`) for that version's release notes, to show you what changed. The request carries nothing about you or your snippets; GitHub sees your IP address, as with any web request. Updates themselves come through TestFlight and the App Store.
 - **AI Notes:** when you use Explain, the explanation (written by Apple Intelligence on your device, or by your own provider) is kept as a note under the snippet's code. Notes are kept on your device and, with iCloud Sync on, in your private iCloud so your other devices show them. They're never sent to your ByteStash server. You can delete one, or clear them all in Settings → Smart Suggestions; only the newest (25, 50 or 100, your choice) are kept.
 - **Spotlight:** titles and the first lines of recently viewed snippets are indexed on your device so Spotlight can find them. Signing out removes them from the index.
+- **Tip Jar** (optional; Settings → About): tips are in-app purchases handled entirely by Apple. ByteCache never sees your payment details. To show a Supporter badge, ByteCache checks your Apple purchase history for its own tips on your device; nothing about it is sent anywhere.
 
 Questions: email hello@suryajs.me or open an issue in the ByteCache repository.

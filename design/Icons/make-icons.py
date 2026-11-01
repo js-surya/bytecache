@@ -31,7 +31,7 @@ TABLE = [
     ("pin", "pin"), ("pinFill", "pin.fill"), ("pinOff", "pin.slash"),
     ("signedOut", "person.crop.circle.badge.exclamationmark"), ("person", "person.fill"),
     ("edit", "pencil"), ("newWindow", "macwindow.badge.plus"),
-    ("handoff", "macbook.and.iphone"), ("haptics", "iphone.radiowaves.left.and.right"), ("bug", "ladybug"), ("assistant", "brain.head.profile"), ("refresh", "arrow.clockwise"), ("infoCircle", "info.circle"), ("database", "cylinder.split.1x2"), ("terminal", "terminal"), ("plainText", "doc.plaintext"), ("configFile", "gearshape"), ("chip", "cpu"), ("lockOpen", "lock.slash"),
+    ("handoff", "macbook.and.iphone"), ("haptics", "iphone.radiowaves.left.and.right"), ("bug", "ladybug"), ("assistant", "brain.head.profile"), ("refresh", "arrow.clockwise"), ("infoCircle", "info.circle"), ("heart", "heart.fill"), ("tipJar", "cup.and.saucer.fill"), ("tipMedium", "mug.fill"), ("tipLarge", "takeoutbag.and.cup.and.straw.fill"), ("tipThanks", "cup.and.heat.waves.fill"), ("database", "cylinder.split.1x2"), ("terminal", "terminal"), ("plainText", "doc.plaintext"), ("configFile", "gearshape"), ("chip", "cpu"), ("lockOpen", "lock.slash"),
     ("changePassword", "lock.rotation"), ("lock", "lock.fill"),
     ("info", "info"), ("icloud", "icloud.fill"), ("icloudWarning", "exclamationmark.icloud"),
     ("privacy", "hand.raised.fill"), ("settings", "gear"),

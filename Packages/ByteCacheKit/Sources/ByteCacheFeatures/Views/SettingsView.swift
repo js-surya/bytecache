@@ -322,6 +322,17 @@ struct AppearanceSettingsView: View {
                     }
                 }
             }
+            #if os(macOS)
+            Section {
+                Toggle("Show in Menu Bar", isOn: $settings.quickSearchInMenuBar)
+                    .disabled(settings.menuBarOnly)
+                Toggle("Menu Bar Only", isOn: $settings.menuBarOnly)
+            } header: {
+                Text("Dock & Menu Bar")
+            } footer: {
+                InfoFooter("Menu Bar Only hides ByteCache from the Dock and the app switcher; open the main window from the menu bar icon. Takes effect right away.")
+            }
+            #endif
             Section {
                 ForEach(LanguageIconStyle.allCases) { style in
                     Button { settings.languageIconStyle = style } label: {
@@ -485,16 +496,33 @@ struct PrivacyInfoView: View {
     }
 }
 
+/// "Made with ♥ by Surya JS", the heart gently pulsing.
+private struct MadeWithLove: View {
+    var body: some View {
+        HStack(spacing: 4) {
+            Text("Made with")
+            Icon(.heart)
+                .foregroundStyle(.pink)
+                .symbolEffect(.pulse)
+            Text("by Surya JS")
+        }
+        .fontWeight(.medium)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(AboutText.credit.replacingOccurrences(of: "❤️", with: "love"))
+    }
+}
+
 struct AboutView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(\.openURL) private var openURL
     @State private var appIcon = AppIconModel()
+    @State private var tipJar = TipJarModel.forAbout()
 
     var body: some View {
         @Bindable var settings = settings
         SettingsList {
             Section {
-                AboutHeader(icon: appIcon.current)
+                AboutHeader(icon: appIcon.current, supporter: tipJar.isSupporter)
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
             }
@@ -508,6 +536,7 @@ struct AboutView: View {
                 }
             }
             #endif
+            TipJarSection(model: tipJar)
             Section {
                 // Buttons, not Links: a Link tints its whole row like a web link.
                 Button { openURL(AboutText.sourceCode) } label: {
@@ -535,7 +564,7 @@ struct AboutView: View {
                 }
             } footer: {
                 VStack(spacing: 6) {
-                    Text(AboutText.credit)
+                    MadeWithLove()
                     Text(AboutText.disclaimer)
                 }
                 .font(.footnote)
@@ -545,12 +574,15 @@ struct AboutView: View {
             }
         }
         .navigationTitle("About")
+        .task { await tipJar.load() }
     }
 }
 
 /// The top of About: the app icon the person picked, name, tagline and version.
 private struct AboutHeader: View {
     let icon: AppIconChoice
+    /// Has tipped: a Supporter badge under the version, for good.
+    var supporter = false
 
     var body: some View {
         VStack(spacing: 6) {
@@ -571,7 +603,21 @@ private struct AboutHeader: View {
                 .background(.fill.tertiary, in: Capsule())
                 .padding(.top, 4)
                 .textSelection(.enabled)
+            if supporter {
+                HStack(spacing: 4) {
+                    SteamingCup()
+                    Text("Supporter")
+                }
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.orange)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(.orange.opacity(0.15), in: Capsule())
+                .transition(.scale.combined(with: .opacity))
+                .accessibilityElement(children: .combine)
+            }
         }
+        .animation(.spring(duration: 0.5, bounce: 0.4), value: supporter)
         .frame(maxWidth: .infinity)
     }
 }
