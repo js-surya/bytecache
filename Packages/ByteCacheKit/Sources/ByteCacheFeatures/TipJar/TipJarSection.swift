@@ -11,7 +11,7 @@ struct TipJarSection: View {
             Section {
                 VStack(spacing: 12) {
                     VStack(spacing: 2) {
-                        Label { Text("Tip Jar") } icon: { Icon(.tipJar).foregroundStyle(.orange) }
+                        Text("Tip Jar")
                             .font(.headline)
                         if model.isSupporter {
                             Text("Thank you for supporting ByteCache!")
