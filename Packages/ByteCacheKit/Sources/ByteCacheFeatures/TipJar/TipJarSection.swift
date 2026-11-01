@@ -9,16 +9,16 @@ struct TipJarSection: View {
     var body: some View {
         if model.state == .ready {
             Section {
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack(spacing: 12) {
-                        SettingsIcon(.tipJar, color: .orange)
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text("Tip Jar")
-                            Text("Enjoying ByteCache? Buy me a coffee.")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
+                VStack(spacing: 12) {
+                    VStack(spacing: 2) {
+                        Label { Text("Tip Jar") } icon: { Icon(.tipJar).foregroundStyle(.orange) }
+                            .font(.headline)
+                        Text("Enjoying ByteCache? Buy me a coffee.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
                     HStack(spacing: 10) {
                         ForEach(Array(model.tips.enumerated()), id: \.element.id) { index, tip in
                             TipButton(tip: tip, symbol: TipButton.symbols[min(index, 2)], buying: model.buying == tip.id,
