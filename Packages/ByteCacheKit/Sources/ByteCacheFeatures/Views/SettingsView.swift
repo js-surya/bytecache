@@ -485,7 +485,7 @@ struct PrivacyInfoView: View {
     }
 }
 
-/// "Made with ♥ by SyntaxError", the heart gently pulsing.
+/// "Made with ♥ by Surya JS", the heart gently pulsing.
 private struct MadeWithLove: View {
     var body: some View {
         HStack(spacing: 4) {
@@ -493,7 +493,7 @@ private struct MadeWithLove: View {
             Icon(.heart)
                 .foregroundStyle(.pink)
                 .symbolEffect(.pulse)
-            Text("by SyntaxError")
+            Text("by Surya JS")
         }
         .fontWeight(.medium)
         .accessibilityElement(children: .ignore)
