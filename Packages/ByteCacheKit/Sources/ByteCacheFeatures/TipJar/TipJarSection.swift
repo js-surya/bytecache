@@ -21,7 +21,7 @@ struct TipJarSection: View {
                     }
                     HStack(spacing: 10) {
                         ForEach(Array(model.tips.enumerated()), id: \.element.id) { index, tip in
-                            TipButton(tip: tip, cups: index + 1, buying: model.buying == tip.id,
+                            TipButton(tip: tip, symbol: TipButton.symbols[min(index, 2)], buying: model.buying == tip.id,
                                       disabled: model.buying != nil) {
                                 Task { await model.buy(tip) }
                             }
@@ -64,23 +64,23 @@ extension TipJarModel {
     }
 }
 
-/// One tip: more cups for a bigger tip, and the price underneath.
+/// One tip: a bigger coffee for a bigger tip, and the price underneath.
 private struct TipButton: View {
     let tip: Tip
-    let cups: Int
+    let symbol: AppSymbol
     let buying: Bool
     let disabled: Bool
     let action: () -> Void
 
+    static let symbols: [AppSymbol] = [.tipJar, .tipMedium, .tipLarge]
+
     var body: some View {
         Button(action: action) {
             VStack(spacing: 4) {
-                HStack(spacing: 1) {
-                    ForEach(0..<cups, id: \.self) { _ in Icon(.tipJar) }
-                }
-                .font(.footnote)
+                Icon(symbol)
+                .font(.body)
                 .foregroundStyle(.orange)
-                .frame(height: 18)
+                .frame(height: 22)
                 .opacity(buying ? 0 : 1)
                 .overlay { if buying { ProgressView().controlSize(.small) } }
                 Text(tip.price)

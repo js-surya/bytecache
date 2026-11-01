@@ -55,6 +55,8 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case infoCircle
     case heart
     case tipJar
+    case tipMedium
+    case tipLarge
     case database
     case terminal
     case plainText
@@ -148,6 +150,8 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .infoCircle: "info.circle"
         case .heart: "heart.fill"
         case .tipJar: "cup.and.saucer.fill"
+        case .tipMedium: "mug.fill"
+        case .tipLarge: "takeoutbag.and.cup.and.straw.fill"
         case .database: "cylinder.split.1x2"
         case .terminal: "terminal"
         case .plainText: "doc.plaintext"
