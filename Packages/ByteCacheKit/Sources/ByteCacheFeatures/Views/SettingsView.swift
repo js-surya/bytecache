@@ -516,6 +516,7 @@ struct AboutView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(\.openURL) private var openURL
     @State private var appIcon = AppIconModel()
+    @State private var tipJar = TipJarModel.forAbout()
 
     var body: some View {
         @Bindable var settings = settings
@@ -535,6 +536,7 @@ struct AboutView: View {
                 }
             }
             #endif
+            TipJarSection(model: tipJar)
             Section {
                 // Buttons, not Links: a Link tints its whole row like a web link.
                 Button { openURL(AboutText.sourceCode) } label: {
@@ -572,6 +574,7 @@ struct AboutView: View {
             }
         }
         .navigationTitle("About")
+        .task { await tipJar.load() }
     }
 }
 
