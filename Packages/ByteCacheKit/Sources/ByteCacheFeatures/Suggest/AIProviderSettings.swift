@@ -9,7 +9,7 @@ struct AIProviderSection: View {
     @State private var keyDraft = ""
     @State private var models: [String] = []
     @State private var check = Check.idle
-    @State private var choosingModel = false
+    @State private var search = ""
 
     enum Check: Equatable { case idle, checking, connected(Int), failed(String) }
 
@@ -45,7 +45,8 @@ struct AIProviderSection: View {
                     Button("Get an API Key") { openURL(page) }
                 }
             }
-            HStack {
+            if models.isEmpty {
+                // Before the list loads (or if the server can't list them): type the model's name.
                 TextField("Model", text: Binding(get: { settings.aiModel(for: provider) },
                                                  set: { settings.setAIModel($0, for: provider) }),
                           prompt: Text(provider == .localServer ? "e.g. llama3.2" : provider.defaultModel))
@@ -53,8 +54,8 @@ struct AIProviderSection: View {
                     #if os(iOS)
                     .textInputAutocapitalization(.never)
                     #endif
-                Button("Choose…") { choosingModel = true }
-                    .disabled(models.isEmpty)
+            } else {
+                modelList
             }
             Button {
                 Task { await testConnection() }
@@ -81,14 +82,63 @@ struct AIProviderSection: View {
                 InfoFooter(footer)
             }
         }
-        .sheet(isPresented: $choosingModel) {
-            ModelPicker(models: models, selection: Binding(get: { settings.aiModel(for: provider) },
-                                                           set: { settings.setAIModel($0, for: provider) }))
-        }
         .onChange(of: provider) {
             keyDraft = ""
+            search = ""
             models = []
             check = .idle
+        }
+        // Fill the model list as soon as there's a key (or a local server) to ask.
+        .task(id: provider) {
+            if models.isEmpty, check == .idle, hasKey || !provider.needsKey { await testConnection() }
+        }
+    }
+
+    /// The current model, a search field and a few matching models from the provider's list.
+    @ViewBuilder private var modelList: some View {
+        let selection = settings.aiModel(for: provider)
+        let choices = ModelChoices(models: models, suggested: provider.suggestedModels,
+                                   selection: selection, search: search)
+        LabeledContent("Model", value: selection.isEmpty ? "None" : selection)
+        HStack {
+            Icon(.search).foregroundStyle(.secondary)
+            TextField("Search Models", text: $search, prompt: Text("Search \(models.count) models"))
+                .autocorrectionDisabled()
+                #if os(iOS)
+                .textInputAutocapitalization(.never)
+                #endif
+        }
+        if choices.shown.isEmpty {
+            Text("No models match “\(search)”.").font(.caption).foregroundStyle(.secondary)
+        } else {
+            // Its own scroll area, so hundreds of models (OpenRouter) don't make Settings endless.
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    ForEach(choices.shown) { model in
+                        Button {
+                            settings.setAIModel(model.id, for: provider)
+                            search = ""
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(model.id).foregroundStyle(.primary)
+                                    if !model.detail.isEmpty {
+                                        Text(model.detail).font(.caption).foregroundStyle(.secondary)
+                                    }
+                                }
+                                Spacer()
+                                if model.id == selection { Icon(.check).foregroundStyle(.tint) }
+                            }
+                            .padding(.vertical, 8)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        if model.id != choices.shown.last?.id { Divider() }
+                    }
+                }
+            }
+            .frame(height: min(CGFloat(choices.shown.count) * 44, 264))
+            .scrollBounceBehavior(.basedOnSize)
         }
     }
 
@@ -121,44 +171,23 @@ struct AIProviderSection: View {
     }
 }
 
-/// The provider's models, searchable (OpenRouter lists hundreds).
-private struct ModelPicker: View {
-    let models: [String]
-    @Binding var selection: String
-    @State private var search = ""
-    @Environment(\.dismiss) private var dismiss
+/// The models in the scrolling list: with no search, the suggested ones the provider has and the current
+/// choice first, then the rest; with a search, only the matches.
+struct ModelChoices {
+    let shown: [SuggestedModel]
 
-    private var shown: [String] {
-        search.isEmpty ? models : models.filter { $0.localizedCaseInsensitiveContains(search) }
-    }
-
-    var body: some View {
-        NavigationStack {
-            List(shown, id: \.self) { model in
-                Button {
-                    selection = model
-                    dismiss()
-                } label: {
-                    HStack {
-                        Text(model).foregroundStyle(.primary)
-                        Spacer()
-                        if model == selection { Icon(.check).foregroundStyle(.tint) }
-                    }
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-            }
-            .searchable(text: $search, prompt: "Search models")
-            .navigationTitle("Model")
-            #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-            #endif
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
-            }
+    init(models: [String], suggested: [SuggestedModel], selection: String, search: String) {
+        let query = search.trimmingCharacters(in: .whitespaces)
+        let available = Set(models)
+        let detail = Dictionary(suggested.map { ($0.id, $0.detail) }, uniquingKeysWith: { first, _ in first })
+        let ordered: [String] = if query.isEmpty {
+            suggested.map(\.id).filter(available.contains)
+                + (available.contains(selection) ? [selection] : [])
+                + models
+        } else {
+            models.filter { $0.localizedCaseInsensitiveContains(query) }
         }
-        #if os(macOS)
-        .frame(minWidth: 360, minHeight: 420)
-        #endif
+        var seen = Set<String>()
+        shown = ordered.filter { seen.insert($0).inserted }.map { SuggestedModel(id: $0, detail: detail[$0] ?? "") }
     }
 }

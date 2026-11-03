@@ -117,9 +117,11 @@ public struct SnippetListView: View {
             }
         } else if model.pinnedSection.isEmpty {
             ForEach(model.snippets) { row($0) }
+                .onMove(perform: model.selection == .pinned ? movePins : nil)
         } else {
             Section {
                 ForEach(model.pinnedSection) { row($0) }
+                    .onMove(perform: movePins)
             } header: {
                 Label("Pinned", symbol: .pinFill).foregroundStyle(.orange)
             }
@@ -129,11 +131,31 @@ public struct SnippetListView: View {
         }
     }
 
+    /// Dragging pins into order (CP-99): on iPhone and iPad with Select's handles, so a plain drag still
+    /// sends the snippet to other apps; on the Mac, by dragging rows.
+    private var movePins: ((IndexSet, Int) -> Void)? {
+        #if os(iOS)
+        guard model.isSelecting else { return nil }
+        #endif
+        guard model.canReorderPins else { return nil }
+        return { model.movePins(from: $0, to: $1) }
+    }
+
+    /// Select mode on iPhone and iPad, where pinned rows show reorder handles.
+    private var reorderingWithHandles: Bool {
+        #if os(iOS)
+        model.isSelecting
+        #else
+        false
+        #endif
+    }
+
     private func row(_ snippet: Snippet) -> some View {
         rowLabel(snippet)
             .tag(snippet.id)
-            // Drag a snippet out: its code into other apps, its file into Finder or Files (CP-92).
-            .draggable(SnippetDragItem(snippet))
+            // Drag a snippet out: its code into other apps, its file into Finder or Files (CP-92). Not in
+            // Select mode on iPhone and iPad: a row's own drag takes over the reorder handles (CP-99).
+            .modifier(DragOut(snippet: snippet, enabled: !reorderingWithHandles))
             .task { await model.loadMoreIfNeeded(current: snippet) }
             .contextMenu { SnippetActions(snippet: snippet, model: model) }
             #if os(iOS)
@@ -344,5 +366,15 @@ extension View {
                 Text(suggestion.title).searchCompletion(suggestion.completion)
             }
         }
+    }
+}
+
+/// `.draggable` that can be turned off.
+private struct DragOut: ViewModifier {
+    let snippet: Snippet
+    let enabled: Bool
+
+    func body(content: Content) -> some View {
+        if enabled { content.draggable(SnippetDragItem(snippet)) } else { content }
     }
 }

@@ -48,6 +48,17 @@ public enum AIProvider: String, CaseIterable, Codable, Sendable, Identifiable {
         }
     }
 
+    /// Models worth finding without searching, shown first in the model list when the provider has them.
+    public var suggestedModels: [SuggestedModel] {
+        switch self {
+        case .openRouter: [
+            SuggestedModel(id: "openrouter/auto", detail: "Picks a good model for each request."),
+            SuggestedModel(id: "openrouter/free", detail: "Free: picks one of OpenRouter's free models. Rate limited."),
+        ]
+        default: []
+        }
+    }
+
     /// Ollama's OpenAI-style endpoint on this Mac. On iPhone and iPad the person enters their Mac's address.
     public static let defaultLocalServer = "http://localhost:11434/v1"
 
@@ -80,6 +91,12 @@ public enum AIProvider: String, CaseIterable, Codable, Sendable, Identifiable {
             "When you tap Suggest, Explain or Fix with AI, ByteCache sends the code, its language and title (and for Fix with AI, the scanned picture) to \(recipient) with your API key. \(recipient)'s terms and privacy policy apply, and your account may be charged for each request. Nothing is sent to ByteCache's developer."
         }
     }
+}
+
+/// A model shown at the top of the model list, with what it does.
+public struct SuggestedModel: Identifiable, Equatable, Sendable {
+    public let id: String
+    public let detail: String
 }
 
 /// Saved API keys, one per provider. Keys stay on this device: they aren't synced through iCloud.

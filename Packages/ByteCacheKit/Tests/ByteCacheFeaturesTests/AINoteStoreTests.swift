@@ -33,6 +33,18 @@ final class AINoteStoreTests: XCTestCase {
         XCTAssertNil(again.note(server: "https://b.io", snippetID: 7), "servers don't mix")
     }
 
+    func testRemembersWhoWroteIt() throws {
+        let dir = directory()
+        let store = AINoteStore(directory: dir, settings: settings(), cloud: nil)
+        store.save("Prints hi.", code: "print(1)", server: "s", snippetID: 1, author: "OpenRouter (openrouter/free)")
+        let again = AINoteStore(directory: dir, settings: settings(), cloud: nil)
+        XCTAssertEqual(again.note(server: "s", snippetID: 1)?.author, "OpenRouter (openrouter/free)")
+
+        // Notes saved before CP-98 have no author.
+        let old = #"{"server":"s","snippetID":2,"text":"t","codeFingerprint":"f","created":0}"#
+        XCTAssertNil(try JSONDecoder().decode(AINote.self, from: Data(old.utf8)).author)
+    }
+
     func testKnowsWhenTheCodeChanged() throws {
         let store = AINoteStore(directory: directory(), settings: settings(), cloud: nil)
         store.save("Prints hello.", code: "echo hi", server: server, snippetID: 7)

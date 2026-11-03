@@ -5,11 +5,18 @@ import SwiftUI
 struct AINoteCard: View {
     let note: AINote
     let code: String
-    /// This device can make a new one (Apple Intelligence available here).
+    /// This device can make a new one (the chosen AI provider is ready).
     let canExplainAgain: Bool
     let onExplainAgain: () -> Void
     let onDelete: () -> Void
     @State private var expanded = false
+
+    /// "Explained by OpenRouter (model) 2 hours ago"; just "Explained by …" for a fresh note, not "… now".
+    private var byline: String {
+        let author = "Explained by \(note.author ?? AIProvider.appleIntelligence.name)"
+        guard Date().timeIntervalSince(note.created) >= 60 else { return author }
+        return "\(author) \(note.created.formatted(.relative(presentation: .named)))"
+    }
 
     private var long: Bool { note.text.count > 360 || note.text.filter { $0 == "\n" }.count > 6 }
 
@@ -33,7 +40,7 @@ struct AINoteCard: View {
                 .menuIndicator(.hidden)
                 .fixedSize()
             }
-            Text("Explained by Apple Intelligence \(note.created.formatted(.relative(presentation: .named)))")
+            Text(byline)
                 .font(.caption)
                 .foregroundStyle(.secondary)
             if note.isStale(for: code) {

@@ -55,6 +55,28 @@ final class CloudSyncTests: XCTestCase {
         XCTAssertEqual(session.accounts.map(\.server.base.absoluteString), ["https://a.io", "https://b.io"])
     }
 
+    func testComingBackCatchesUpOnlyAfterStart() async throws {
+        let cloud = InMemorySyncStore()
+        var orders = PinOrders()
+        orders.set([3, 1], server: try ServerURL("https://a.io"))
+        cloud.setData(try JSONEncoder().encode(SyncedSettings(appearance: .dark, accent: .green, codeThemeID: "nord",
+                                                              codeFontSize: 18, showLineNumbers: false, pinOrders: orders)),
+                      forKey: CloudSyncCoordinator.settingsKey)
+        let (sync, settings, _, _) = try await setup(cloud: cloud)
+        // Before start (launch, servers not restored): nothing happens, so nothing is published either.
+        await sync.appBecameActive()
+        XCTAssertEqual(settings.pinOrders, PinOrders())
+        XCTAssertNil(cloud.data(forKey: CloudSyncCoordinator.serversKey))
+        await sync.start()
+        // The Mac changes the order; coming back to the app picks it up.
+        orders.set([1, 3], server: try ServerURL("https://a.io"))
+        var remote = settings.synced
+        remote.pinOrders = orders
+        cloud.setData(try JSONEncoder().encode(remote), forKey: CloudSyncCoordinator.settingsKey)
+        await sync.appBecameActive()
+        XCTAssertEqual(settings.pinOrders, orders)
+    }
+
     func testTurnedOffDoesNothing() async throws {
         let cloud = InMemorySyncStore()
         cloud.setData(try JSONEncoder().encode(SyncedSettings(appearance: .dark, accent: .green, codeThemeID: "nord",
