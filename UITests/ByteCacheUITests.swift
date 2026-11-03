@@ -168,4 +168,43 @@ final class ByteCacheUITests: XCTestCase {
         XCUIDevice.shared.press(.home)
         XCUIDevice.shared.press(.home)
     }
+
+    // MARK: Pin order (CP-99)
+
+    /// In Pinned, Select's handles drag a pin to the top. Only the order on the device changes.
+    func testReorderPinnedWithSelectHandles() throws {
+        // Sign in with a key when the runner has one (TEST_RUNNER_BC_DEBUG_SERVER / _API_KEY).
+        let env = ProcessInfo.processInfo.environment
+        app = XCUIApplication()
+        app.launchArguments = ["-BCTab", "pinned"]
+        if let server = env["BC_DEBUG_SERVER"], let key = env["BC_DEBUG_API_KEY"] {
+            app.launchArguments.append("-BCKeyLogin")
+            app.launchEnvironment["BC_DEBUG_SERVER"] = server
+            app.launchEnvironment["BC_DEBUG_API_KEY"] = key
+        }
+        app.launch()
+        dismissWhatsNew()
+        try requireSignedIn()
+        let list = app.collectionViews.firstMatch
+        XCTAssertTrue(list.waitForExistence(timeout: 10))
+        guard list.cells.count >= 2 else { throw XCTSkip("Needs at least two pinned snippets.") }
+
+        // On iPhone, Select is in the More (…) menu.
+        let select = app.buttons["Select"].firstMatch
+        if !select.waitForExistence(timeout: 3) { app.buttons["OverflowBarButtonItem"].firstMatch.tap() }
+        XCTAssertTrue(select.waitForExistence(timeout: 5))
+        select.tap()
+        let handles = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Reorder'"))
+        if !handles.firstMatch.waitForExistence(timeout: 5) { print("UI TREE:", app.debugDescription) }
+        XCTAssertTrue(handles.firstMatch.exists, "Select mode shows reorder handles")
+        let before = list.cells.allElementsBoundByIndex.map { $0.staticTexts.firstMatch.label }
+        // The third pin (well clear of the tab bar) to the top.
+        handles.element(boundBy: 2).press(forDuration: 0.5, thenDragTo: handles.element(boundBy: 0),
+                                          withVelocity: .slow, thenHoldForDuration: 0.5)
+        Thread.sleep(forTimeInterval: 1)
+        pace()
+        let after = list.cells.allElementsBoundByIndex.map { $0.staticTexts.firstMatch.label }
+        XCTAssertNotEqual(before, after, "The dragged pin moved")
+        XCTAssertEqual(after.first, before[2])
+    }
 }
