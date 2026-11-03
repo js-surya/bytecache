@@ -94,6 +94,16 @@ public final class AppSettings {
     public var snippetExpiries: SnippetExpiries {
         didSet { defaults.set(try? JSONEncoder().encode(snippetExpiries), forKey: Key.snippetExpiries) }
     }
+    /// The person's order of pinned snippets (ByteStash doesn't store one), per server (CP-99).
+    public var pinOrders: PinOrders {
+        didSet {
+            guard pinOrders != oldValue else { return }
+            defaults.set(try? JSONEncoder().encode(pinOrders), forKey: Key.pinOrders)
+            NotificationCenter.default.post(name: Self.pinOrdersChanged, object: self)
+        }
+    }
+    /// Posted when `pinOrders` changes, here or from another device, so every list re-sorts.
+    public static let pinOrdersChanged = Notification.Name("ByteCachePinOrdersChanged")
     /// Saved rule-based groups, shown in the sidebar.
     public var smartGroups: [SmartGroup] {
         didSet { defaults.set(try? JSONEncoder().encode(smartGroups), forKey: Key.smartGroups) }
@@ -151,7 +161,7 @@ public final class AppSettings {
         static let quickSearchReturn = "quickSearchReturnAction", quickSearchOptionReturn = "quickSearchOptionReturnAction"
         static let quickSearchStart = "quickSearchStart", quickSearchClears = "quickSearchClearsOnOpen"
         static let menuBarPanelSize = "menuBarPanelSize", menuBarOnly = "menuBarOnly"
-        static let snippetExpiries = "snippetExpiries"
+        static let snippetExpiries = "snippetExpiries", pinOrders = "pinOrders"
         static let aiNotesLimit = "aiNotesLimit"
         static let iCloudSync = "iCloudSyncEnabled", handoff = "handoffEnabled", suggestions = "suggestionsEnabled"
         static let aiProvider = "aiProvider", aiModels = "aiModels", aiServerAddress = "aiServerAddress", aiKeysSaved = "aiKeysSaved"
@@ -181,6 +191,8 @@ public final class AppSettings {
         menuBarOnly = defaults.bool(forKey: Key.menuBarOnly)
         snippetExpiries = defaults.data(forKey: Key.snippetExpiries)
             .flatMap { try? JSONDecoder().decode(SnippetExpiries.self, from: $0) } ?? SnippetExpiries()
+        pinOrders = defaults.data(forKey: Key.pinOrders)
+            .flatMap { try? JSONDecoder().decode(PinOrders.self, from: $0) } ?? PinOrders()
         smartGroups = defaults.data(forKey: Key.smartGroups).flatMap { try? JSONDecoder().decode([SmartGroup].self, from: $0) } ?? []
         iCloudSyncEnabled = defaults.object(forKey: Key.iCloudSync) as? Bool ?? true
         handoffEnabled = defaults.object(forKey: Key.handoff) as? Bool ?? true
@@ -264,7 +276,7 @@ public final class AppSettings {
         SyncedSettings(appearance: appearance, accent: accent, codeThemeID: codeThemeID,
                        codeFontSize: codeFontSize, showLineNumbers: showLineNumbers,
                        searchInCode: searchInCode, languageIconStyle: languageIconStyle, wrapLines: wrapLines,
-                       smartGroups: smartGroups, snippetExpiries: snippetExpiries)
+                       smartGroups: smartGroups, snippetExpiries: snippetExpiries, pinOrders: pinOrders)
     }
 
     public func apply(_ remote: SyncedSettings) {
@@ -278,6 +290,7 @@ public final class AppSettings {
         if let wrap = remote.wrapLines, wrapLines != wrap { wrapLines = wrap }
         if let groups = remote.smartGroups, smartGroups != groups { smartGroups = groups }
         if let expiries = remote.snippetExpiries, snippetExpiries != expiries { snippetExpiries = expiries }
+        if let orders = remote.pinOrders, pinOrders != orders { pinOrders = orders }
     }
 }
 
@@ -306,11 +319,12 @@ public struct SyncedSettings: Codable, Equatable, Sendable {
     public var wrapLines: Bool?
     public var smartGroups: [SmartGroup]?
     public var snippetExpiries: SnippetExpiries?
+    public var pinOrders: PinOrders?
 
     public init(appearance: AppAppearance, accent: AccentChoice, codeThemeID: String, codeFontSize: Double,
                 showLineNumbers: Bool, searchInCode: Bool? = nil,
                 languageIconStyle: LanguageIconStyle? = nil, wrapLines: Bool? = nil,
-                smartGroups: [SmartGroup]? = nil, snippetExpiries: SnippetExpiries? = nil) {
+                smartGroups: [SmartGroup]? = nil, snippetExpiries: SnippetExpiries? = nil, pinOrders: PinOrders? = nil) {
         self.appearance = appearance
         self.accent = accent
         self.codeThemeID = codeThemeID
@@ -321,6 +335,7 @@ public struct SyncedSettings: Codable, Equatable, Sendable {
         self.wrapLines = wrapLines
         self.smartGroups = smartGroups
         self.snippetExpiries = snippetExpiries
+        self.pinOrders = pinOrders
     }
 }
 

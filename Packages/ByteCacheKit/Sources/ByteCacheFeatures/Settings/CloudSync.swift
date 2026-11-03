@@ -88,6 +88,13 @@ public final class CloudSyncCoordinator {
         push()
     }
 
+    /// Back in the app: catch up now. Only once `start()` has run, so a launch (servers not yet
+    /// restored) never publishes an empty server list.
+    public func appBecameActive() async {
+        guard started else { return }
+        await syncNow()
+    }
+
     public func pull() async {
         guard enabled else { return }
         if let data = cloud.data(forKey: Self.settingsKey),

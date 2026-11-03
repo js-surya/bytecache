@@ -43,6 +43,9 @@ public final class SnippetListModel {
     @ObservationIgnored private var loadingMore = false
     @ObservationIgnored private var generation = 0
     @ObservationIgnored nonisolated(unsafe) private var changeObserver: NSObjectProtocol?
+    @ObservationIgnored nonisolated(unsafe) private var pinOrderObserver: NSObjectProtocol?
+    /// Holds the pin order (CP-99). Without it, pins keep the list's sort.
+    @ObservationIgnored private let settings: AppSettings?
 
     let session: SessionManager
     private let cache: SnippetCache?
@@ -52,8 +55,9 @@ public final class SnippetListModel {
     static let sortKey = "listSort"
 
     public init(session: SessionManager, cache: SnippetCache?, searchDelay: Duration = .milliseconds(300),
-                usage: UsageTracker = UsageTracker(), sortDefaults: UserDefaults? = nil) {
+                usage: UsageTracker = UsageTracker(), sortDefaults: UserDefaults? = nil, settings: AppSettings? = nil) {
         self.sortDefaults = sortDefaults
+        self.settings = settings
         self.session = session
         self.cache = cache
         self.searchDelay = searchDelay
@@ -66,10 +70,19 @@ public final class SnippetListModel {
                   let self, note.object as AnyObject? !== self else { return }
             MainActor.assumeIsolated { self.apply(change) }
         }
+        // The pin order changed (here, in another list or on another device): re-sort.
+        pinOrderObserver = NotificationCenter.default.addObserver(forName: AppSettings.pinOrdersChanged, object: settings,
+                                                                  queue: nil) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                self.snippets = self.arranged(self.snippets)
+            }
+        }
     }
 
     deinit {
         if let changeObserver { NotificationCenter.default.removeObserver(changeObserver) }
+        if let pinOrderObserver { NotificationCenter.default.removeObserver(pinOrderObserver) }
     }
 
     /// Public snippets belong to everyone: browse, copy and save only.
@@ -309,6 +322,7 @@ public final class SnippetListModel {
         do {
             try await client.setPinned(id: updated.id, updated.isPinned)
             cache?.upsert(updated, server: client.server)
+            if !updated.isPinned { settings?.pinOrders.remove(updated.id, server: client.server) }
         } catch {
             snippets = before
             announce(.updated(original), server: client.server)
@@ -320,6 +334,23 @@ public final class SnippetListModel {
     public var pinnedSection: [Snippet] {
         guard selection != .pinned, selection != .recycleBin else { return [] }
         return snippets.filter(\.isPinned)
+    }
+
+    /// Pinned rows can be dragged into order: in Pinned and the Pinned section, not while searching
+    /// (results are ranked) or in a read-only list.
+    public var canReorderPins: Bool {
+        settings != nil && searchText.trimmingCharacters(in: .whitespaces).isEmpty && !isReadOnly && selection != .mostUsed && !showsCloseMatches
+    }
+
+    /// The pinned rows as shown: the whole list in Pinned, else the Pinned section.
+    private var pinnedRows: [Snippet] { selection == .pinned ? snippets.filter(\.isPinned) : pinnedSection }
+
+    /// Moves pinned rows (indexes into `pinnedRows`, as `onMove` gives them) and keeps the new order.
+    public func movePins(from source: IndexSet, to destination: Int) {
+        guard canReorderPins, let settings, let server = session.client?.server else { return }
+        let order = PinOrders.moving(pinnedRows.map(\.id), in: settings.pinOrders.order(server: server),
+                                     from: source, to: destination)
+        settings.pinOrders.set(order, server: server)
     }
 
     public var otherSection: [Snippet] {
@@ -405,7 +436,8 @@ public final class SnippetListModel {
         var seen = Set<Int>()
         let list = list.filter { seen.insert($0.id).inserted }
         guard selection != .mostUsed else { return list }
-        let sorted = SnippetOrdering.arranged(list, by: sort)
+        let pinOrder = session.client.map { settings?.pinOrders.order(server: $0.server) ?? [] } ?? []
+        let sorted = SnippetOrdering.arranged(list, by: sort, pinOrder: pinOrder)
         let text = parsedSearch.text
         return text.isEmpty ? sorted : SearchRanking.arranged(sorted, by: text)
     }

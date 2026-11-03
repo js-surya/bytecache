@@ -66,6 +66,9 @@ struct RootView: View {
             if phase == .active {
                 Task { await services.updates.appBecameActive() }
                 Task { await services.serverSettings.pull() }
+                // Catch up with other devices (a pin order changed on the Mac, say) without waiting
+                // for iCloud's own nudge, which can take minutes (CP-99).
+                Task { await services.cloudSync.appBecameActive() }
             }
         }
         .sheet(item: Bindable(services.updates).whatsNew) { release in
@@ -76,6 +79,8 @@ struct RootView: View {
             Task { await services.widgets.refresh() }
             if case .signedIn = services.session.state { Task { await services.serverSettings.pull() } }
         }
+        // The Pinned widget follows the person's pin order (CP-99).
+        .onChange(of: services.settings.pinOrders) { Task { await services.widgets.refresh() } }
         .onContinueUserActivity(SnippetActivity.type) { activity in
             guard services.settings.handoffEnabled, let target = SnippetActivity.parse(activity.userInfo) else { return }
             Task { await openHandoff(server: target.server, snippetID: target.snippetID) }
