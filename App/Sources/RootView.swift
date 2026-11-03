@@ -66,6 +66,9 @@ struct RootView: View {
             if phase == .active {
                 Task { await services.updates.appBecameActive() }
                 Task { await services.serverSettings.pull() }
+                // Catch up with other devices (a pin order changed on the Mac, say) without waiting
+                // for iCloud's own nudge, which can take minutes (CP-99).
+                Task { await services.cloudSync.appBecameActive() }
             }
         }
         .sheet(item: Bindable(services.updates).whatsNew) { release in
