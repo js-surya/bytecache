@@ -11,6 +11,13 @@ struct AINoteCard: View {
     let onDelete: () -> Void
     @State private var expanded = false
 
+    /// "Explained by OpenRouter (model) 2 hours ago"; just "Explained by …" for a fresh note, not "… now".
+    private var byline: String {
+        let author = "Explained by \(note.author ?? AIProvider.appleIntelligence.name)"
+        guard Date().timeIntervalSince(note.created) >= 60 else { return author }
+        return "\(author) \(note.created.formatted(.relative(presentation: .named)))"
+    }
+
     private var long: Bool { note.text.count > 360 || note.text.filter { $0 == "\n" }.count > 6 }
 
     var body: some View {
@@ -33,7 +40,7 @@ struct AINoteCard: View {
                 .menuIndicator(.hidden)
                 .fixedSize()
             }
-            Text("Explained by \(note.author ?? AIProvider.appleIntelligence.name) \(note.created.formatted(.relative(presentation: .named)))")
+            Text(byline)
                 .font(.caption)
                 .foregroundStyle(.secondary)
             if note.isStale(for: code) {
