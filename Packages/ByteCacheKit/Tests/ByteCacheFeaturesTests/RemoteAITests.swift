@@ -95,6 +95,34 @@ final class RemoteAIClientTests: XCTestCase {
         XCTAssertEqual(request?.value(forHTTPHeaderField: "X-Title"), "ByteCache")
     }
 
+    func testOpenRouterSuggestsItsRouters() {
+        XCTAssertEqual(AIProvider.openRouter.suggestedModels.map(\.id), ["openrouter/auto", "openrouter/free"])
+        XCTAssertTrue(AIProvider.openAI.suggestedModels.isEmpty)
+    }
+
+    func testModelChoicesStayShort() {
+        let models = (1...450).map { "vendor/model-\($0)" } + ["openrouter/auto", "openrouter/free"]
+        let suggested = AIProvider.openRouter.suggestedModels
+
+        let start = ModelChoices(models: models, suggested: suggested, selection: "vendor/model-300", search: "")
+        XCTAssertEqual(start.shown.map(\.id).prefix(3), ["openrouter/auto", "openrouter/free", "vendor/model-300"])
+        XCTAssertFalse(start.shown[1].detail.isEmpty)
+        XCTAssertEqual(start.shown.count, ModelChoices.limit)
+        XCTAssertEqual(start.shown.count + start.hidden, models.count)
+
+        let found = ModelChoices(models: models, suggested: suggested, selection: "", search: "MODEL-45")
+        XCTAssertEqual(found.shown.first?.id, "vendor/model-45")
+        XCTAssertEqual(found.shown.count + found.hidden, 2) // 45 and 450
+
+        let none = ModelChoices(models: models, suggested: suggested, selection: "", search: "nothing")
+        XCTAssertTrue(none.shown.isEmpty)
+        XCTAssertEqual(none.hidden, 0)
+
+        // Suggestions the provider doesn't list aren't offered.
+        let plain = ModelChoices(models: ["gpt-a", "gpt-b"], suggested: suggested, selection: "", search: "")
+        XCTAssertEqual(plain.shown.map(\.id), ["gpt-a", "gpt-b"])
+    }
+
     func testLocalServerWorksWithoutAKey() async throws {
         let transport = RecordingTransport(body: #"{"choices":[{"message":{"content":"ok"}}]}"#)
         _ = try await client(.localServer, key: nil, server: "http://mac.local:11434/v1/", transport: transport)
