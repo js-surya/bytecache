@@ -147,10 +147,13 @@ public struct QuickSearchView: View {
                             .padding(.horizontal, 4)
                             .listRowBackground(index == model.highlighted ? Color.accentColor.opacity(0.18) : Color.clear)
                             .contentShape(Rectangle())
-                            .onTapGesture {
+                            // A click picks the snippet to preview; a double-click does what Return does.
+                            // (A single click used to copy and close, so you couldn't look at another.)
+                            .onTapGesture(count: 2) {
                                 model.highlighted = index
                                 choose(option: NSEvent.modifierFlags.contains(.option))
                             }
+                            .onTapGesture { model.highlighted = index }
                             .id(snippet.id)
                     }
                 }
@@ -185,6 +188,15 @@ public struct QuickSearchView: View {
                     Text("+\(snippet.fragments.count - 1) more").foregroundStyle(.secondary)
                 }
                 Spacer()
+                Button {
+                    model.copy(snippet)
+                    CopyFeedback.copied()
+                } label: {
+                    Label("Copy", symbol: .copy)
+                }
+                .controlSize(.small)
+                .touchTarget()
+                .help("Copy all of this snippet's code")
                 Toggle(isOn: Binding(get: { settings.wrapLines }, set: { settings.wrapLines = $0 })) {
                     Label("Wrap", symbol: .wrapLines)
                 }
