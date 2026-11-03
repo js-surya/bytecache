@@ -12,6 +12,9 @@ public struct AINote: Codable, Equatable, Sendable {
     /// A fingerprint of the code that was explained.
     public var codeFingerprint: String
     public var created: Date
+    /// Who wrote it, such as "Apple Intelligence" or "OpenRouter (openrouter/free)". Missing on notes
+    /// from before CP-98, which Apple Intelligence wrote.
+    public var author: String?
 
     /// The snippet's code changed since this was written.
     public func isStale(for code: String) -> Bool { codeFingerprint != AINoteStore.fingerprint(code) }
@@ -56,9 +59,10 @@ public final class AINoteStore {
 
     public func note(server: String, snippetID: Int) -> AINote? { notes[Self.key(server, snippetID)] }
 
-    public func save(_ text: String, code: String, server: String, snippetID: Int, date: Date = Date()) {
+    public func save(_ text: String, code: String, server: String, snippetID: Int, author: String? = nil,
+                     date: Date = Date()) {
         let note = AINote(server: server, snippetID: snippetID, text: String(text.prefix(Self.maxCharacters)),
-                          codeFingerprint: Self.fingerprint(code), created: date)
+                          codeFingerprint: Self.fingerprint(code), created: date, author: author)
         let key = Self.key(server, snippetID)
         notes[key] = note
         push(key, note)
