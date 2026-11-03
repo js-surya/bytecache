@@ -5,7 +5,7 @@ import SwiftUI
 struct AINoteCard: View {
     let note: AINote
     let code: String
-    /// This device can make a new one (Apple Intelligence available here).
+    /// This device can make a new one (the chosen AI provider is ready).
     let canExplainAgain: Bool
     let onExplainAgain: () -> Void
     let onDelete: () -> Void
@@ -33,7 +33,7 @@ struct AINoteCard: View {
                 .menuIndicator(.hidden)
                 .fixedSize()
             }
-            Text("Explained by Apple Intelligence \(note.created.formatted(.relative(presentation: .named)))")
+            Text("Explained by \(note.author ?? AIProvider.appleIntelligence.name) \(note.created.formatted(.relative(presentation: .named)))")
                 .font(.caption)
                 .foregroundStyle(.secondary)
             if note.isStale(for: code) {

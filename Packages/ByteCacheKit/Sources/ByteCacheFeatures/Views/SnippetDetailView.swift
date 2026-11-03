@@ -184,7 +184,8 @@ public struct SnippetDetailView: View {
                                 ExplainSheet(model: ExplainModel(explainer: explainer, provider: settings.aiProvider),
                                              snippet: (allCode, fragments.first?.language ?? "plaintext", snippet.title)) { text in
                                     if let server = noteServer {
-                                        aiNotes?.save(text, code: allCode, server: server, snippetID: snippet.id)
+                                        aiNotes?.save(text, code: allCode, server: server, snippetID: snippet.id,
+                                                      author: settings.aiAuthor)
                                     }
                                 }
                             }

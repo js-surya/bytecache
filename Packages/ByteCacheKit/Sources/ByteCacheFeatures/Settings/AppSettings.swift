@@ -217,6 +217,12 @@ public final class AppSettings {
         return remoteAIClient().map(RemoteScanFixer.init)
     }
 
+    /// Who writes explanations now, for the AI Note: "Apple Intelligence", or the provider and model.
+    var aiAuthor: String {
+        let model = aiModel(for: aiProvider)
+        return aiProvider.isOnDevice || model.isEmpty ? aiProvider.name : "\(aiProvider.name) (\(model))"
+    }
+
     /// Whether the chosen provider can be used: Apple Intelligence is available, or the person's own
     /// provider has its key (when it needs one) and a model.
     public var aiIsReady: Bool {
