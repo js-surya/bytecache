@@ -44,8 +44,9 @@ public final class AppServices {
         self.detector = detector
         self.settings = settings
         self.lock = lock
-        widgets = WidgetSnapshotWriter(session: session, smartGroups: { [settings] in settings.smartGroups })
-        quickSearch = QuickSearchModel(list: SnippetListModel(session: session, cache: cache))
+        widgets = WidgetSnapshotWriter(session: session, smartGroups: { [settings] in settings.smartGroups },
+                                       pinOrders: { [settings] in settings.pinOrders })
+        quickSearch = QuickSearchModel(list: SnippetListModel(session: session, cache: cache, settings: settings))
         saveQueue = SaveQueueFlusher(session: session, queue: pendingSaves)
         updates = UpdateModel(checker: Self.makeUpdateChecker())
         lock.appDidLaunch()

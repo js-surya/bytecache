@@ -66,7 +66,7 @@ struct PhoneTabsView: View {
         self.onCapture = onCapture
         func model(_ item: SidebarItem) -> SnippetListModel {
             let m = SnippetListModel(session: services.session, cache: services.cache,
-                                         sortDefaults: AppEnvironment.sharedDefaults)
+                                         sortDefaults: AppEnvironment.sharedDefaults, settings: services.settings)
             m.selection = item
             return m
         }

@@ -35,7 +35,7 @@ struct MainSplitView: View {
         self.services = services
         _sidebar = State(initialValue: SidebarModel(session: services.session))
         _list = State(initialValue: SnippetListModel(session: services.session, cache: services.cache,
-                                         sortDefaults: AppEnvironment.sharedDefaults))
+                                         sortDefaults: AppEnvironment.sharedDefaults, settings: services.settings))
     }
 
     var body: some View {

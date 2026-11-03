@@ -76,6 +76,8 @@ struct RootView: View {
             Task { await services.widgets.refresh() }
             if case .signedIn = services.session.state { Task { await services.serverSettings.pull() } }
         }
+        // The Pinned widget follows the person's pin order (CP-99).
+        .onChange(of: services.settings.pinOrders) { Task { await services.widgets.refresh() } }
         .onContinueUserActivity(SnippetActivity.type) { activity in
             guard services.settings.handoffEnabled, let target = SnippetActivity.parse(activity.userInfo) else { return }
             Task { await openHandoff(server: target.server, snippetID: target.snippetID) }

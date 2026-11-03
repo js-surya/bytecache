@@ -18,16 +18,19 @@ public final class WidgetSnapshotWriter {
     private let session: SessionManager
     private let store: WidgetSnapshotStore
     private let smartGroups: () -> [SmartGroup]
+    private let pinOrders: () -> PinOrders
     private let reload: () -> Void
     /// The whole library, reused for a minute so quick successive refreshes don't refetch it.
     private var library: (server: ServerURL, snippets: [Snippet], loaded: Date)?
 
     public init(session: SessionManager, store: WidgetSnapshotStore = WidgetSnapshotStore(),
                 smartGroups: @escaping () -> [SmartGroup] = { [] },
+                pinOrders: @escaping () -> PinOrders = { PinOrders() },
                 reload: @escaping () -> Void = WidgetSnapshotWriter.reloadAllWidgets) {
         self.session = session
         self.store = store
         self.smartGroups = smartGroups
+        self.pinOrders = pinOrders
         self.reload = reload
     }
 
@@ -45,7 +48,11 @@ public final class WidgetSnapshotWriter {
         }
         let name = client.server.base.host() ?? client.server.base.absoluteString
         do {
-            let pinned = try await client.snippets(SnippetQuery(pinned: true, limit: Self.rowsPerList)).snippets
+            // All the pins (a few dozen at most), so the person's order picks the top ones.
+            let pinned = SnippetOrdering.arranged(
+                try await client.snippets(SnippetQuery(pinned: true, limit: 100)).snippets, by: .newest,
+                pinOrder: pinOrders().order(server: client.server)
+            ).prefix(Self.rowsPerList)
             let recent = try await client.snippets(SnippetQuery(limit: Self.rowsPerList)).snippets
             let all = try await allSnippets(client)
             let (sources, lists) = Self.extraLists(library: all, smartGroups: smartGroups())

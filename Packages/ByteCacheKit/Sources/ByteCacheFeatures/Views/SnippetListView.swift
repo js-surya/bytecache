@@ -117,9 +117,11 @@ public struct SnippetListView: View {
             }
         } else if model.pinnedSection.isEmpty {
             ForEach(model.snippets) { row($0) }
+                .onMove(perform: model.selection == .pinned ? movePins : nil)
         } else {
             Section {
                 ForEach(model.pinnedSection) { row($0) }
+                    .onMove(perform: movePins)
             } header: {
                 Label("Pinned", symbol: .pinFill).foregroundStyle(.orange)
             }
@@ -127,6 +129,16 @@ public struct SnippetListView: View {
                 ForEach(model.otherSection) { row($0) }
             }
         }
+    }
+
+    /// Dragging pins into order (CP-99): on iPhone and iPad with Select's handles, so a plain drag still
+    /// sends the snippet to other apps; on the Mac, by dragging rows.
+    private var movePins: ((IndexSet, Int) -> Void)? {
+        #if os(iOS)
+        guard model.isSelecting else { return nil }
+        #endif
+        guard model.canReorderPins else { return nil }
+        return { model.movePins(from: $0, to: $1) }
     }
 
     private func row(_ snippet: Snippet) -> some View {
