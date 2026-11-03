@@ -108,31 +108,37 @@ struct AIProviderSection: View {
                 .textInputAutocapitalization(.never)
                 #endif
         }
-        ForEach(choices.shown, id: \.id) { model in
-            Button {
-                settings.setAIModel(model.id, for: provider)
-                search = ""
-            } label: {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(model.id).foregroundStyle(.primary)
-                        if !model.detail.isEmpty {
-                            Text(model.detail).font(.caption).foregroundStyle(.secondary)
-                        }
-                    }
-                    Spacer()
-                    if model.id == selection { Icon(.check).foregroundStyle(.tint) }
-                }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-        }
-        if choices.hidden > 0 {
-            Text(search.isEmpty ? "\(choices.hidden) more. Search to find one." : "\(choices.hidden) more match. Keep typing to narrow it down.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        } else if choices.shown.isEmpty {
+        if choices.shown.isEmpty {
             Text("No models match “\(search)”.").font(.caption).foregroundStyle(.secondary)
+        } else {
+            // Its own scroll area, so hundreds of models (OpenRouter) don't make Settings endless.
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    ForEach(choices.shown) { model in
+                        Button {
+                            settings.setAIModel(model.id, for: provider)
+                            search = ""
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(model.id).foregroundStyle(.primary)
+                                    if !model.detail.isEmpty {
+                                        Text(model.detail).font(.caption).foregroundStyle(.secondary)
+                                    }
+                                }
+                                Spacer()
+                                if model.id == selection { Icon(.check).foregroundStyle(.tint) }
+                            }
+                            .padding(.vertical, 8)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        if model.id != choices.shown.last?.id { Divider() }
+                    }
+                }
+            }
+            .frame(height: min(CGFloat(choices.shown.count) * 44, 264))
+            .scrollBounceBehavior(.basedOnSize)
         }
     }
 
@@ -165,14 +171,10 @@ struct AIProviderSection: View {
     }
 }
 
-/// The few models shown under the search field: with no search, the suggested ones the provider has and
-/// the current choice first; with a search, the first matches. Lists can run to hundreds (OpenRouter).
+/// The models in the scrolling list: with no search, the suggested ones the provider has and the current
+/// choice first, then the rest; with a search, only the matches.
 struct ModelChoices {
-    static let limit = 6
-
     let shown: [SuggestedModel]
-    /// Models left out to keep the list short.
-    let hidden: Int
 
     init(models: [String], suggested: [SuggestedModel], selection: String, search: String) {
         let query = search.trimmingCharacters(in: .whitespaces)
@@ -186,8 +188,6 @@ struct ModelChoices {
             models.filter { $0.localizedCaseInsensitiveContains(query) }
         }
         var seen = Set<String>()
-        let unique = ordered.filter { seen.insert($0).inserted }
-        shown = unique.prefix(Self.limit).map { SuggestedModel(id: $0, detail: detail[$0] ?? "") }
-        hidden = unique.count - shown.count
+        shown = ordered.filter { seen.insert($0).inserted }.map { SuggestedModel(id: $0, detail: detail[$0] ?? "") }
     }
 }

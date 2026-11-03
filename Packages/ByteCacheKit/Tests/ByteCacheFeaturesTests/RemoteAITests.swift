@@ -100,23 +100,19 @@ final class RemoteAIClientTests: XCTestCase {
         XCTAssertTrue(AIProvider.openAI.suggestedModels.isEmpty)
     }
 
-    func testModelChoicesStayShort() {
+    func testModelChoicesPutRoutersFirstAndSearch() {
         let models = (1...450).map { "vendor/model-\($0)" } + ["openrouter/auto", "openrouter/free"]
         let suggested = AIProvider.openRouter.suggestedModels
 
         let start = ModelChoices(models: models, suggested: suggested, selection: "vendor/model-300", search: "")
         XCTAssertEqual(start.shown.map(\.id).prefix(3), ["openrouter/auto", "openrouter/free", "vendor/model-300"])
         XCTAssertFalse(start.shown[1].detail.isEmpty)
-        XCTAssertEqual(start.shown.count, ModelChoices.limit)
-        XCTAssertEqual(start.shown.count + start.hidden, models.count)
+        XCTAssertEqual(start.shown.count, models.count) // each once, all scrollable
 
         let found = ModelChoices(models: models, suggested: suggested, selection: "", search: "MODEL-45")
-        XCTAssertEqual(found.shown.first?.id, "vendor/model-45")
-        XCTAssertEqual(found.shown.count + found.hidden, 2) // 45 and 450
+        XCTAssertEqual(found.shown.map(\.id), ["vendor/model-45", "vendor/model-450"])
 
-        let none = ModelChoices(models: models, suggested: suggested, selection: "", search: "nothing")
-        XCTAssertTrue(none.shown.isEmpty)
-        XCTAssertEqual(none.hidden, 0)
+        XCTAssertTrue(ModelChoices(models: models, suggested: suggested, selection: "", search: "nothing").shown.isEmpty)
 
         // Suggestions the provider doesn't list aren't offered.
         let plain = ModelChoices(models: ["gpt-a", "gpt-b"], suggested: suggested, selection: "", search: "")
