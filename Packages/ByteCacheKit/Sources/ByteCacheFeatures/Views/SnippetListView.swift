@@ -309,6 +309,13 @@ struct BulkActionBar: View {
                 }
                 .font(.subheadline)
                 if model.isBulkWorking { ProgressView().controlSize(.small) }
+                #if os(iOS)
+                // Here as well as on the toolbar, where narrow bars (iPhone, iPad portrait, iPhone Duo)
+                // tuck it into the More (…) menu.
+                Button("Done") { model.isSelecting = false }
+                    .font(.subheadline.weight(.semibold))
+                    .padding(.leading, 8)
+                #endif
             }
             HStack(spacing: 18) {
                 if model.selection == .recycleBin {
