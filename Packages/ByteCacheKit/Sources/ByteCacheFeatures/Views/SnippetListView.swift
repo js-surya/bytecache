@@ -301,21 +301,21 @@ struct BulkActionBar: View {
     var body: some View {
         VStack(spacing: 8) {
             HStack {
+                #if os(iOS)
+                // Here as well as on the toolbar, where narrow bars (iPhone, iPad portrait, iPhone Duo)
+                // tuck it into the More (…) menu. On the left, away from Recycle / Delete Forever.
+                Button("Done") { model.isSelecting = false }
+                    .font(.subheadline.weight(.semibold))
+                    .padding(.trailing, 8)
+                #endif
                 Text(model.selectedIDs.isEmpty ? "Select snippets" : "\(model.selectedIDs.count) selected")
                     .font(.subheadline.weight(.semibold))
                 Spacer()
+                if model.isBulkWorking { ProgressView().controlSize(.small) }
                 Button(model.selectedIDs.count == model.snippets.count ? "Deselect All" : "Select All") {
                     model.selectedIDs = model.selectedIDs.count == model.snippets.count ? [] : Set(model.snippets.map(\.id))
                 }
                 .font(.subheadline)
-                if model.isBulkWorking { ProgressView().controlSize(.small) }
-                #if os(iOS)
-                // Here as well as on the toolbar, where narrow bars (iPhone, iPad portrait, iPhone Duo)
-                // tuck it into the More (…) menu.
-                Button("Done") { model.isSelecting = false }
-                    .font(.subheadline.weight(.semibold))
-                    .padding(.leading, 8)
-                #endif
             }
             HStack(spacing: 18) {
                 if model.selection == .recycleBin {
