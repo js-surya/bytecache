@@ -96,6 +96,9 @@ public enum AppSymbol: String, CaseIterable, Sendable {
     case forward
     case more
     case select
+    case send
+    case stop
+    case chat
 
     public var sfName: String {
         switch self {
@@ -124,7 +127,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .allSnippets: "tray.full"
         case .textSmaller: "textformat.size.smaller"
         case .textLarger: "textformat.size.larger"
-        case .wrapLines: "arrow.turn.down.left"
+        case .wrapLines: "text.append"
         case .smartGroup: "folder.badge.gearshape"
         case .image: "photo"
         case .timer: "timer"
@@ -192,6 +195,9 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .forward: "chevron.right"
         case .more: "ellipsis.circle"
         case .select: "checkmark.circle"
+        case .send: "arrow.up.circle.fill"
+        case .stop: "stop.circle.fill"
+        case .chat: "bubble.left.and.bubble.right"
         }
     }
 }

@@ -43,8 +43,7 @@ public struct MarkdownView: View {
         case .code(let language, let text) where language?.lowercased() == "mermaid":
             MermaidView(source: text)
         case .code(let language, let text):
-            CodeView(code: text, language: language.flatMap(LanguageName.catalogID) ?? "plaintext")
-                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            MarkdownCodeBlock(language: language, code: text)
         case .rule:
             Divider()
         case .table(let header, let alignments, let rows):
@@ -69,6 +68,44 @@ public struct MarkdownView: View {
         case 3: .title3.weight(.semibold)
         default: .headline
         }
+    }
+}
+
+/// A fenced code block with its language and a Copy button, so code in AI answers and Markdown
+/// snippets can be copied on its own (CP-101).
+struct MarkdownCodeBlock: View {
+    let language: String?
+    let code: String
+    @State private var copied = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text(language?.isEmpty == false ? language! : "Code")
+                    .font(.caption.monospaced())
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button {
+                    Pasteboard.copy(code)
+                    CopyFeedback.copied(toast: false)
+                    copied = true
+                    Task {
+                        try? await Task.sleep(for: .seconds(1.5))
+                        copied = false
+                    }
+                } label: {
+                    Label(copied ? "Copied" : "Copy", symbol: copied ? .check : .copy)
+                        .font(.caption.weight(.semibold))
+                }
+                .buttonStyle(.borderless)
+                .accessibilityLabel(copied ? "Copied" : "Copy Code")
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(.fill.tertiary)
+            CodeView(code: code, language: language.flatMap(LanguageName.catalogID) ?? "plaintext")
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 }
 

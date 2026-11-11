@@ -15,6 +15,8 @@ public final class AppServices {
     public let cloudSync: CloudSyncCoordinator
     /// Explain results kept under the code, synced through iCloud (CP-79).
     public let aiNotes: AINoteStore
+    /// Explain chats (CP-101), kept on this device only.
+    public let explainChats: ExplainChatStore
     /// Appearance, line numbers and search-inside-code, shared with the web app's settings (CP-74).
     public let serverSettings: ServerSettingsSync
     public let lock: AppLockModel
@@ -53,6 +55,7 @@ public final class AppServices {
         cloudSync = CloudSyncCoordinator(settings: settings, session: session, cloud: cloud ?? UbiquitousSyncStore())
         serverSettings = ServerSettingsSync(settings: settings, session: session)
         aiNotes = AINoteStore(directory: AINoteStore.defaultDirectory, settings: settings, cloud: cloud ?? UbiquitousSyncStore())
+        explainChats = ExplainChatStore(directory: AINoteStore.defaultDirectory)
     }
 }
 

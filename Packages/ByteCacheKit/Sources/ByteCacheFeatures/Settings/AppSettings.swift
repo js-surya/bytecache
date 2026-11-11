@@ -216,6 +216,9 @@ public final class AppSettings {
 
     /// The chosen provider's explainer, like `suggester`.
     public var explainer: (any SnippetExplainer)? {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-BCStubAI") { return StubAIExplainer() }
+        #endif
         guard suggestionsEnabled else { return nil }
         if aiProvider.isOnDevice { return SnippetSuggesters.explainer() }
         return remoteAIClient().map(RemoteExplainer.init)

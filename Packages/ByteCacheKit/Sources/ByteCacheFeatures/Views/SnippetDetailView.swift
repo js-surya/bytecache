@@ -12,7 +12,8 @@ public struct SnippetDetailView: View {
     @State private var exportFile: ExportFile?
     @State private var exportMessage: String?
     @State private var sharingLinks = false
-    @State private var explaining = false
+    /// Explain's sheet is open: continuing the saved chat, or starting a new one.
+    @State private var explaining: ExplainStart?
     /// The file shown when files are tabs (nil: the first).
     @State private var selectedFile: Int?
     #if os(iOS)
@@ -21,6 +22,7 @@ public struct SnippetDetailView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(\.openWindow) private var openWindow
     @Environment(AINoteStore.self) private var aiNotes: AINoteStore?
+    @Environment(ExplainChatStore.self) private var explainChats: ExplainChatStore?
     let showsOpenInWindow: Bool
 
     public init(snippet: Snippet, list: SnippetListModel?, showsOpenInWindow: Bool = true, onEdit: @escaping () -> Void) {
@@ -119,10 +121,16 @@ public struct SnippetDetailView: View {
                     }
                 }
                 if let server = noteServer, let note = aiNotes?.note(server: server, snippetID: snippet.id) {
-                    AINoteCard(note: note, code: allCode, canExplainAgain: canExplain) {
-                        explaining = true
+                    AINoteCard(note: note, code: allCode, canExplainAgain: canExplain,
+                               followUps: max(0, (explainChats?.chat(server: server, snippetID: snippet.id)?.messages.count ?? 1) - 1)) {
+                        explaining = .fresh
+                    } onContinueChat: {
+                        explaining = .resume
                     } onDelete: {
-                        withAnimation { aiNotes?.delete(server: server, snippetID: snippet.id) }
+                        withAnimation {
+                            aiNotes?.delete(server: server, snippetID: snippet.id)
+                            explainChats?.delete(server: server, snippetID: snippet.id)
+                        }
                     }
                 }
             }
@@ -177,17 +185,11 @@ public struct SnippetDetailView: View {
             }
             if let explainer = settings.explainer {
                 ToolbarItem(id: "explain", placement: .primaryAction) {
-                    Button { explaining = true } label: { Label("Explain", symbol: .sparkles) }
+                    Button { explaining = .resume } label: { Label("Explain", symbol: .sparkles) }
                         .toolbarIcon()
-                        .sheet(isPresented: $explaining) {
+                        .sheet(item: $explaining) { start in
                             NavigationStack {
-                                ExplainSheet(model: ExplainModel(explainer: explainer, provider: settings.aiProvider),
-                                             snippet: (allCode, fragments.first?.language ?? "plaintext", snippet.title)) { text in
-                                    if let server = noteServer {
-                                        aiNotes?.save(text, code: allCode, server: server, snippetID: snippet.id,
-                                                      author: settings.aiAuthor)
-                                    }
-                                }
+                                ExplainSheet(model: explainChat(explainer, start: start))
                             }
                         }
                 }
@@ -224,6 +226,12 @@ public struct SnippetDetailView: View {
             }
         }
         #if DEBUG
+        // `-BCExplain`: opens Explain's chat for the opened snippet.
+        .task {
+            guard ProcessInfo.processInfo.arguments.contains("-BCExplain"), canExplain else { return }
+            try? await Task.sleep(for: .seconds(1))
+            explaining = .resume
+        }
         // `-BCAINotePreview`: a sample AI Note for older code, so the card and its "code changed" note show.
         .task {
             guard ProcessInfo.processInfo.arguments.contains("-BCAINotePreview"), let server = noteServer,
@@ -238,6 +246,38 @@ public struct SnippetDetailView: View {
         }
         #endif
         .logScreen("Snippet")
+    }
+
+    enum ExplainStart: Identifiable {
+        case resume, fresh
+        var id: Self { self }
+    }
+
+    /// Explain's chat (CP-101): the saved one, or one that starts from the AI Note (made on another
+    /// device, or before chats), or a new explanation.
+    private func explainChat(_ explainer: any SnippetExplainer, start: ExplainStart) -> ExplainChatModel {
+        let server = noteServer
+        let saved = start == .fresh ? nil : server.flatMap { explainChats?.chat(server: $0, snippetID: snippet.id) }
+        let note = start == .fresh ? nil : server.flatMap { aiNotes?.note(server: $0, snippetID: snippet.id) }
+        var messages = saved?.messages ?? []
+        var codeChanged = saved?.isStale(for: allCode) ?? false
+        if let note, saved.map({ note.created > $0.updated && $0.messages.first?.text != note.text }) ?? true {
+            // A newer explanation (from another device) starts a new chat.
+            messages = [ChatMessage(role: .assistant, text: note.text,
+                                    author: note.author ?? AIProvider.appleIntelligence.name, date: note.created)]
+            codeChanged = note.isStale(for: allCode)
+        }
+        let model = ExplainChatModel(explainer: explainer, provider: settings.aiProvider, author: settings.aiAuthor,
+                                     code: allCode, language: fragments.first?.language ?? "plaintext",
+                                     title: snippet.title, messages: messages, codeChanged: codeChanged)
+        let code = allCode, id = snippet.id, author = settings.aiAuthor
+        model.onExplained = { [aiNotes] text in
+            if let server { aiNotes?.save(text, code: code, server: server, snippetID: id, author: author) }
+        }
+        model.onChange = { [explainChats] messages in
+            if let server { explainChats?.save(messages, code: code, server: server, snippetID: id) }
+        }
+        return model
     }
 
     @ViewBuilder

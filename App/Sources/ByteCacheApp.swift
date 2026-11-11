@@ -17,6 +17,7 @@ struct ByteCacheApp: App {
                 .appSettingsStyle(services.settings)
                 .environment(services.cloudSync)
                 .environment(services.aiNotes)
+                .environment(services.explainChats)
                 .environment(services.lock)
                 .environment(services.updates)
                 .appLockCover(services.lock)
@@ -55,6 +56,7 @@ struct ByteCacheApp: App {
                     .appSettingsStyle(services.settings)
                 .environment(services.cloudSync)
                 .environment(services.aiNotes)
+                .environment(services.explainChats)
                 .environment(services.lock)
                 .appLockCover(services.lock)
             }
@@ -73,6 +75,7 @@ struct ByteCacheApp: App {
             .appSettingsStyle(services.settings)
                 .environment(services.cloudSync)
                 .environment(services.aiNotes)
+                .environment(services.explainChats)
                 .environment(services.lock)
                 .environment(services.updates)
                 .appLockCover(services.lock)

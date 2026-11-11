@@ -279,17 +279,22 @@ final class AIProviderSettingsTests: XCTestCase {
 
 @MainActor
 final class RemoteExplainTests: XCTestCase {
+    private func chat(_ result: Result<String, Error>, _ provider: AIProvider) -> ExplainChatModel {
+        ExplainChatModel(explainer: StubExplainer(result: result), provider: provider, author: provider.name,
+                         code: "x", language: "bash", title: "t")
+    }
+
     func testProviderErrorsAreShownAsIs() async {
-        let model = ExplainModel(explainer: StubExplainer(result: .failure(RemoteAIError.keyRejected(.openAI))), provider: .openAI)
-        await model.explain(code: "x", language: "bash", title: "t")
-        XCTAssertEqual(model.state, .failed("OpenAI didn't accept the API key. Check it in Settings → Smart Suggestions."))
+        let model = chat(.failure(RemoteAIError.keyRejected(.openAI)), .openAI)
+        await model.start()
+        XCTAssertEqual(model.phase, .failed("OpenAI didn't accept the API key. Check it in Settings → Smart Suggestions."))
     }
 
     func testOtherErrorsNameTheProvider() async {
         struct Boom: Error {}
-        let model = ExplainModel(explainer: StubExplainer(result: .failure(Boom())), provider: .gemini)
-        await model.explain(code: "x", language: "bash", title: "t")
-        XCTAssertEqual(model.state, .failed("Google Gemini couldn't explain this snippet right now. Try again in a moment."))
+        let model = chat(.failure(Boom()), .gemini)
+        await model.start()
+        XCTAssertEqual(model.phase, .failed("Google Gemini couldn't explain this snippet right now. Try again in a moment."))
     }
 }
 

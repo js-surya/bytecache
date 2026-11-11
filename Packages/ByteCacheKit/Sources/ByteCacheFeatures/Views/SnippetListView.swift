@@ -301,21 +301,23 @@ struct BulkActionBar: View {
     var body: some View {
         VStack(spacing: 8) {
             HStack {
-                Text(model.selectedIDs.isEmpty ? "Select snippets" : "\(model.selectedIDs.count) selected")
-                    .font(.subheadline.weight(.semibold))
-                Spacer()
-                Button(model.selectedIDs.count == model.snippets.count ? "Deselect All" : "Select All") {
-                    model.selectedIDs = model.selectedIDs.count == model.snippets.count ? [] : Set(model.snippets.map(\.id))
-                }
-                .font(.subheadline)
-                if model.isBulkWorking { ProgressView().controlSize(.small) }
                 #if os(iOS)
                 // Here as well as on the toolbar, where narrow bars (iPhone, iPad portrait, iPhone Duo)
                 // tuck it into the More (…) menu.
                 Button("Done") { model.isSelecting = false }
                     .font(.subheadline.weight(.semibold))
-                    .padding(.leading, 8)
+                    .padding(.trailing, 12)
                 #endif
+                // Buttons stay on the left; only the count sits above Recycle / Delete Forever,
+                // so a slip on the top row can't land on a destructive button.
+                Button(model.selectedIDs.count == model.snippets.count ? "Deselect All" : "Select All") {
+                    model.selectedIDs = model.selectedIDs.count == model.snippets.count ? [] : Set(model.snippets.map(\.id))
+                }
+                .font(.subheadline)
+                Spacer()
+                if model.isBulkWorking { ProgressView().controlSize(.small) }
+                Text(model.selectedIDs.isEmpty ? "Select snippets" : "\(model.selectedIDs.count) selected")
+                    .font(.subheadline.weight(.semibold))
             }
             HStack(spacing: 18) {
                 if model.selection == .recycleBin {
