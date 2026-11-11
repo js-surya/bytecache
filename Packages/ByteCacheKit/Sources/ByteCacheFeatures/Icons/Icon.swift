@@ -20,8 +20,15 @@ public struct Icon: View {
 
     public var body: some View {
         symbol.image()
+            .scaleEffect(x: symbol.isMirrored ? -1 : 1, y: 1)
             .accessibilityHidden(true)
     }
+}
+
+extension AppSymbol {
+    /// Drawn right to left: Wrap Long Lines is `text.append` with its arrow coming back to the start
+    /// of the next line, like wrapped text.
+    var isMirrored: Bool { self == .wrapLines }
 }
 
 extension Label where Title == Text, Icon == ByteCacheFeatures.Icon {
