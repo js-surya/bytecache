@@ -823,6 +823,7 @@ struct SuggestionsSettingsView: View {
 struct AINotesSettingsView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(AINoteStore.self) private var aiNotes: AINoteStore?
+    @Environment(ExplainChatStore.self) private var explainChats: ExplainChatStore?
     @State private var confirmingClear = false
 
     var body: some View {
@@ -837,19 +838,22 @@ struct AINotesSettingsView: View {
                     }
                     .onChange(of: settings.aiNotesLimit) { aiNotes.applyLimit() }
                 } footer: {
-                    InfoFooter("Explain keeps its answer as a note under the code. Notes stay on this device and, with iCloud Sync on, your other devices; never on your ByteStash server. When the limit is reached, the oldest note makes room.")
+                    InfoFooter("Explain keeps its answer as a note under the code. Notes stay on this device and, with iCloud Sync on, your other devices; never on your ByteStash server. When the limit is reached, the oldest note makes room. Chats about the code (questions and answers after the explanation) stay on this device only.")
                 }
                 Section {
                     Button("Clear All AI Notes", role: .destructive) { confirmingClear = true }
-                        .disabled(aiNotes.count == 0)
+                        .disabled(aiNotes.count == 0 && (explainChats?.count ?? 0) == 0)
                 }
             }
         }
         .navigationTitle("AI Notes")
         .confirmationDialog("Clear All AI Notes?", isPresented: $confirmingClear, titleVisibility: .visible) {
-            Button("Clear All AI Notes", role: .destructive) { aiNotes?.clearAll() }
+            Button("Clear All AI Notes", role: .destructive) {
+                aiNotes?.clearAll()
+                explainChats?.clearAll()
+            }
         } message: {
-            Text(settings.iCloudSyncEnabled ? "They're removed from this device and your other devices." : "They're removed from this device.")
+            Text(settings.iCloudSyncEnabled ? "They're removed from this device and your other devices, with the chats on this device." : "They're removed from this device, with their chats.")
         }
     }
 }
