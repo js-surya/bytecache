@@ -7,7 +7,10 @@ struct AINoteCard: View {
     let code: String
     /// This device can make a new one (the chosen AI provider is ready).
     let canExplainAgain: Bool
+    /// Questions and answers after the explanation in this snippet's chat (CP-101).
+    var followUps = 0
     let onExplainAgain: () -> Void
+    var onContinueChat: () -> Void = {}
     let onDelete: () -> Void
     @State private var expanded = false
 
@@ -60,11 +63,20 @@ struct AINoteCard: View {
                 .padding(.top, 4)
                 .frame(maxHeight: long && !expanded ? 150 : nil, alignment: .top)
                 .clipped()
-            if long {
-                Button(expanded ? "Show Less" : "Show More") { withAnimation { expanded.toggle() } }
-                    .font(.subheadline)
-                    .buttonStyle(.borderless)
+            HStack {
+                if long {
+                    Button(expanded ? "Show Less" : "Show More") { withAnimation { expanded.toggle() } }
+                        .font(.subheadline)
+                }
+                Spacer()
+                if canExplainAgain {
+                    Button(action: onContinueChat) {
+                        Label(followUps > 0 ? "Continue Chat" : "Ask a Follow-up", symbol: .chat)
+                    }
+                    .font(.subheadline.weight(.semibold))
+                }
             }
+            .buttonStyle(.borderless)
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)

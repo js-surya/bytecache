@@ -58,7 +58,16 @@ public struct RemoteAIClient: Sendable {
     /// models can spend all of it thinking and answer nothing. Length is asked for in the instructions.
     /// `jpeg`: a picture sent with the prompt (Fix Scan), for models that can see images.
     public func complete(system: String, prompt: String, jpeg: Data? = nil, maxTokens: Int = 8_192) async throws -> String {
+        try await complete(system: system, turns: [AITurn(role: .user, text: prompt)], jpeg: jpeg, maxTokens: maxTokens)
+    }
+
+    /// An answer to a conversation (Explain's chat, CP-101). `turns` alternate and start and end with the
+    /// person; `jpeg` goes with the last turn.
+    public func complete(system: String, turns: [AITurn], jpeg: Data? = nil, maxTokens: Int = 8_192) async throws -> String {
         guard !model.isEmpty else { throw RemoteAIError.missingModel }
+        precondition(!turns.isEmpty)
+        let prompt = turns[turns.count - 1].text
+        let earlier = turns.dropLast()
         let key = try apiKey()
         var request: URLRequest
         let body: [String: Any]
@@ -72,8 +81,9 @@ public struct RemoteAIClient: Sendable {
                 [["type": "image", "source": ["type": "base64", "media_type": "image/jpeg", "data": $0]],
                  ["type": "text", "text": prompt]] as [[String: Any]]
             } ?? prompt
+            let history: [[String: Any]] = earlier.map { ["role": $0.role.rawValue, "content": $0.text] }
             body = ["model": model, "max_tokens": maxTokens, "system": system,
-                    "messages": [["role": "user", "content": content]]]
+                    "messages": history + [["role": "user", "content": content]]]
         case .gemini:
             let name = model.hasPrefix("models/") ? String(model.dropFirst(7)) : model
             guard let path = name.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
@@ -81,12 +91,20 @@ public struct RemoteAIClient: Sendable {
             else { throw RemoteAIError.missingModel }
             request = URLRequest(url: url)
             let image: [[String: Any]] = picture.map { [["inline_data": ["mime_type": "image/jpeg", "data": $0]]] } ?? []
-            // Gemma models on this API reject system instructions, so theirs go with the prompt.
+            // Gemini calls the assistant "model".
+            var contents: [[String: Any]] = earlier.map {
+                ["role": $0.role == .assistant ? "model" : "user", "parts": [["text": $0.text]]]
+            }
+            // Gemma models on this API reject system instructions, so theirs go with the first turn.
             if name.lowercased().hasPrefix("gemini") {
-                body = ["systemInstruction": ["parts": [["text": system]]],
-                        "contents": [["role": "user", "parts": image + [["text": prompt]]]]]
-            } else {
+                contents.append(["role": "user", "parts": image + [["text": prompt]]])
+                body = ["systemInstruction": ["parts": [["text": system]]], "contents": contents]
+            } else if contents.isEmpty {
                 body = ["contents": [["role": "user", "parts": image + [["text": system + "\n\n" + prompt]]]]]
+            } else {
+                contents[0]["parts"] = [["text": system + "\n\n" + turns[0].text]]
+                contents.append(["role": "user", "parts": image + [["text": prompt]]])
+                body = ["contents": contents]
             }
         case .openAI, .openRouter, .localServer:
             request = URLRequest(url: try base().appending(path: "chat/completions"))
@@ -95,7 +113,9 @@ public struct RemoteAIClient: Sendable {
                 [["type": "text", "text": prompt],
                  ["type": "image_url", "image_url": ["url": "data:image/jpeg;base64,\($0)"]]] as [[String: Any]]
             } ?? prompt
-            body = ["model": model, "messages": [["role": "system", "content": system], ["role": "user", "content": content]]]
+            let history: [[String: Any]] = earlier.map { ["role": $0.role.rawValue, "content": $0.text] }
+            body = ["model": model,
+                    "messages": [["role": "system", "content": system]] + history + [["role": "user", "content": content]]]
         }
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -271,6 +291,23 @@ public struct RemoteExplainer: SnippetExplainer {
         try await client.complete(system: AIPrompts.explainInstructions,
                                   prompt: AIPrompts.explainPrompt(code: code, language: language, title: title))
     }
+
+    public func reply(code: String, language: String, title: String, conversation: [ChatMessage]) async throws -> String {
+        try await client.complete(system: AIPrompts.chatInstructions,
+                                  turns: AIPrompts.chatTurns(code: code, language: language, title: title,
+                                                             conversation: conversation))
+    }
+}
+
+/// One turn of a conversation sent to a provider.
+public struct AITurn: Equatable, Sendable {
+    public var role: ChatMessage.Role
+    public var text: String
+
+    public init(role: ChatMessage.Role, text: String) {
+        self.role = role
+        self.text = text
+    }
 }
 
 /// The same instructions for Apple Intelligence and the person's own provider.
@@ -295,5 +332,46 @@ enum AIPrompts {
 
     static func explainPrompt(code: String, language: String, title: String) -> String {
         "Title: \(title)\nLanguage: \(language)\nCode:\n\(code)"
+    }
+
+    // MARK: Chat (CP-101)
+
+    static let chatInstructions = """
+    You're helping a developer understand a code snippet from their snippet library. The snippet is in the \
+    first message, and you have already explained it. Answer their follow-up questions about it in plain \
+    language, using Markdown. Keep answers short unless they ask for more. When you suggest a change, show \
+    the changed code in a fenced code block. Point out anything risky. If you're not sure, say so.
+    """
+
+    /// The snippet (its current code) as the first turn, then the conversation. Questions in a row (one
+    /// went unanswered) become one turn, since some providers need turns to alternate.
+    static func chatTurns(code: String, language: String, title: String, conversation: [ChatMessage]) -> [AITurn] {
+        var turns = [AITurn(role: .user, text: "Explain this snippet.\n\n" + explainPrompt(code: code, language: language, title: title))]
+        for message in conversation {
+            if turns[turns.count - 1].role == message.role {
+                turns[turns.count - 1].text += "\n\n" + message.text
+            } else {
+                turns.append(AITurn(role: message.role, text: message.text))
+            }
+        }
+        return turns
+    }
+
+    /// Roughly how many characters Apple Intelligence's small context gets for a chat (about 4,000 tokens
+    /// in all, with room left for the answer).
+    static let onDeviceBudget = 6_000
+
+    /// Apple Intelligence gets one prompt: the code, then as many of the newest messages as fit.
+    static func onDeviceChatPrompt(code: String, language: String, title: String, conversation: [ChatMessage]) -> String {
+        let head = explainPrompt(code: String(code.prefix(2_500)), language: language, title: title)
+        var room = onDeviceBudget - head.count
+        var lines: [String] = []
+        for message in conversation.reversed() {
+            let line = (message.role == .user ? "Developer: " : "You: ") + String(message.text.prefix(1_500))
+            guard line.count <= room || lines.isEmpty else { break }
+            lines.insert(line, at: 0)
+            room -= line.count
+        }
+        return head + "\n\nConversation so far:\n" + lines.joined(separator: "\n\n") + "\n\nAnswer the developer's last message."
     }
 }

@@ -43,6 +43,7 @@ TABLE = [
     ("circle", "circle"), ("checkbox", "square"), ("checkboxChecked", "checkmark.square.fill"),
     ("back", "chevron.left"), ("forward", "chevron.right"), ("more", "ellipsis.circle"),
     ("select", "checkmark.circle"),
+    ("send", "arrow.up.circle.fill"), ("stop", "stop.circle.fill"), ("chat", "bubble.left.and.bubble.right"),
 ]
 
 
