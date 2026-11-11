@@ -127,7 +127,7 @@ public enum AppSymbol: String, CaseIterable, Sendable {
         case .allSnippets: "tray.full"
         case .textSmaller: "textformat.size.smaller"
         case .textLarger: "textformat.size.larger"
-        case .wrapLines: "arrow.turn.down.left"
+        case .wrapLines: "text.append"
         case .smartGroup: "folder.badge.gearshape"
         case .image: "photo"
         case .timer: "timer"
