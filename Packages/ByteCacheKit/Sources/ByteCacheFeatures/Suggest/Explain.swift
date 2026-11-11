@@ -51,6 +51,10 @@ struct StubAIExplainer: SnippetExplainer {
         - Loops over the input line by line.
         - Skips empty lines.
         - Nothing risky: no files are changed.
+
+        ```bash
+        printf '%s\\n' "$@" | grep -v '^$'
+        ```
         """
     }
 
