@@ -116,6 +116,26 @@ public final class ExplainChatModel {
 
     public var isThinking: Bool { phase == .thinking }
 
+    /// Questions offered as one-tap chips while the chat has only the explanation (CP-102).
+    public static let suggestions = ["Make it shorter", "Find bugs", "Add comments", "Explain line by line"]
+
+    public var showsSuggestions: Bool { messages.count == 1 && phase == .idle }
+
+    /// Sends one of the suggested questions.
+    @discardableResult
+    public func ask(_ question: String) -> Task<Void, Never>? {
+        draft = question
+        return send()
+    }
+
+    /// Whether the answer at `index` names who wrote it: the first one, and any after the writer
+    /// changed (another provider or model), so the same name isn't repeated under every answer.
+    public func showsAuthor(at index: Int) -> Bool {
+        guard messages.indices.contains(index), messages[index].role == .assistant else { return false }
+        let earlier = messages[..<index].last { $0.role == .assistant }
+        return earlier == nil || earlier?.author != messages[index].author
+    }
+
     public var canSend: Bool {
         !isThinking && !messages.isEmpty && !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
@@ -284,7 +304,7 @@ struct ExplainSheet: View {
                     .foregroundStyle(.orange)
             }
             ForEach(Array(model.messages.enumerated()), id: \.element.id) { index, message in
-                ChatBubble(message: message)
+                ChatBubble(message: message, showsAuthor: model.showsAuthor(at: index))
                 if index == 0 { disclaimer }
             }
             status
@@ -295,11 +315,10 @@ struct ExplainSheet: View {
     }
 
     private var disclaimer: some View {
-        Text("AI answers can be wrong — check before running code. "
+        Text("Answers can be wrong — check before running code. "
              + (model.provider.isOnDevice
-                ? "Apple Intelligence answers on this device."
-                : "Your questions and the code go to \(model.provider.name), which answers with your API key.")
-             + " The explanation is kept as an AI Note under the code; the chat stays on this device.")
+                ? "Answered on this device."
+                : "Your questions and the code go to \(model.provider.name)."))
             .font(.footnote)
             .foregroundStyle(.secondary)
     }
@@ -330,6 +349,29 @@ struct ExplainSheet: View {
     }
 
     private var inputBar: some View {
+        VStack(spacing: 8) {
+            if model.showsSuggestions { suggestions }
+            inputRow
+        }
+        .padding(.vertical, 8)
+    }
+
+    /// One-tap questions, scrolling sideways when they don't fit.
+    private var suggestions: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(ExplainChatModel.suggestions, id: \.self) { question in
+                    Button(question) { model.ask(question) }
+                        .buttonStyle(.bordered)
+                        .buttonBorderShape(.capsule)
+                        .controlSize(.small)
+                }
+            }
+            .padding(.horizontal)
+        }
+    }
+
+    private var inputRow: some View {
         HStack(alignment: .bottom, spacing: 8) {
             TextField("Ask about this code…", text: $model.draft, axis: .vertical)
                 .lineLimit(1...5)
@@ -355,7 +397,6 @@ struct ExplainSheet: View {
             .buttonStyle(.borderless)
         }
         .padding(.horizontal)
-        .padding(.vertical, 8)
     }
 
     private static let end = "end"
@@ -368,6 +409,7 @@ struct ExplainSheet: View {
 /// A question (right, tinted) or an answer (rendered Markdown, with who wrote it).
 private struct ChatBubble: View {
     let message: ChatMessage
+    var showsAuthor = true
 
     var body: some View {
         Group {
@@ -384,7 +426,7 @@ private struct ChatBubble: View {
                 VStack(alignment: .leading, spacing: 4) {
                     MarkdownView(message.text)
                         .padding(-14) // MarkdownView pads itself.
-                    if let author = message.author {
+                    if showsAuthor, let author = message.author {
                         Text(author)
                             .font(.caption2)
                             .foregroundStyle(.secondary)

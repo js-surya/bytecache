@@ -157,6 +157,10 @@ public struct SnippetDetailView: View {
         }
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+        // The page starts with the title, so the bar doesn't show it again: iPhone Duo's layout
+        // (bars on the side) put the two right under each other (CP-102). It stays the navigation
+        // title for the Back menu and window names.
+        .toolbar(removing: .title)
         #endif
         // Right-click the toolbar (Mac) or long-press it (iPad) to choose and reorder these.
         // One toolbar in several steps, so each group has its own overflow priority (CP-102). When the
