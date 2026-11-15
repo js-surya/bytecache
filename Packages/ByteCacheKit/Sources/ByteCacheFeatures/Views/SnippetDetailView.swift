@@ -157,46 +157,25 @@ public struct SnippetDetailView: View {
         }
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+        // The page starts with the title, so the bar doesn't show it again: iPhone Duo's layout
+        // (bars on the side) put the two right under each other (CP-102). It stays the navigation
+        // title for the Back menu and window names.
+        .toolbar(removing: .title)
         #endif
         // Right-click the toolbar (Mac) or long-press it (iPad) to choose and reorder these.
-        .toolbar(id: windowToolbarID) {
-            if let list, !readOnly {
-                ToolbarItem(id: "pin", placement: .primaryAction) {
-                    // The colour goes on the button: in toolbars its tint wins over the label's style.
-                    Button { Task { await list.togglePin(snippet) } } label: {
-                        Label(snippet.isPinned ? "Unpin" : "Pin", symbol: snippet.isPinned ? .pinFill : .pin)
-                    }
-                    .tint(snippet.isPinned ? .orange : .primary)
-                }
-                ToolbarItem(id: "favorite", placement: .primaryAction) {
-                    Button { Task { await list.toggleFavorite(snippet) } } label: {
-                        Label(snippet.isFavorite ? "Unfavorite" : "Favorite", symbol: snippet.isFavorite ? .starFill : .star)
-                    }
-                    .tint(snippet.isFavorite ? .yellow : .primary)
+        // One toolbar in several steps, so each group has its own overflow priority (CP-102). When the
+        // bar is short of room, Edit is the last to go (the only one iPhone Duo's vertical bar keeps),
+        // then Pin, Wrap and Explain: an iPhone shows those four. Favorite (also a swipe in the list),
+        // Share, Share Link, Save and Open in New Window wait in the overflow menu.
+        // Items of a later step come first in the bar, so the steps are written last to first.
+        .toolbar(id: windowToolbarID, overflowPriority: .highest) {
+            if !readOnly {
+                ToolbarItem(id: "edit", placement: .primaryAction) {
+                    Button(action: onEdit) { Label("Edit", symbol: .edit) }.toolbarIcon()
                 }
             }
-            ToolbarItem(id: "wrap", placement: .primaryAction) {
-                Toggle(isOn: Bindable(settings).wrapLines) {
-                    Label("Wrap Long Lines", symbol: .wrapLines)
                 }
-                .toggleStyle(.button)
-                .toolbarIcon()
-                .help("Wrap Long Lines")
-            }
-            if let explainer = settings.explainer {
-                ToolbarItem(id: "explain", placement: .primaryAction) {
-                    Button { explaining = .resume } label: { Label("Explain", symbol: .sparkles) }
-                        .toolbarIcon()
-                        .sheet(item: $explaining) { start in
-                            NavigationStack {
-                                ExplainSheet(model: explainChat(explainer, start: start))
-                            }
-                        }
-                }
-            }
-            ToolbarItem(id: "share", placement: .primaryAction) {
-                SwiftUI.ShareLink(item: allCode).toolbarIcon()
-            }
+        .toolbar(id: windowToolbarID, overflowPriority: .low) {
             if let list, !readOnly {
                 ToolbarItem(id: "share-link", placement: .primaryAction) {
                     Button { sharingLinks = true } label: { Label("Share Link", symbol: .link) }
@@ -219,12 +198,54 @@ public struct SnippetDetailView: View {
                     .toolbarIcon()
                 }
             }
-            if !readOnly {
-                ToolbarItem(id: "edit", placement: .primaryAction) {
-                    Button(action: onEdit) { Label("Edit", symbol: .edit) }.toolbarIcon()
+                }
+        .toolbar(id: windowToolbarID, overflowPriority: .normal) {
+            ToolbarItem(id: "share", placement: .primaryAction) {
+                SwiftUI.ShareLink(item: allCode).toolbarIcon()
+            }
+                }
+        .toolbar(id: windowToolbarID, overflowPriority: .high) {
+            ToolbarItem(id: "wrap", placement: .primaryAction) {
+                Toggle(isOn: Bindable(settings).wrapLines) {
+                    Label("Wrap Long Lines", symbol: .wrapLines)
+                }
+                .toggleStyle(.button)
+                .toolbarIcon()
+                .help("Wrap Long Lines")
+            }
+            if let explainer = settings.explainer {
+                ToolbarItem(id: "explain", placement: .primaryAction) {
+                    Button { explaining = .resume } label: { Label("Explain", symbol: .sparkles) }
+                        .toolbarIcon()
+                        .sheet(item: $explaining) { start in
+                            NavigationStack {
+                                ExplainSheet(model: explainChat(explainer, start: start))
+                            }
+                        }
                 }
             }
         }
+        .toolbar(id: windowToolbarID, overflowPriority: .low) {
+            if let list, !readOnly {
+                ToolbarItem(id: "favorite", placement: .primaryAction) {
+                    Button { Task { await list.toggleFavorite(snippet) } } label: {
+                        Label(snippet.isFavorite ? "Unfavorite" : "Favorite", symbol: snippet.isFavorite ? .starFill : .star)
+                    }
+                    .tint(snippet.isFavorite ? .yellow : .primary)
+                }
+            }
+                }
+        .toolbar(id: windowToolbarID, overflowPriority: .high) {
+            if let list, !readOnly {
+                ToolbarItem(id: "pin", placement: .primaryAction) {
+                    // The colour goes on the button: in toolbars its tint wins over the label's style.
+                    Button { Task { await list.togglePin(snippet) } } label: {
+                        Label(snippet.isPinned ? "Unpin" : "Pin", symbol: snippet.isPinned ? .pinFill : .pin)
+                    }
+                    .tint(snippet.isPinned ? .orange : .primary)
+                }
+            }
+                }
         #if DEBUG
         // `-BCExplain`: opens Explain's chat for the opened snippet.
         .task {

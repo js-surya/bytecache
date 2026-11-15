@@ -69,7 +69,7 @@ public struct ClipboardBanner: View {
         // A one-line floating bar over the list; it stops growing at the largest standard size.
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .padding(10)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .glassSurface(in: RoundedRectangle(cornerRadius: 12))
         .padding(.horizontal)
         .padding(.bottom, 8)
     }

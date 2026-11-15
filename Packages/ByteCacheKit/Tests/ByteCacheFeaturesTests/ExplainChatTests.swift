@@ -139,6 +139,28 @@ final class ExplainChatModelTests: XCTestCase {
         XCTAssertEqual(chat.messages.map(\.text), ["Lists files.", "why?"])
     }
 
+    func testSuggestedQuestionsAreOfferedOnlyUnderTheExplanation() async {
+        let explainer = ScriptedExplainer([.success("Lists files."), .success("Shorter.")])
+        let chat = model(explainer)
+        XCTAssertFalse(chat.showsSuggestions, "nothing to ask about yet")
+        await chat.start()
+        XCTAssertTrue(chat.showsSuggestions)
+        await chat.ask("Make it shorter")?.value
+        XCTAssertEqual(chat.messages.map(\.text), ["Lists files.", "Make it shorter", "Shorter."])
+        XCTAssertFalse(chat.showsSuggestions)
+    }
+
+    func testWriterIsNamedOnceUntilItChanges() {
+        let chat = model(ScriptedExplainer([]), messages: [
+            ChatMessage(role: .assistant, text: "a", author: "Apple Intelligence"),
+            ChatMessage(role: .user, text: "q"),
+            ChatMessage(role: .assistant, text: "b", author: "Apple Intelligence"),
+            ChatMessage(role: .user, text: "q2"),
+            ChatMessage(role: .assistant, text: "c", author: "OpenRouter (openrouter/free)"),
+        ])
+        XCTAssertEqual((0..<5).map { chat.showsAuthor(at: $0) }, [true, false, false, false, true])
+    }
+
     func testVeryLongCodeIsTrimmedForTheModel() {
         let long = String(repeating: "a", count: 20_000)
         XCTAssertEqual(ExplainChatModel.prepared(long).count, ExplainChatModel.maxCharacters)
