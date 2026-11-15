@@ -159,10 +159,12 @@ public struct SnippetDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         // Right-click the toolbar (Mac) or long-press it (iPad) to choose and reorder these.
-        // One toolbar in three steps, so Share Link, Save and Open in New Window can be the first to go
-        // to the overflow menu when the bar is short of room (iPhone, iPhone Duo's vertical bars)
-        // (CP-102). Items of a later step come first in the bar, so the steps are written last to first.
-        .toolbar(id: windowToolbarID, overflowPriority: .normal) {
+        // One toolbar in several steps, so each group has its own overflow priority (CP-102). When the
+        // bar is short of room, Edit is the last to go (the only one iPhone Duo's vertical bar keeps),
+        // then Pin, Wrap and Explain: an iPhone shows those four. Favorite (also a swipe in the list),
+        // Share, Share Link, Save and Open in New Window wait in the overflow menu.
+        // Items of a later step come first in the bar, so the steps are written last to first.
+        .toolbar(id: windowToolbarID, overflowPriority: .highest) {
             if !readOnly {
                 ToolbarItem(id: "edit", placement: .primaryAction) {
                     Button(action: onEdit) { Label("Edit", symbol: .edit) }.toolbarIcon()
@@ -194,21 +196,11 @@ public struct SnippetDetailView: View {
             }
                 }
         .toolbar(id: windowToolbarID, overflowPriority: .normal) {
-            if let list, !readOnly {
-                ToolbarItem(id: "pin", placement: .primaryAction) {
-                    // The colour goes on the button: in toolbars its tint wins over the label's style.
-                    Button { Task { await list.togglePin(snippet) } } label: {
-                        Label(snippet.isPinned ? "Unpin" : "Pin", symbol: snippet.isPinned ? .pinFill : .pin)
-                    }
-                    .tint(snippet.isPinned ? .orange : .primary)
-                }
-                ToolbarItem(id: "favorite", placement: .primaryAction) {
-                    Button { Task { await list.toggleFavorite(snippet) } } label: {
-                        Label(snippet.isFavorite ? "Unfavorite" : "Favorite", symbol: snippet.isFavorite ? .starFill : .star)
-                    }
-                    .tint(snippet.isFavorite ? .yellow : .primary)
-                }
+            ToolbarItem(id: "share", placement: .primaryAction) {
+                SwiftUI.ShareLink(item: allCode).toolbarIcon()
             }
+                }
+        .toolbar(id: windowToolbarID, overflowPriority: .high) {
             ToolbarItem(id: "wrap", placement: .primaryAction) {
                 Toggle(isOn: Bindable(settings).wrapLines) {
                     Label("Wrap Long Lines", symbol: .wrapLines)
@@ -217,7 +209,7 @@ public struct SnippetDetailView: View {
                 .toolbarIcon()
                 .help("Wrap Long Lines")
             }
-                    if let explainer = settings.explainer {
+            if let explainer = settings.explainer {
                 ToolbarItem(id: "explain", placement: .primaryAction) {
                     Button { explaining = .resume } label: { Label("Explain", symbol: .sparkles) }
                         .toolbarIcon()
@@ -228,8 +220,26 @@ public struct SnippetDetailView: View {
                         }
                 }
             }
-                    ToolbarItem(id: "share", placement: .primaryAction) {
-                SwiftUI.ShareLink(item: allCode).toolbarIcon()
+        }
+        .toolbar(id: windowToolbarID, overflowPriority: .low) {
+            if let list, !readOnly {
+                ToolbarItem(id: "favorite", placement: .primaryAction) {
+                    Button { Task { await list.toggleFavorite(snippet) } } label: {
+                        Label(snippet.isFavorite ? "Unfavorite" : "Favorite", symbol: snippet.isFavorite ? .starFill : .star)
+                    }
+                    .tint(snippet.isFavorite ? .yellow : .primary)
+                }
+            }
+                }
+        .toolbar(id: windowToolbarID, overflowPriority: .high) {
+            if let list, !readOnly {
+                ToolbarItem(id: "pin", placement: .primaryAction) {
+                    // The colour goes on the button: in toolbars its tint wins over the label's style.
+                    Button { Task { await list.togglePin(snippet) } } label: {
+                        Label(snippet.isPinned ? "Unpin" : "Pin", symbol: snippet.isPinned ? .pinFill : .pin)
+                    }
+                    .tint(snippet.isPinned ? .orange : .primary)
+                }
             }
                 }
         #if DEBUG
