@@ -95,6 +95,14 @@ public struct SnippetListView: View {
                 .toolbarIcon()
             }
         }
+        #if DEBUG
+        // `-BCSelect`: starts in Select mode, to look at the Select bar without tapping.
+        .task {
+            guard ProcessInfo.processInfo.arguments.contains("-BCSelect") else { return }
+            try? await Task.sleep(for: .seconds(3))
+            if !model.isReadOnly && !model.snippets.isEmpty { model.isSelecting = true }
+        }
+        #endif
         .onChange(of: model.sort) { Task { await model.refresh() } }
         .onChange(of: settings.searchInCode, initial: true) {
             guard model.searchCode != settings.searchInCode else { return }
