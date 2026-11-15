@@ -71,9 +71,7 @@ public struct CopyToastLayer: View {
                     .font(.subheadline.weight(.semibold))
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
-                    .background(.regularMaterial, in: Capsule())
-                    .overlay(Capsule().strokeBorder(.separator))
-                    .shadow(color: .black.opacity(0.15), radius: 8, y: 2)
+                    .modifier(ToastSurface())
                     // Longer messages wrap; keep them off the screen's edges.
                     .padding(.horizontal, 16)
                     .transition(reduceMotion ? .opacity : .move(edge: edge == .top ? .top : .bottom).combined(with: .opacity))
@@ -86,5 +84,20 @@ public struct CopyToastLayer: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .animation(.spring(response: 0.35, dampingFraction: 0.8), value: model.message)
         .allowsHitTesting(false)
+    }
+}
+
+/// The toast's capsule: glass on iOS 26 / macOS 26 and later (it brings its own edge and shadow);
+/// the material with a hairline and a shadow before.
+private struct ToastSurface: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26, macOS 26, *) {
+            content.glassSurface(in: Capsule())
+        } else {
+            content
+                .background(.regularMaterial, in: Capsule())
+                .overlay(Capsule().strokeBorder(.separator))
+                .shadow(color: .black.opacity(0.15), radius: 8, y: 2)
+        }
     }
 }

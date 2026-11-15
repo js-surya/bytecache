@@ -3,10 +3,20 @@ import SwiftUI
 /// How readily toolbar items move to the overflow menu when the bar is short of room, such as the
 /// vertical bars on iPhone Duo (CP-83). No effect before iOS 27 / macOS 26.1.
 public enum ToolbarPriority {
-    case low, high
+    /// `normal` is the system's own choice; `highest` outranks `high` (Done while selecting, CP-102).
+    case low, normal, high, highest
 
     @available(iOS 27, macOS 26.1, *)
-    var visibility: ToolbarItemVisibilityPriority { self == .high ? .high : .low }
+    var visibility: ToolbarItemVisibilityPriority {
+        switch self {
+        case .low: return .low
+        case .normal: return .automatic
+        case .high: return .high
+        case .highest:
+            if #available(iOS 27, macOS 27, *) { return ToolbarItemVisibilityPriority(higherThan: .high) }
+            return .high
+        }
+    }
 }
 
 // The availability check sits in a view builder, not a toolbar builder: `if #available` inside a
