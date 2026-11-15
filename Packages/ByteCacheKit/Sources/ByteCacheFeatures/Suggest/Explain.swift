@@ -234,16 +234,15 @@ struct ExplainSheet: View {
             .onChange(of: model.messages.count) { scrollToEnd(proxy) }
             .onChange(of: model.phase) { scrollToEnd(proxy) }
         }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            if !model.messages.isEmpty { inputBar }
-        }
+        .modifier(ChatInputBar(shown: !model.messages.isEmpty) { inputBar })
         .navigationTitle("Explain")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("Done") { dismiss() }
+                // An icon as well as the title: vertical bars (iPhone Duo) show only items with one.
+                Button { dismiss() } label: { Label("Done", symbol: .check) }
             }
             ToolbarItem(placement: .primaryAction) {
                 Menu {
@@ -339,7 +338,7 @@ struct ExplainSheet: View {
                 .onSubmit { model.send() }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 9)
-                .background(.fill.tertiary, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .modifier(ChatFieldSurface())
             Group {
                 if model.isThinking {
                     Button { model.stop() } label: { Label("Stop", symbol: .stop) }
@@ -357,7 +356,6 @@ struct ExplainSheet: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
-        .background(.bar)
     }
 
     private static let end = "end"
@@ -398,5 +396,49 @@ private struct ChatBubble: View {
         .contextMenu {
             Button { Pasteboard.copy(message.text) } label: { Label("Copy", symbol: .copy) }
         }
+    }
+}
+
+/// Where the question field sits (CP-102). On iOS 26 and later it floats over the conversation as a
+/// bar of its own, like Messages, and the messages fade out behind it; on the Mac and on earlier
+/// systems it's a solid strip under the conversation.
+private struct ChatInputBar<Bar: View>: ViewModifier {
+    let shown: Bool
+    @ViewBuilder let bar: Bar
+
+    func body(content: Content) -> some View {
+        #if os(iOS)
+        if #available(iOS 26, *) {
+            content
+                .safeAreaBar(edge: .bottom, spacing: 0) { if shown { bar } }
+                .scrollEdgeEffectStyle(.soft, for: .bottom)
+        } else {
+            solid(content)
+        }
+        #else
+        solid(content)
+        #endif
+    }
+
+    private func solid(_ content: Content) -> some View {
+        content.safeAreaInset(edge: .bottom, spacing: 0) {
+            if shown { bar.background(.bar) }
+        }
+    }
+}
+
+/// The question field's own background: glass on iOS 26 and later, a quiet fill elsewhere.
+private struct ChatFieldSurface: ViewModifier {
+    func body(content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: 20, style: .continuous)
+        #if os(iOS)
+        if #available(iOS 26, *) {
+            content.glassEffect(.regular.interactive(), in: shape)
+        } else {
+            content.background(.fill.tertiary, in: shape)
+        }
+        #else
+        content.background(.fill.tertiary, in: shape)
+        #endif
     }
 }

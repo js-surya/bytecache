@@ -33,6 +33,12 @@ public struct SnippetListView: View {
         .safeAreaInset(edge: .bottom) {
             if model.isSelecting { BulkActionBar(model: model) }
         }
+        #if os(iOS)
+        // Select mode swaps the tab bar for the Select bar, as Mail and Photos do, so two bars don't
+        // stack over the list (CP-102). Only narrow windows have a tab bar.
+        .toolbarVisibility(model.isSelecting ? .hidden : .automatic, for: .tabBar)
+        .animation(.default, value: model.isSelecting)
+        #endif
         .overlay {
             if model.snippets.isEmpty {
                 Group {
@@ -61,9 +67,10 @@ public struct SnippetListView: View {
         .refreshable { await model.refresh() }
         .navigationTitle(model.title)
         // One toolbar id for the whole window, so it can be customised (CP-71); per window, see WindowToolbarID.
-        .toolbar(id: windowToolbarID) {
+        // While selecting, Done outranks everything, so it stays in the bar (CP-102).
+        .toolbar(id: windowToolbarID, overflowPriority: model.isSelecting ? .highest : .normal) {
             if !model.isReadOnly && !model.snippets.isEmpty {
-                ToolbarItem(id: "select") {
+                ToolbarItem(id: "select", placement: selectPlacement) {
                     // An icon as well as the title: vertical bars (iPhone Duo) show only items with one.
                     Button { model.isSelecting.toggle() } label: {
                         Label(model.isSelecting ? "Done" : "Select", symbol: model.isSelecting ? .check : .select)
@@ -291,6 +298,18 @@ private struct OptionalSearch: ViewModifier {
 }
 
 /// Actions for the selected snippets, shown at the bottom in select mode.
+extension SnippetListView {
+    /// Done is the bar's main action while selecting, so narrow bars (iPhone, iPhone Duo) keep it
+    /// instead of tucking it into the More (…) menu (CP-102). The Mac's bar has room and stays put.
+    fileprivate var selectPlacement: ToolbarItemPlacement {
+        #if os(iOS)
+        model.isSelecting ? .primaryAction : .automatic
+        #else
+        .automatic
+        #endif
+    }
+}
+
 struct BulkActionBar: View {
     let model: SnippetListModel
     @State private var categoryPrompt: CategoryPrompt?
@@ -349,7 +368,7 @@ struct BulkActionBar: View {
             .disabled(model.selectedIDs.isEmpty || model.isBulkWorking)
         }
         .padding(12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .glassSurface(in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .padding(.horizontal)
         .padding(.bottom, 6)
         .alert(categoryPrompt == .remove ? "Remove Category" : "Add Category",

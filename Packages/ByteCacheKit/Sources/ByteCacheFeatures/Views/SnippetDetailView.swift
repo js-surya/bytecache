@@ -159,7 +159,41 @@ public struct SnippetDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         // Right-click the toolbar (Mac) or long-press it (iPad) to choose and reorder these.
-        .toolbar(id: windowToolbarID) {
+        // One toolbar in three steps, so Share Link, Save and Open in New Window can be the first to go
+        // to the overflow menu when the bar is short of room (iPhone, iPhone Duo's vertical bars)
+        // (CP-102). Items of a later step come first in the bar, so the steps are written last to first.
+        .toolbar(id: windowToolbarID, overflowPriority: .normal) {
+            if !readOnly {
+                ToolbarItem(id: "edit", placement: .primaryAction) {
+                    Button(action: onEdit) { Label("Edit", symbol: .edit) }.toolbarIcon()
+                }
+            }
+                }
+        .toolbar(id: windowToolbarID, overflowPriority: .low) {
+            if let list, !readOnly {
+                ToolbarItem(id: "share-link", placement: .primaryAction) {
+                    Button { sharingLinks = true } label: { Label("Share Link", symbol: .link) }
+                        .toolbarIcon()
+                        .sheet(isPresented: $sharingLinks) {
+                            NavigationStack {
+                                ShareLinksView(model: ShareLinksModel(session: list.session, snippetID: snippet.id), title: snippet.title)
+                            }
+                        }
+                }
+            }
+            ToolbarItem(id: "save", placement: .primaryAction) {
+                saveButton.toolbarIcon()
+            }
+            if showsOpenInWindow && supportsMultipleWindows {
+                ToolbarItem(id: "window", placement: .primaryAction) {
+                    Button { openWindow(value: snippet.id) } label: {
+                        Label("Open in New Window", symbol: .newWindow)
+                    }
+                    .toolbarIcon()
+                }
+            }
+                }
+        .toolbar(id: windowToolbarID, overflowPriority: .normal) {
             if let list, !readOnly {
                 ToolbarItem(id: "pin", placement: .primaryAction) {
                     // The colour goes on the button: in toolbars its tint wins over the label's style.
@@ -183,7 +217,7 @@ public struct SnippetDetailView: View {
                 .toolbarIcon()
                 .help("Wrap Long Lines")
             }
-            if let explainer = settings.explainer {
+                    if let explainer = settings.explainer {
                 ToolbarItem(id: "explain", placement: .primaryAction) {
                     Button { explaining = .resume } label: { Label("Explain", symbol: .sparkles) }
                         .toolbarIcon()
@@ -194,37 +228,10 @@ public struct SnippetDetailView: View {
                         }
                 }
             }
-            ToolbarItem(id: "share", placement: .primaryAction) {
+                    ToolbarItem(id: "share", placement: .primaryAction) {
                 SwiftUI.ShareLink(item: allCode).toolbarIcon()
             }
-            if let list, !readOnly {
-                ToolbarItem(id: "share-link", placement: .primaryAction) {
-                    Button { sharingLinks = true } label: { Label("Share Link", symbol: .link) }
-                        .toolbarIcon()
-                        .sheet(isPresented: $sharingLinks) {
-                            NavigationStack {
-                                ShareLinksView(model: ShareLinksModel(session: list.session, snippetID: snippet.id), title: snippet.title)
-                            }
-                        }
                 }
-            }
-            ToolbarItem(id: "save", placement: .primaryAction) {
-                saveButton.toolbarIcon()
-            }
-            if showsOpenInWindow && supportsMultipleWindows {
-                ToolbarItem(id: "window", placement: .primaryAction) {
-                    Button { openWindow(value: snippet.id) } label: {
-                        Label("Open in New Window", symbol: .newWindow)
-                    }
-                    .toolbarIcon()
-                }
-            }
-            if !readOnly {
-                ToolbarItem(id: "edit", placement: .primaryAction) {
-                    Button(action: onEdit) { Label("Edit", symbol: .edit) }.toolbarIcon()
-                }
-            }
-        }
         #if DEBUG
         // `-BCExplain`: opens Explain's chat for the opened snippet.
         .task {
